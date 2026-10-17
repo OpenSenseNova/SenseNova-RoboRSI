@@ -192,6 +192,7 @@ RoboRSI-27B-Preview 通过模型与 Harness 的协同 RSI，将经过验证的�
 - [x] 首批代码：Agent 运行时与 LIBERO 系列评测
 - [x] [使用文档](docs/README.md)
 - [ ] Harness demo
+- [ ] SenseNova-RoboRSI-27B-Preview 模型权重——预计 2026 年 10 月 20 日发布
 - [ ] RoboRSI 技术报告
 
 ### 后续研究方向
