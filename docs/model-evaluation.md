@@ -194,7 +194,7 @@ model connection settings are unnecessary:
 python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --prepare-only
 ```
 
-With no external source, `--dry-run` only prints the preparation plan: no
+`--dry-run` always prints an offline plan, for managed, HTTP and registry sources: no
 downloads, containers, catalog requests or model calls. It does not verify API support.
 
 ```bash
@@ -217,7 +217,7 @@ ROBORSI_ROBOCASA_CELLS=all python scripts/evaluation/evaluate_model.py \
 ```
 
 The inline `all` setting also overrides an earlier `ROBORSI_ROBOCASA_CELLS=seed1`.
-Native Windows supports `--help` and automatic/HTTP `--dry-run` only;
+Native Windows supports `--help` and offline `--dry-run` only;
 preparation and evaluation require Linux/WSL.
 
 ## Existing environments and custom Agents
@@ -245,10 +245,10 @@ CLI `--benchmark-url NAME=URL` overrides the corresponding YAML endpoint;
 `--registry-root` overrides all YAML endpoints. Multi-benchmark HTTP mode requires
 an endpoint for every selected name. This is a simulator service origin, without
 the model API's `/v1` prefix, and is not a container registry URL. A configured
-endpoint selects the benchmark's referenced Agent. HTTP mode skips native
-environment/ICL preparation; Agents using ICL need prepared local resources.
+endpoint selects the benchmark's referenced Agent. HTTP skips native simulator
+preparation; ICL, tokenizer and optional VLA resources are prepared independently.
 
-Pass exactly one external source to skip automatic environment/ICL preparation:
+Pass one external source to skip local simulator preparation:
 
 ```bash
 python scripts/evaluation/evaluate_model.py --benchmark libero \
@@ -261,16 +261,15 @@ python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
 For multiple HTTP benchmarks provide `--benchmark-url NAME=URL` for every selected
 name. These are **simulator service origins**, distinct from the model's
 `OPENAI_BASE_URL`. Registry mode starts its prepared services; HTTP mode connects
-to services you already manage. With either external source, `--dry-run` reads
-and validates catalogs/plans without episodes or model calls. Use
-`--benchmark-token-env ENV_NAME` for HTTP service authentication.
+to services you already manage. `--dry-run` is offline and does not read catalogs.
+Use benchmark `token_env: ENV_NAME`, or override it with
+`--benchmark-token-env ENV_NAME`, for HTTP authentication. Tokens stay in the environment.
 
-`--agent-config NAME=PATH` overrides the automatic ICL preset. With an external
-source the default is `configs/agents/embodied/default.yaml` (no automatic ICL).
-An explicit `--benchmark-config` selects its referenced Agent instead. Explicit
-VLA-enabled LIBERO Agents also get automatic VLA setup with external sources.
-Custom presets need their code, dependencies and context resources already
-available. Their format, context and budgets are retained unless explicitly
+`--agent-config NAME=PATH` overrides the referenced Agent. Every transport uses
+the benchmark YAML's selected Agent and prepares required ICL/tokenizer/VLA resources.
+An explicit Agent preserves its policy and bypasses benchmark Agent overrides.
+Custom factories/resources remain supported; automatically supplied resources
+apply to the built-in LIBERO and RoboCasa ICL/VLA factories. Their format, context and budgets are retained unless explicitly
 overridden; the script always sets your model connection.
 
 See `python scripts/evaluation/evaluate_model.py --help` for all options.
@@ -301,3 +300,52 @@ Score RoboCasa by passing both result directories to
 `python -m benchmarks.robocasa365.score`; append `--cells seed1` for a complete
 50-cell seed-1 run. A smoke check is not a full benchmark score. See
 [evaluation](evaluation.md) and [RoboCasa365](../benchmarks/robocasa365/README.md).
+
+
+## Startup checks, live logs and resume
+
+Before downloads, normal evaluation sends one small main-model request using
+the selected API format, a 1×1 image and a tool definition, capped at 16 output
+tokens. Identical connections share one probe. This checks connectivity/request
+acceptance, not task competence. Existing Benchmark catalogs and VLA health/
+protocol are checked too. `--prepare-only` skips model requests; with existing
+HTTP/registry sources it prepares Agent resources only.
+
+`--dry-run` is always offline: no files, subprocesses, catalog or model requests,
+and no model URL/key required. It prints resolved settings and their sources,
+configuration paths, filters, service/resource plans and result directories.
+Exact case counts are resolved from the catalog during execution.
+
+Task, seed, completed count and elapsed time stream live, with heartbeat messages
+during long cases and service warmup. Invocation artifacts sit alongside the
+existing per-group directories:
+
+```text
+<results-root>/
+  robocasa-001/
+    resolved_config.json   # Sources, effective Agent configs/fingerprints; no keys
+    summary.json           # Case success ratio, runtime errors, native group summaries
+    logs/                  # Preflight/eval output and services/ container logs
+  robocasa-001-robocasa365-atomic/
+  robocasa-001-robocasa365-composite/
+```
+
+The overview ratio counts selected cases directly; official benchmark scoring
+still uses the native summaries/scoring entry points. Inspect `complete` and
+`exit_code` for interrupted/failed runs. Preparation failures produce
+`failure.json`; service logs are saved before owned containers are removed.
+Caches are preserved.
+
+Resume the previous **invocation ID**, with the same inputs/results root and a new ID:
+
+```bash
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
+  --run-id robocasa-retry --resume-from robocasa-001
+```
+
+The entry point maps all atomic/composite/seed groups, reuses terminal results,
+and runs only missing or explicitly retryable cases. Normal task failures remain
+valid scores. Changed selection, model/Agent identity or locked benchmark inputs
+reject resume. Changing managed VLA ports does not change Agent identity.
+First-time enhanced LIBERO ICL extraction may pull its pinned package-bearing
+image and use Docker even with HTTP; it does not start a local simulator.

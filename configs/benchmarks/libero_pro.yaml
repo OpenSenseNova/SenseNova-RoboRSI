@@ -2,6 +2,8 @@ schema_version: 1
 benchmark: libero_pro
 # Existing simulator HTTP origin, or null to prepare/start automatically.
 endpoint: null
+# Optional environment variable containing the existing HTTP service token.
+token_env: null
 model: ../models/default.yaml
 agent: ../agents/libero/pro.yaml
 case_timeout_s: 43200

@@ -4,6 +4,7 @@
 """VLA opt-in owns downloads and services without changing benchmark execution."""
 
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -159,7 +160,11 @@ def test_shared_service_is_ready_before_binding_and_removed_on_failure(
         ) as bound:
             assert ready == ["http://127.0.0.1:32123"]
             assert (
-                AgentConfig.from_file(bound["libero"]).parameters["vla_endpoint"]
+                os.environ[
+                    AgentConfig.from_file(bound["libero"]).parameters[
+                        "vla_endpoint_env"
+                    ]
+                ]
                 == "http://127.0.0.1:32123"
             )
             assert (
@@ -199,6 +204,9 @@ def test_readiness_failure_still_cleans_owned_service(tmp_path, monkeypatch):
         ):
             pytest.fail("evaluation ran before readiness")
     assert calls[-1][:3] == ["docker", "rm", "--force"]
+    container = calls[-1][-1]
+    assert calls[-2] == ["docker", "logs", "--timestamps", container]
+    assert (tmp_path / "logs/services" / f"{container}.log").is_file()
 
 
 def test_benchmark_override_can_enable_vla_before_any_download(tmp_path, monkeypatch):

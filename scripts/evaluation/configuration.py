@@ -46,6 +46,7 @@ class BenchmarkConfig:
     agent_overrides: dict = field(default_factory=dict)
     evaluation: dict = field(default_factory=dict)
     endpoint: str | None = None
+    token_env: str | None = None
 
 
 @dataclass(frozen=True)
@@ -56,6 +57,7 @@ class ModelConfig:
     openai_format: str | None = None
     api_key_env: str = "OPENAI_API_KEY"
     vla: OpenPiProfile | None = None
+    sources: dict = field(default_factory=dict)
 
 
 def _read(path: Path, allowed: set[str], required: set[str]) -> dict:
@@ -271,6 +273,7 @@ def load_benchmark(
             "agent_overrides",
             "evaluation",
             "endpoint",
+            "token_env",
         },
         {"schema_version", "benchmark"}
         if custom
@@ -296,6 +299,11 @@ def load_benchmark(
     endpoint = document.get("endpoint", base.endpoint if base else None)
     if endpoint is not None and (not isinstance(endpoint, str) or not endpoint.strip()):
         raise ValueError("Benchmark endpoint must be an HTTP origin or null")
+    token_env = document.get("token_env", base.token_env if base else None)
+    if token_env is not None and (
+        not isinstance(token_env, str) or not re.fullmatch(r"[A-Za-z_]\w*", token_env)
+    ):
+        raise ValueError("Benchmark token_env must name an environment variable")
     return BenchmarkConfig(
         path,
         name,
@@ -308,6 +316,7 @@ def load_benchmark(
         overrides,
         _evaluation(path, document.get("evaluation", base.evaluation if base else {})),
         endpoint,
+        token_env,
     )
 
 
@@ -375,11 +384,14 @@ def resolve_model(
 ) -> ModelConfig:
     """Apply CLI > named environment > model YAML without persisting a key."""
     document = _model_document(path)
+    sources = {}
 
     def choose(explicit, field_name, environment):
         if explicit is not None:
+            sources[field_name] = "CLI"
             return explicit
         variable = document.get(field_name + "_env", environment)
+        sources[field_name] = f"env:{variable}" if variable in os.environ else str(path)
         return os.environ.get(variable, document.get(field_name))
 
     return ModelConfig(
@@ -391,4 +403,5 @@ def resolve_model(
         parse_profile(document["vla"], base_dir=Path(path).parent)
         if document.get("vla") is not None
         else None,
+        sources,
     )

@@ -14,6 +14,8 @@ openai_format: null
 # OpenPI runs in an isolated container, separate from the main model API above.
 vla:
   backend: openpi
+  # Existing compatible HTTP VLA service, or null for automatic deployment.
+  endpoint: null
   openpi_revision: 215abfb217dbac7d5f1273282331b9b1866c0479
   policy_config: pi05_libero
   checkpoint: gs://openpi-assets/checkpoints/pi05_libero

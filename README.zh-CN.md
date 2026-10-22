@@ -135,7 +135,20 @@ Agent 策略修改 `configs/agents/` 中的预设。上面的环境变量仍会�
 `parameters.enable_vla: true` 后会[自动下载、部署 π0.5 VLA](docs/libero-vla.zh-CN.md)，
 仍可保持只传 `--benchmark NAME` 的入口。
 benchmark YAML 的 `endpoint: http://host:18800` 可连接已有镜像的 HTTP 服务，
-默认 `endpoint: null` 自动准备环境；已有 HTTP 模式的 ICL 用法见[评测指南](docs/model-evaluation.zh-CN.md)。
+默认 `endpoint: null` 自动准备环境。HTTP 模式仍会准备 Agent 所需的 ICL、tokenizer 和 VLA。
+benchmark 的 `token_env` 配置 HTTP 鉴权变量名；模型的 `vla.endpoint` 可连接已有 VLA 服务。
+
+正式运行会先检查主模型图像/工具接口和已有 HTTP 服务，再下载资源。
+任务、seed、完成数量和耗时实时显示，运行日志与脱敏配置会保存到结果目录。
+可先离线查看计划，或在中断后用新的运行 ID 续跑：
+
+```bash
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --dry-run
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
+  --run-id robocasa-retry --resume-from robocasa-001
+```
+
+结果概览见 `<results-root>/<run-id>/summary.json`；完整用法见[评测指南](docs/model-evaluation.zh-CN.md)。
 
 单任务检查通过后，去掉任务和种子过滤，运行 RoboCasa 全部 340 个 cell：
 

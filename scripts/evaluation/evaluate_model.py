@@ -27,6 +27,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from collections import defaultdict
 from dataclasses import replace
 from datetime import datetime, timezone
@@ -198,6 +199,9 @@ def parse_args(
         "--keep-turns", type=positive_int, help="generic preset default: 8"
     )
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--resume-from", help="previous invocation run ID; requires a new --run-id"
+    )
     args = parser.parse_args(argv)
     try:
         configuration = load_configuration()
@@ -235,10 +239,14 @@ def parse_args(
             )
             if model.base_url:
                 model = replace(model, base_url=validate_url(model.base_url))
-            if not args.prepare_only and (
-                not model.base_url
-                or not model.model_name
-                or not model.model_name.strip()
+            if (
+                not args.prepare_only
+                and not args.dry_run
+                and (
+                    not model.base_url
+                    or not model.model_name
+                    or not model.model_name.strip()
+                )
             ):
                 raise ValueError(
                     "set model YAML, --base-url / OPENAI_BASE_URL and --model-name / MODEL_NAME"
@@ -271,10 +279,6 @@ def parse_args(
                 f"{name}={url}" for name, url in configured_endpoints.items()
             ]
         args.auto_prepare = not (args.registry_root or args.benchmark_url)
-        if args.prepare_only and not args.auto_prepare:
-            raise ValueError(
-                "--prepare-only cannot be combined with an existing benchmark source"
-            )
         if len(args.benchmark) != len(set(args.benchmark)):
             raise ValueError("--benchmark values must be unique")
         args.libero_suite = (
@@ -295,6 +299,14 @@ def parse_args(
             raise ValueError(
                 "--run-id must contain only letters, digits, underscores and hyphens"
             )
+        if args.resume_from and (
+            not re.fullmatch(r"[A-Za-z0-9_-]+", args.resume_from)
+            or args.resume_from == args.run_id
+            or args.prepare_only
+        ):
+            raise ValueError(
+                "--resume-from requires a valid previous run ID and a different --run-id; cannot combine with --prepare-only"
+            )
         if args.seed is not None and (
             len(args.seed) != len(set(args.seed)) or min(args.seed) < 0
         ):
@@ -313,10 +325,25 @@ def parse_args(
                 name: validate_url(url, origin=True)
                 for name, url in args.endpoints.items()
             }
-        if args.benchmark_token_env:
-            if not args.benchmark_url or not os.environ.get(args.benchmark_token_env):
+        args.benchmark_tokens = {
+            name: args.benchmark_token_env or args.configurations[name].token_env
+            for name in args.endpoints
+        }
+        if args.benchmark_token_env and not args.endpoints:
+            raise ValueError("--benchmark-token-env requires HTTP Benchmarks")
+        for variable in args.benchmark_tokens.values():
+            if variable and not re.fullmatch(r"[A-Za-z_]\w*", variable):
                 raise ValueError(
-                    "--benchmark-token-env requires HTTP Benchmarks and a populated environment variable"
+                    "Benchmark token_env must name an environment variable"
+                )
+            if (
+                variable
+                and not args.dry_run
+                and not args.prepare_only
+                and not os.environ.get(variable)
+            ):
+                raise ValueError(
+                    f"Benchmark token variable {variable} is not populated"
                 )
         args.presets = {
             name: str(args.configurations[name].agent)
@@ -343,11 +370,12 @@ def parse_args(
         args.results_root = (
             (args.results_root or args.work_dir / "results").expanduser().resolve()
         )
+        args.run_dir = args.results_root / args.run_id
         if args.registry_root:
             args.registry_root = args.registry_root.expanduser().resolve()
-        if IS_WINDOWS and not (args.dry_run and (args.endpoints or args.auto_prepare)):
+        if IS_WINDOWS and not args.dry_run:
             raise ValueError(
-                "preparation and evaluation require Linux/WSL; native Windows supports --help and automatic/HTTP --dry-run only"
+                "preparation and evaluation require Linux/WSL; native Windows supports --help and offline --dry-run only"
             )
     except (ValueError, OSError) as exc:
         parser.error(str(exc))
@@ -383,9 +411,10 @@ def build_commands(args: argparse.Namespace) -> list[list[str]]:
     registry = (
         HttpBenchmarkRegistry(
             args.endpoints,
-            token=os.environ.get(args.benchmark_token_env)
-            if args.benchmark_token_env
-            else None,
+            token={
+                name: os.environ.get(variable) if variable else None
+                for name, variable in args.benchmark_tokens.items()
+            },
             timeout_s=args.timeout_s,
         )
         if args.endpoints
@@ -489,8 +518,8 @@ def build_commands(args: argparse.Namespace) -> list[list[str]]:
         ]
         if args.endpoints:
             command += ["--benchmark-url", f"{benchmark}={args.endpoints[benchmark]}"]
-            if args.benchmark_token_env:
-                command += ["--benchmark-token-env", args.benchmark_token_env]
+            if args.benchmark_tokens.get(benchmark):
+                command += ["--benchmark-token-env", args.benchmark_tokens[benchmark]]
         else:
             command += ["--registry-root", str(args.registry_root)]
         for key, value in overrides.items():
@@ -499,6 +528,7 @@ def build_commands(args: argparse.Namespace) -> list[list[str]]:
             command += ["--task", f"{benchmark}:{task}"]
         for seed in seeds:
             command += ["--seed", str(seed)]
+        command += ["--progress"]
         commands.append(command)
     return commands
 
@@ -523,42 +553,43 @@ def load_bootstrap():
 
 def main(argv: list[str] | None = None) -> int:
     parser, args = parse_args(argv)
-    if not args.auto_prepare:
-        from scripts.evaluation import vla
+    from scripts.evaluation import preflight, reporting, vla
 
-        try:
-            if args.dry_run:
-                vla.plan(args.presets, models=args.models)
-                return run_evaluation(parser, args)
-            deployments = vla.prepare_agents(
-                args.presets, args.work_dir, models=args.models
-            )
-            with vla.services(deployments, args.presets, args.work_dir) as bound:
-                args.presets = {**args.presets, **bound}
-                return run_evaluation(parser, args)
-        except (
-            ValueError,
-            RuntimeError,
-            OSError,
-            subprocess.CalledProcessError,
-        ) as exc:
-            parser.error(str(exc))
-        except KeyboardInterrupt:
-            return 130
-    bootstrap = load_bootstrap()
-    if args.dry_run:
-        try:
-            plan = bootstrap.preparation_plan(
+    redact = reporting.redactor(args)
+    owned_run_dir = False
+    try:
+        if args.dry_run:
+            bootstrap = load_bootstrap()
+            preparation = bootstrap.preparation_plan(
                 args.benchmark, args.work_dir, configurations=args.configurations
             )
-        except (ValueError, RuntimeError, OSError) as exc:
-            parser.error(str(exc))
-        print(json.dumps(plan, indent=2))
-        return 0
-    try:
-        prepared = bootstrap.prepare_benchmarks(
-            args.benchmark, args.work_dir, configurations=args.configurations
-        )
+            plan = reporting.plan(args, preparation)
+            if not args.auto_prepare:
+                plan["images"] = dict.fromkeys(
+                    args.benchmark, "existing source; no simulator image preparation"
+                )
+            print(redact(json.dumps(plan, indent=2, default=str)))
+            return 0
+        if not args.prepare_only:
+            if args.run_dir.exists():
+                raise FileExistsError(
+                    f"Run already exists: {args.run_dir}; choose a new --run-id"
+                )
+            preflight.check(args)
+            args.run_dir.mkdir(parents=True)
+            owned_run_dir = True
+            print(f"Run: {args.run_id} | Diagnostics: {args.run_dir}", flush=True)
+            reporting.write_json(
+                args.run_dir / "resolved_config.json",
+                {**reporting.plan(args, {}), "network_requests": True},
+                redact,
+            )
+        bootstrap = load_bootstrap()
+        prepared = (
+            bootstrap.prepare_benchmarks
+            if args.auto_prepare
+            else bootstrap.prepare_agents
+        )(args.benchmark, args.work_dir, configurations=args.configurations)
         if args.prepare_only:
             print(
                 json.dumps(
@@ -574,16 +605,25 @@ def main(argv: list[str] | None = None) -> int:
         # Preparation already selected explicit user presets and bound local assets.
         args.presets = prepared.presets
         args.prepared_env = prepared.env
-        from scripts.evaluation import vla
+        prepared.log_dir = args.run_dir / "logs/services"
+
+        from contextlib import nullcontext
 
         with (
-            bootstrap.benchmark_services(
-                prepared,
-                libero_suite=args.libero_suite,
-                robocasa_cells=args.robocasa_cells,
+            (
+                bootstrap.benchmark_services(
+                    prepared,
+                    libero_suite=args.libero_suite,
+                    robocasa_cells=args.robocasa_cells,
+                )
+                if args.auto_prepare
+                else nullcontext(args.endpoints)
             ) as endpoints,
             vla.services(
-                getattr(prepared, "vla", {}), args.presets, args.work_dir
+                getattr(prepared, "vla", {}),
+                args.presets,
+                args.work_dir,
+                log_dir=prepared.log_dir,
             ) as bound,
         ):
             args.presets = {**args.presets, **bound}
@@ -591,7 +631,11 @@ def main(argv: list[str] | None = None) -> int:
             args.benchmark_url = [f"{name}={url}" for name, url in endpoints.items()]
             return run_evaluation(parser, args)
     except (ValueError, RuntimeError, OSError, subprocess.CalledProcessError) as exc:
-        parser.error(str(exc))
+        if owned_run_dir:
+            reporting.write_json(
+                args.run_dir / "failure.json", {"error": str(exc)}, redact
+            )
+        parser.error(redact(str(exc)))
     except KeyboardInterrupt:
         print(
             "Interrupted; managed Benchmark services have been stopped.",
@@ -600,132 +644,169 @@ def main(argv: list[str] | None = None) -> int:
         return 130
 
 
+def run_child(*args, **kwargs):
+    from scripts.evaluation.reporting import run_child as stream
+
+    return stream(*args, **kwargs)
+
+
 def run_evaluation(parser: argparse.ArgumentParser, args: argparse.Namespace) -> int:
-    """Preflight and execute already available catalogs and selected Agent presets."""
-    if str(ROOT) not in sys.path:
-        sys.path.insert(0, str(ROOT))
+    """Preflight all groups, stream progress, and persist invocation artifacts."""
     from roborsi.utils.rpc import RpcError
+    from scripts.evaluation import reporting
 
-    secrets = [
-        value
-        for value in (
-            *(model.api_key for model in args.models.values()),
-            os.environ.get(args.benchmark_token_env)
-            if args.benchmark_token_env
-            else None,
-        )
-        if value
-    ]
-
-    def redact(value: str) -> str:
-        for secret in secrets:
-            value = value.replace(secret, "[REDACTED]")
-        return value
-
+    redact = reporting.redactor(args)
+    started = time.monotonic()
+    reports = []
+    code = 1
     try:
         commands = build_commands(args)
-    except (ValueError, OSError, KeyError, RpcError) as exc:
-        parser.error(redact(str(exc)))
-    environment = os.environ.copy()
-    for variable in {
-        "OPENAI_API_KEY",
-        *(model.api_key_env for model in args.models.values()),
-    }:
-        environment.pop(variable, None)
-    environment.update(getattr(args, "prepared_env", {}))
-    environment["PYTHONUTF8"] = "1"
-    for name, model in args.models.items():
-        print(
-            redact(f"Model ({name}): {model.model_name} | API: {model.base_url}"),
-            flush=True,
-        )
-    for command in commands:
-        run_id = command[command.index("--run-id") + 1]
-        print(redact(f"Results: {args.results_root / run_id}"), flush=True)
 
-    # Validate every group before starting the first expensive evaluation.
-    phases = [True] if args.dry_run else [True, False]
-    failed = False
-    for dry_run in phases:
+        def values(command, option):
+            return [
+                command[index + 1]
+                for index, value in enumerate(command)
+                if value == option
+            ]
+
+        groups = [
+            {
+                "run_id": values(command, "--run-id")[0],
+                "benchmark": values(command, "--benchmark")[0],
+                "tasks": values(command, "--task"),
+                "seeds": values(command, "--seed"),
+            }
+            for command in commands
+        ]
+        if args.resume_from:
+            previous_path = (
+                args.results_root / args.resume_from / "resolved_config.json"
+            )
+            previous = json.loads(previous_path.read_text(encoding="utf-8"))
+
+            def identity(items):
+                return [
+                    {key: value for key, value in group.items() if key != "run_id"}
+                    for group in items
+                ]
+
+            if identity(previous.get("groups", [])) != identity(groups):
+                raise ValueError(
+                    "Resume selection differs from the previous invocation; use the same tasks/seeds/configs"
+                )
+            for command, old_group in zip(commands, previous["groups"], strict=True):
+                old_id = old_group["run_id"]
+                if (args.results_root / old_id / "batch_plan.json").is_file():
+                    command += ["--resume-from", old_id]
+        document = {
+            **reporting.plan(args, {}),
+            "network_requests": True,
+            "groups": groups,
+            "commands": commands,
+        }
+        from roborsi.agents.config import AgentConfig
+
+        document["agents"] = {}
         for command in commands:
-            run_id = command[command.index("--run-id") + 1]
-            print(f"{'Preflight' if dry_run else 'Evaluate'}: {run_id}", flush=True)
-            try:
-                model = args.models[command[command.index("--benchmark") + 1]]
+            config = AgentConfig.from_file(
+                values(command, "--agent-config")[0],
+                overrides=values(command, "--agent-set"),
+            )
+            document["agents"][values(command, "--run-id")[0]] = {
+                "fingerprint": config.fingerprint,
+                "configuration": config.document,
+            }
+        reporting.write_json(args.run_dir / "resolved_config.json", document, redact)
+        environment = os.environ.copy()
+        for variable in {
+            "OPENAI_API_KEY",
+            *(model.api_key_env for model in args.models.values()),
+            *(variable for variable in args.benchmark_tokens.values() if variable),
+        }:
+            environment.pop(variable, None)
+        environment.update(getattr(args, "prepared_env", {}))
+        environment["PYTHONUTF8"] = "1"
+        environment["PYTHONUNBUFFERED"] = "1"
+        for name, model in args.models.items():
+            print(
+                redact(f"Model ({name}): {model.model_name} | API: {model.base_url}"),
+                flush=True,
+            )
+        planned = sum(len(group["tasks"]) * len(group["seeds"]) for group in groups)
+        print(f"Cases: {planned} | Results and logs: {args.run_dir}", flush=True)
+        failed = False
+        for dry_run in (True, False):
+            for command in commands:
+                run_id = values(command, "--run-id")[0]
+                benchmark = values(command, "--benchmark")[0]
+                print(f"{'Preflight' if dry_run else 'Evaluate'}: {run_id}", flush=True)
+                model = args.models[benchmark]
                 child_environment = environment.copy()
                 if model.api_key:
                     child_environment["OPENAI_API_KEY"] = model.api_key
-                else:
-                    child_environment.pop("OPENAI_API_KEY", None)
-                completed = subprocess.run(
+                variable = args.benchmark_tokens.get(benchmark)
+                if variable:
+                    child_environment[variable] = os.environ[variable]
+                completed = run_child(
                     command + (["--dry-run"] if dry_run else []),
                     cwd=ROOT,
                     env=child_environment,
-                    text=True,
-                    encoding="utf-8",
-                    errors="replace",
-                    capture_output=True,
+                    log_path=args.run_dir
+                    / "logs"
+                    / f"{run_id}-{'preflight' if dry_run else 'eval'}.log",
+                    redact=redact,
                 )
-            except OSError as exc:
-                print(redact(str(exc)), file=sys.stderr)
-                return 1
-            if completed.stdout:
-                print(
-                    redact(completed.stdout),
-                    end="" if completed.stdout.endswith("\n") else "\n",
-                    flush=True,
-                )
-            if completed.stderr:
-                print(
-                    redact(completed.stderr),
-                    file=sys.stderr,
-                    end="" if completed.stderr.endswith("\n") else "\n",
-                )
-            if completed.returncode:
-                return completed.returncode
-            if not dry_run:
-                try:
-                    report = json.loads(completed.stdout.strip().splitlines()[-1])
-                    results = [record["result"] for record in report["cases"]]
-                    if not results:
-                        raise ValueError("empty evaluation report")
-                    has_errors = False
-                    for result in results:
-                        status = result["status"]
-                        # Match benchmarks/robocasa365/score.py: protocol planner
-                        # budget exhaustion is a scored task failure in Target50.
-                        protocol_timeout = (
-                            result["task"]["benchmark"] == "robocasa365"
-                            and status == "agent_error"
-                            and "planner timed out"
-                            in ((result.get("error") or {}).get("message") or "")
+                if completed.returncode:
+                    code = completed.returncode
+                    return code
+                if not dry_run:
+                    try:
+                        report = json.loads(completed.stdout.strip().splitlines()[-1])
+                        if not report["cases"]:
+                            raise ValueError("empty evaluation report")
+                        group_summary = reporting.summary([report], started)
+                    except (
+                        ValueError,
+                        KeyError,
+                        IndexError,
+                        TypeError,
+                        AttributeError,
+                    ):
+                        raise ValueError(
+                            "Runner did not return a valid evaluation report."
+                        ) from None
+                    reports.append(report)
+                    if group_summary["runtime_errors"]:
+                        print(
+                            f"Runtime errors recorded in {run_id}; inspect the case results.",
+                            file=sys.stderr,
                         )
-                        if status not in {
-                            "success",
-                            "task_failure",
-                            "agent_error",
-                            "infrastructure_error",
-                            "cancelled",
-                        }:
-                            raise ValueError("unrecognized evaluation status")
-                        has_errors |= (
-                            status
-                            in {"agent_error", "infrastructure_error", "cancelled"}
-                            and not protocol_timeout
-                        )
-                except (ValueError, KeyError, IndexError, TypeError, AttributeError):
-                    print(
-                        "Runner did not return a valid evaluation report.",
-                        file=sys.stderr,
-                    )
-                    return 1
-                if has_errors:
-                    print(
-                        f"Runtime errors recorded in {run_id}; inspect the case results.",
-                        file=sys.stderr,
-                    )
-                    failed = True
-    return int(failed)
+                        failed = True
+        code = int(failed)
+        return code
+    except (ValueError, OSError, KeyError, RpcError) as exc:
+        print(redact(str(exc)), file=sys.stderr)
+        code = 1
+        return code
+    except KeyboardInterrupt:
+        code = 130
+        raise
+    finally:
+        overview = {
+            **reporting.summary(reports, started),
+            "exit_code": code,
+            "complete": code in {0, 1}
+            and bool(reports)
+            and len(reports) == len(locals().get("commands", [])),
+            "results": str(args.run_dir),
+        }
+        reporting.write_json(args.run_dir / "summary.json", overview, redact)
+        print(
+            f"Overview: {overview['successes']}/{overview['total']} successful "
+            f"({overview['success_rate']:.1%}), runtime errors={overview['runtime_errors']}, "
+            f"elapsed={overview['elapsed_s']:.1f}s | {args.run_dir / 'summary.json'}",
+            flush=True,
+        )
 
 
 if __name__ == "__main__":

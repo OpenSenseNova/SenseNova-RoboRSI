@@ -52,6 +52,7 @@ class Prepared:
     standard_asset: Path | None = None
     configurations: dict[str, BenchmarkConfig] = field(default_factory=dict)
     vla: dict = field(default_factory=dict)
+    log_dir: Path | None = None
 
 
 def _run(command: list[str], **kwargs) -> subprocess.CompletedProcess:
@@ -384,8 +385,8 @@ def _write_preset(
     return str(destination)
 
 
-def prepare_benchmarks(benchmarks, work_dir: Path, *, configurations=None) -> Prepared:
-    """Download selected assets and ICL, and prepare images without episodes."""
+def prepare_agents(benchmarks, work_dir: Path, *, configurations=None) -> Prepared:
+    """Prepare Agent resources independently of simulator ownership/transport."""
     configs = configurations or {name: load_benchmark(name) for name in benchmarks}
     from roborsi.agents.config import AgentConfig
 
@@ -403,12 +404,6 @@ def prepare_benchmarks(benchmarks, work_dir: Path, *, configurations=None) -> Pr
             for name, config in configs.items()
         },
     )
-    try:
-        _run(["docker", "info"], capture_output=True)
-    except (OSError, subprocess.CalledProcessError):
-        raise RuntimeError(
-            "Docker is unavailable. Start Docker on Linux/WSL and retry."
-        ) from None
     work_dir = work_dir.resolve()
     work_dir.mkdir(parents=True, exist_ok=True)
     prepared = Prepared(tuple(benchmarks), work_dir, {}, {}, {}, configurations=configs)
@@ -416,12 +411,17 @@ def prepare_benchmarks(benchmarks, work_dir: Path, *, configurations=None) -> Pr
     for name in benchmarks:
         config = configs[name]
         environment = config.environment
-        if environment["kind"] == "libero_three":
-            base_image = _ensure_image(environment["image"])
+        agent = AgentConfig.from_file(config.agent)
+        if (
+            agent.factory
+            == "robots.libero.three_benchmark_agent:make_three_benchmark_agent"
+        ):
             _ensure_tokenizer(config.agent)
             if three_assets is None:
+                base_image = environment["image"]
+                if not (work_dir / "assets/libero-three").exists():
+                    base_image = _ensure_image(base_image)
                 three_assets = _prepare_three_assets(work_dir, base_image, config)
-            image = _build_three_image(name, work_dir, base_image, config)
             group, variable = (
                 environment["icl"]["group"],
                 environment["icl"]["root_env"],
@@ -444,13 +444,10 @@ def prepare_benchmarks(benchmarks, work_dir: Path, *, configurations=None) -> Pr
                 },
                 config,
             )
-        elif name == "libero":
-            prepared.standard_asset = _prepare_standard_assets(work_dir, config)
-            prepared.presets[name] = _write_preset(
-                work_dir, name, {"extends": config.agent.as_posix()}, config
-            )
-            image = _build_image(name, work_dir, config)
-        elif name == "robocasa365":
+        elif (
+            agent.factory == "robots.robocasa.model_eval_agent:make_agent"
+            and "icl_package" not in agent.resources
+        ):
             package = download_snapshot(
                 **environment["icl"],
                 destination=work_dir / "assets/robocasa365-icl",
@@ -468,15 +465,41 @@ def prepare_benchmarks(benchmarks, work_dir: Path, *, configurations=None) -> Pr
                 },
                 config,
             )
-            image = _build_image(name, work_dir, config)
         else:
-            raise ValueError(f"Unsupported automatic benchmark: {name}")
-        prepared.images[name] = image
+            prepared.presets[name] = _write_preset(
+                work_dir, name, {"extends": config.agent.as_posix()}, config
+            )
     prepared.vla = vla.prepare_agents(prepared.presets, work_dir, models=models)
     return prepared
 
 
+def prepare_benchmarks(benchmarks, work_dir: Path, *, configurations=None) -> Prepared:
+    """Prepare Agent resources and locally owned native simulator images."""
+    try:
+        _run(["docker", "info"], capture_output=True)
+    except (OSError, subprocess.CalledProcessError):
+        raise RuntimeError(
+            "Docker is unavailable. Start Docker on Linux/WSL and retry."
+        ) from None
+    prepared = prepare_agents(benchmarks, work_dir, configurations=configurations)
+    for name, config in prepared.configurations.items():
+        environment = config.environment
+        if environment["kind"] == "libero_three":
+            base = _ensure_image(environment["image"])
+            image = _build_three_image(name, prepared.work_dir, base, config)
+        else:
+            if name == "libero":
+                prepared.standard_asset = _prepare_standard_assets(
+                    prepared.work_dir, config
+                )
+            image = _build_image(name, prepared.work_dir, config)
+        prepared.images[name] = image
+    return prepared
+
+
 def _wait_service(url: str, container: str, timeout_s: float = 900) -> None:
+    started = time.monotonic()
+    next_status = started + 15
     deadline = time.monotonic() + timeout_s
     while time.monotonic() < deadline:
         try:
@@ -496,6 +519,13 @@ def _wait_service(url: str, container: str, timeout_s: float = 900) -> None:
             raise RuntimeError(
                 f"Benchmark service exited: {logs.stdout}\n{logs.stderr}"
             )
+        if time.monotonic() >= next_status:
+            print(
+                f"Waiting for Benchmark readiness: elapsed={time.monotonic() - started:.0f}s",
+                file=sys.stderr,
+                flush=True,
+            )
+            next_status = time.monotonic() + 15
         time.sleep(1)
     raise RuntimeError(
         f"Benchmark service did not become ready in {timeout_s:g}s: {container}"
@@ -574,6 +604,11 @@ def benchmark_services(prepared: Prepared, *, libero_suite=None, robocasa_cells=
         yield endpoints
     finally:
         for container in reversed(owned):
+            from scripts.evaluation.reporting import save_service_log
+
+            save_service_log(
+                container, prepared.log_dir or prepared.work_dir / "logs/services", _run
+            )
             try:
                 _run(
                     ["docker", "rm", "--force", container],

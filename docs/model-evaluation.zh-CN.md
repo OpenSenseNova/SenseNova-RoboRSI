@@ -174,7 +174,7 @@ ROBORSI_ROBOCASA_CELLS=seed1 python scripts/evaluation/evaluate_model.py --bench
 python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --prepare-only
 ```
 
-不传外部 source 时，`--dry-run` 只打印准备计划，不下载、不启动容器、不请求 catalog
+`--dry-run` 在自动、HTTP 和 registry 模式下都只打印离线计划，不下载、不启动容器、不请求 catalog
 或模型，也不验证模型是否支持图像与工具调用：
 
 ```bash
@@ -197,7 +197,7 @@ ROBORSI_ROBOCASA_CELLS=all python scripts/evaluation/evaluate_model.py \
 ```
 
 命令前的 `all` 也会覆盖之前设置的 `ROBORSI_ROBOCASA_CELLS=seed1`。
-原生 Windows 仅支持 `--help` 及自动/HTTP 模式的 `--dry-run`，准备与执行评测请使用 Linux/WSL。
+原生 Windows 仅支持 `--help` 及离线 `--dry-run`，准备与执行评测请使用 Linux/WSL。
 
 ## 已有环境和自定义 Agent
 
@@ -223,9 +223,9 @@ python scripts/evaluation/evaluate_model.py --benchmark libero \
 `--benchmark-url NAME=URL` 覆盖对应 YAML 地址；`--registry-root` 覆盖全部 YAML 地址。
 多 benchmark HTTP 模式需为每项在 YAML 或命令行提供地址。`endpoint` 只包含协议、
 主机和端口，不包含模型 `/v1` 前缀，也不是镜像仓库地址。配置 `endpoint` 后使用该
-benchmark 引用的 Agent；HTTP 模式跳过自动环境与 ICL 准备，ICL 资源需已准备。
+benchmark 引用的 Agent；HTTP 只跳过仿真环境准备，ICL、tokenizer、VLA 仍按需自动准备。
 
-传入一种外部 source 后，跳过自动环境与 ICL 准备：
+传入一种外部 source 后，跳过本地仿真环境准备：
 
 ```bash
 python scripts/evaluation/evaluate_model.py --benchmark libero \
@@ -237,15 +237,13 @@ python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
 
 多项 HTTP benchmark 需为每个所选名称提供 `--benchmark-url NAME=URL`。
 这是**模拟器服务地址**，与模型的 `OPENAI_BASE_URL` 不同。Registry 模式启动已准备的服务；
-HTTP 模式连接自行管理的服务。这两种外部 source 模式的 `--dry-run` 会读取、校验 catalog
-与计划，不启动 episode、不请求模型。HTTP 服务需要鉴权时，用
-`--benchmark-token-env ENV_NAME` 指定 token 所在环境变量。
+HTTP 模式连接自行管理的服务。`--dry-run` 始终离线，不请求 catalog。
+HTTP 服务需要鉴权时，在 benchmark YAML 填 `token_env: ENV_NAME`，
+或用 `--benchmark-token-env ENV_NAME` 覆盖；不同 benchmark 可使用不同 token 变量。
 
-`--agent-config NAME=PATH` 可替换自动 ICL 预设。外部 source 模式默认使用
-`configs/agents/embodied/default.yaml`，不会自动配置 ICL。指定 `--benchmark-config`
-时会采用该配置选择的 Agent；启用 VLA 的显式 Agent 在已有环境模式下也会自动准备 VLA。
-自定义预设需已具备代码、依赖与上下文资源；脚本覆盖模型连接，其余格式、上下文与预算保留，
-除非显式传参覆盖。
+`--agent-config NAME=PATH` 可替换 Agent；所有传输模式默认采用 benchmark YAML
+引用的 Agent，并按需准备内置 ICL/tokenizer/VLA 资源。显式 Agent 保留自己的策略，
+跳过 benchmark 的 Agent 参数覆盖；自定义 factory 与资源仍由用户定义。
 
 完整参数见 `python scripts/evaluation/evaluate_model.py --help`。
 `--max-turns`、`--max-tokens`、`--keep-turns` 可覆盖 Agent 预算。增强 LIBERO 保留对应预设
@@ -267,8 +265,51 @@ work/model_eval/results/
   my-model-001-robocasa365-composite/
 ```
 
-每组保留标准 batch plan、逐 case 结果、原生评分产物与 trace。每次请使用新的 `--run-id`。
+每组保留标准 batch plan、逐 case 结果、原生评分产物与 trace。每次使用新的 `--run-id`；
+续跑使用 `--resume-from` 指定上次调用的 ID。
 使用 `bench status` 查看具体组；RoboCasa 可将两个结果目录传给
 `python -m benchmarks.robocasa365.score` 评分，完整 50-cell seed-1 运行需追加
 `--cells seed1`。单任务检查不代表完整榜单分数。
 详见[评测指南](evaluation.zh-CN.md)与 [RoboCasa365](../benchmarks/robocasa365/README.zh-CN.md)。
+
+
+## 启动检查、实时日志与续跑
+
+普通评测在下载前先发送一次主模型小请求：当前 API 格式、1×1 图像、工具定义，
+最多 16 个输出 token。同一模型连接只检查一次；这是连通性与请求格式检查，
+不代表已经验证实际任务能力。已有 benchmark 会检查 HTTP catalog，已有 VLA 会检查
+健康状态与协议。失败时先修复提示的问题再重试。`--prepare-only` 不请求模型，
+可用于提前下载资源；已有 HTTP/registry 模式下只准备 Agent 资源。
+
+`--dry-run` 始终不联网、不写文件、不启动 subprocess，无需模型地址和密钥。
+输出最终模型配置及来源、所选配置路径、测试集筛选、服务模式、资源准备计划与结果目录。
+具体 case 数量在真正执行时读取 catalog 后显示。
+
+正式运行实时显示 task、seed、完成数量和耗时；长任务及服务预热会输出存活提示。
+结果目录新增调用级记录，原有逐组 case 目录和评分接口保持兼容：
+
+```text
+<results-root>/
+  robocasa-001/
+    resolved_config.json   # 配置来源、完整生效 Agent 配置及标识，不含密钥
+    summary.json           # case 成功比例、运行错误数、耗时和原生逐组汇总
+    logs/                  # 逐组 preflight/eval 输出，services/ 保存容器日志
+  robocasa-001-robocasa365-atomic/
+  robocasa-001-robocasa365-composite/
+```
+
+概览的成功比例是本次所选 case 的直接计数；正式榜单仍使用各 benchmark 的原生评分。
+中断或运行错误时检查 `summary.json` 的 `complete`/`exit_code`；启动准备失败时看
+`failure.json` 和服务日志。清理本次容器前会保存日志，缓存保留。
+
+使用相同配置和结果根目录，指定上次**调用 ID**与新的运行 ID：
+
+```bash
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
+  --run-id robocasa-retry --resume-from robocasa-001
+```
+
+入口自动对应 atomic/composite 等组，复用已完成且不允许重试的结果，只执行未完成或
+标记可重试的 case；正常任务失败仍是有效评分，不会自动重跑。改动任务、种子、模型、
+Agent 或 benchmark 锁定输入会拒绝续跑。自动 VLA 端口变化不影响 Agent 标识。
+增强 LIBERO 首次准备 ICL 可能拉取包含资源的固定镜像，HTTP 模式不会启动其仿真器。

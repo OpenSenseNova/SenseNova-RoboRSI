@@ -112,6 +112,9 @@ def main(argv: list[str] | None = None) -> int:
     evaluate.add_argument(
         "--resume-from", help="previous batch run ID; requires a new --run-id"
     )
+    evaluate.add_argument(
+        "--progress", action="store_true", help="stream task/seed progress to stderr"
+    )
     agent_source = evaluate.add_mutually_exclusive_group(required=True)
     agent_source.add_argument(
         "--agent-config", help="Agent YAML/JSON path or installed bundle:name"
@@ -427,12 +430,27 @@ def main(argv: list[str] | None = None) -> int:
                 timeout_s=args.timeout_s,
                 case_timeout_s=args.case_timeout_s,
                 resume_from=args.resume_from,
+                **(
+                    {"progress": _progress}
+                    if args.progress and not args.dry_run
+                    else {}
+                ),
             )
             document = report if args.dry_run else report.as_dict()
     except (ValueError, FileNotFoundError, FileExistsError, RpcError) as exc:
         evaluate.error(str(exc))
     print(json.dumps(document, allow_nan=False, ensure_ascii=False))
     return 0
+
+
+def _progress(event):
+    print(
+        f"[{event['completed']}/{event['total']}] {event['event']} "
+        f"{event['benchmark']} task={event['task_id']} seed={event['seed']} "
+        f"status={event['status'] or '-'} elapsed={event['elapsed_s']:.1f}s",
+        file=sys.stderr,
+        flush=True,
+    )
 
 
 if __name__ == "__main__":

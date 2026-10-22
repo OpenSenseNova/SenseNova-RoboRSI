@@ -151,6 +151,21 @@ LIBERO Agents can opt into [automatic pi05 VLA download and deployment](docs/lib
 with `parameters.enable_vla: true`; the simple `--benchmark NAME` entry remains.
 Set `endpoint: http://host:18800` in a benchmark YAML to connect an existing
 image's HTTP service; `endpoint: null` keeps automatic environment setup.
+HTTP still prepares the selected Agent's ICL/tokenizer/VLA. Set benchmark
+`token_env` for HTTP authentication and model `vla.endpoint` for an existing VLA.
+
+Execution checks the main image/tool API and existing services before downloading.
+Task/seed progress streams live; logs and a redacted configuration snapshot are
+saved under the invocation's result directory. Plan offline or resume with a new ID:
+
+```bash
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --dry-run
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
+  --run-id robocasa-retry --resume-from robocasa-001
+```
+
+The overview is `<results-root>/<run-id>/summary.json`; see the
+[evaluation guide](docs/model-evaluation.md) for details.
 
 After the smoke check, run all 340 RoboCasa cells without task/seed filters:
 

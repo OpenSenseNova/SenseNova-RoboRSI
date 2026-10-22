@@ -69,8 +69,10 @@ def requests(presets, *, models=None, parameter_overrides=None) -> dict:
                 f"{name}: enable_vla requires a vla section in the selected --model-config"
             )
         profile = model.vla
-        url = agent.parameters.get("vla_endpoint") or os.environ.get(
-            "ROBORSI_LIBERO_VLA_URL"
+        url = (
+            agent.parameters.get("vla_endpoint")
+            or os.environ.get("ROBORSI_LIBERO_VLA_URL")
+            or profile.endpoint
         )
         selected[name] = (profile, endpoint_url(url) if url else None)
     return selected
@@ -158,6 +160,8 @@ def prepare_agents(presets, work_dir: Path, *, models=None) -> dict[str, Deploym
 
 
 def _wait(url, container, profile):
+    started = time.monotonic()
+    next_status = started + 15
     deadline = time.monotonic() + profile.startup_timeout_s
     while time.monotonic() < deadline:
         try:
@@ -187,6 +191,13 @@ def _wait(url, container, profile):
                 raise RuntimeError(
                     f"OpenPI VLA service exited:\n{logs.stdout}\n{logs.stderr}"
                 )
+        if time.monotonic() >= next_status:
+            print(
+                f"Waiting for VLA readiness: elapsed={time.monotonic() - started:.0f}s",
+                file=sys.stderr,
+                flush=True,
+            )
+            next_status = time.monotonic() + 15
         time.sleep(1)
     raise RuntimeError(
         f"OpenPI VLA did not become ready in {profile.startup_timeout_s:g}s"
@@ -194,8 +205,9 @@ def _wait(url, container, profile):
 
 
 @contextmanager
-def services(deployments, presets, work_dir):
+def services(deployments, presets, work_dir, *, log_dir=None):
     owned, urls, bound = [], {}, {}
+    previous_env = {}
     try:
         for name, deployment in deployments.items():
             if deployment not in urls:
@@ -237,6 +249,9 @@ def services(deployments, presets, work_dir):
                 _wait(url, container, deployment.profile)
                 urls[deployment] = url
             source = AgentConfig.from_file(presets[name])
+            variable = f"ROBORSI_{name.upper()}_VLA_URL"
+            previous_env[variable] = os.environ.get(variable)
+            os.environ[variable] = urls[deployment]
             destination = work_dir / "presets" / f"{name}-vla.json"
             destination.parent.mkdir(parents=True, exist_ok=True)
             destination.write_text(
@@ -248,7 +263,7 @@ def services(deployments, presets, work_dir):
                         ),
                         "extends": str(source.path),
                         "parameters": {
-                            "vla_endpoint": urls[deployment],
+                            "vla_endpoint_env": variable,
                             "vla_model": {
                                 "backend": "openpi",
                                 **asdict(deployment.profile),
@@ -263,5 +278,13 @@ def services(deployments, presets, work_dir):
             bound[name] = str(destination)
         yield bound
     finally:
+        for variable, value in previous_env.items():
+            if value is None:
+                os.environ.pop(variable, None)
+            else:
+                os.environ[variable] = value
         for container in reversed(owned):
+            from scripts.evaluation.reporting import save_service_log
+
+            save_service_log(container, log_dir or work_dir / "logs/services", _run)
             _remove(container)

@@ -66,13 +66,13 @@ other LIBERO presets support the same flag. See the
 An optional benchmark `endpoint: http://host:18800` connects an already running
 image's Benchmark HTTP service. `null` keeps automatic environment preparation.
 CLI `--benchmark-url NAME=URL` overrides the corresponding endpoint;
-`--registry-root` overrides all YAML endpoints. HTTP mode skips automatic native
-environment/ICL preparation, so provide a prepared Agent when ICL is needed.
+`--registry-root` overrides all YAML endpoints. HTTP skips simulator preparation;
+the selected Agent's ICL, tokenizer and optional VLA are still prepared automatically.
 For multiple benchmarks, provide an endpoint for every selected name.
 
 benchmark YAML 可填写 `endpoint: http://host:18800` 请求已有镜像的 HTTP 服务；
 默认 `null` 自动准备环境。`--benchmark-url` 优先，`--registry-root` 覆盖所有配置地址。
-HTTP 模式跳过自动环境与 ICL 准备，使用 ICL 时需选择已经准备好的 Agent；
+HTTP 模式只跳过仿真环境准备，所选 Agent 的 ICL、tokenizer 和 VLA 仍按需自动准备；
 多 benchmark HTTP 模式需为每项填写地址。此地址与模型的 `base_url` 不同。
 
 Model priority is **CLI > named environment variable > model YAML**. Set
@@ -88,12 +88,22 @@ the Agent's format; set `chat` or `responses` to select one for that model.
 
 For managed environments, `ROBORSI_LIBERO_SUITE` and `ROBORSI_ROBOCASA_CELLS`
 override `environment.catalog.suite` and `.cells`. With external HTTP/registry
-sources, their catalogs remain authoritative and automatic ICL setup is skipped;
-use `--agent-config` for a prepared custom Agent.
+sources, their catalogs remain authoritative. Agent resources are prepared independently;
+use `--agent-config` to select a custom Agent.
 
 自动环境中，`ROBORSI_LIBERO_SUITE` 与 `ROBORSI_ROBOCASA_CELLS` 分别覆盖
 `environment.catalog.suite`、`.cells`。已有 HTTP/registry 模式以外部 catalog 为准，
-跳过自动 ICL 准备，可用 `--agent-config` 指定已经准备好的 Agent。
+Agent 资源独立准备，可用 `--agent-config` 指定自定义 Agent。
+
+Use model `vla.endpoint` for an existing VLA HTTP service (`null` deploys automatically).
+Use benchmark `token_env` for the environment variable containing its HTTP token;
+CLI `--benchmark-token-env` overrides it. Different benchmarks may use different tokens.
+模型 `vla.endpoint` 选择已有 VLA HTTP 服务，默认 `null` 自动部署；benchmark
+`token_env` 填 HTTP token 的环境变量名，可由 `--benchmark-token-env` 覆盖。
+启动前会做主模型图像/工具定义的 16-token 小请求检查及已有服务检查，再开始下载。
+`--prepare-only` 跳过模型请求，仅准备所选模式需要的资源；`--dry-run` 始终离线，
+无需模型地址或密钥。`--resume-from RUN_ID` 配合新的 `--run-id` 续跑。
+运行目录保存脱敏配置快照、逐组日志和 `summary.json`，详见评测指南。
 
 The automatic Agent is composed in this order: referenced Agent YAML (including
 `extends`), benchmark `agent_overrides`, generated local resource bindings, then

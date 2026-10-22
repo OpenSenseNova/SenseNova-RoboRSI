@@ -57,9 +57,10 @@ def test_configured_endpoint_uses_external_http_without_preparation(
     assert args.endpoints == {"libero": "http://localhost:18800"}
     assert not args.auto_prepare
     monkeypatch.setattr(
-        runner, "load_bootstrap", lambda: pytest.fail("prepared environment")
+        runner,
+        "run_evaluation",
+        lambda parser, args: pytest.fail("executed offline plan"),
     )
-    monkeypatch.setattr(runner, "run_evaluation", lambda parser, args: 0)
     assert runner.main(argsv) == 0
 
 

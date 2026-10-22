@@ -116,12 +116,16 @@ class HttpBenchmarkRegistry:
         self,
         endpoints: dict[str, str],
         *,
-        token: str | None = None,
+        token: str | dict[str, str | None] | None = None,
         timeout_s: float = 30.0,
     ) -> None:
         self._locks = {}
         for name, endpoint in endpoints.items():
-            lock = HttpBenchmarkLock(endpoint, token=token, timeout_s=timeout_s)
+            lock = HttpBenchmarkLock(
+                endpoint,
+                token=token.get(name) if isinstance(token, dict) else token,
+                timeout_s=timeout_s,
+            )
             if lock.benchmark != name:
                 raise ValueError("remote Benchmark name differs from requested name")
             self._locks[name] = lock

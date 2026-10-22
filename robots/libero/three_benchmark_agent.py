@@ -157,6 +157,7 @@ def make_three_benchmark_agent(
         "enable_sam3",
         "vla_url_env",
         "vla_endpoint",
+        "vla_endpoint_env",
         "vla_model",
         "sam3_url_env",
     }

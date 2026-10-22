@@ -16,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import time
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -407,6 +408,7 @@ class BatchEvaluator:
         timeout_s: float = 30.0,
         case_timeout_s: float = 3600.0,
         resume_from: str | None = None,
+        progress=None,
     ) -> BatchReport:
         """Start a fresh run, optionally reusing terminal results from a prior run."""
         cells, locks, expected, lineage, reused = self._prepare(
@@ -425,7 +427,30 @@ class BatchEvaluator:
         except FileExistsError as exc:
             raise FileExistsError(f"run already exists: {run_id}") from exc
 
+        started = time.monotonic()
+        completed: dict[BatchCase, CaseRecord] = {}
+
+        def emit(event, cell, status=None):
+            if progress is not None:
+                progress(
+                    {
+                        "event": event,
+                        "benchmark": cell.benchmark,
+                        "task_id": cell.task_id,
+                        "seed": cell.seed,
+                        "completed": len(completed),
+                        "total": len(cells),
+                        "status": status,
+                        "elapsed_s": time.monotonic() - started,
+                    }
+                )
+
+        for cell, record in reused.items():
+            completed[cell] = record
+            emit("reused", cell, record.result.status)
+
         def execute(cell: BatchCase) -> CaseRecord:
+            emit("started", cell)
             self.orchestrator.run(
                 run_id,
                 cell.case_id,
@@ -449,13 +474,14 @@ class BatchEvaluator:
                 raise ValueError("published case differs from locked batch inputs")
             return CaseRecord(cell, result, run_id)
 
-        completed: dict[BatchCase, CaseRecord] = dict(reused)
         pending_cells = [cell for cell in cells if cell not in reused]
         with ThreadPoolExecutor(max_workers=max_concurrent) as executor:
             futures = {executor.submit(execute, cell): cell for cell in pending_cells}
             for future in as_completed(futures):
                 try:
-                    completed[futures[future]] = future.result()
+                    cell = futures[future]
+                    completed[cell] = future.result()
+                    emit("finished", cell, completed[cell].result.status)
                 except Exception:
                     for pending in futures:
                         pending.cancel()

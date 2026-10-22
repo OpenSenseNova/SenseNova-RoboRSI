@@ -28,6 +28,7 @@ class OpenPiProfile:
     startup_timeout_s: float = 1800
     request_timeout_s: float = 120
     action_steps: int = 5
+    endpoint: str | None = None
 
 
 def parse_profile(document: dict, *, base_dir: Path, resolve=True) -> OpenPiProfile:
@@ -52,6 +53,8 @@ def parse_profile(document: dict, *, base_dir: Path, resolve=True) -> OpenPiProf
     document = dict(document)
     if document["backend"] != "openpi":
         raise ValueError("model.vla requires backend: openpi")
+    if document.get("endpoint") is not None:
+        document["endpoint"] = endpoint_url(document["endpoint"])
     if not isinstance(document["openpi_revision"], str) or not re.fullmatch(
         r"[0-9a-f]{40}", document["openpi_revision"]
     ):

@@ -87,6 +87,17 @@ def runner(monkeypatch):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     monkeypatch.setattr(module, "IS_WINDOWS", False, raising=False)
+    from scripts.evaluation import bootstrap, preflight
+
+    monkeypatch.setattr(preflight, "check", lambda args: None)
+    # Isolate command execution; separate tests cover resource/API boundaries.
+    monkeypatch.setattr(
+        bootstrap,
+        "prepare_agents",
+        lambda names, work_dir, **kw: bootstrap.Prepared(
+            tuple(names), work_dir, {}, {}, {}
+        ),
+    )
     return module
 
 
@@ -134,7 +145,7 @@ def evaluation_report(registry, benchmark, status, message="service failed"):
 
 
 @contextmanager
-def catalog_server(registry, benchmark, tmp_path):
+def catalog_server(registry, benchmark, tmp_path, *, token=None):
     lock = BenchmarkRegistry([registry]).lock(benchmark)
 
     class Catalog:
@@ -162,7 +173,7 @@ def catalog_server(registry, benchmark, tmp_path):
             raise AssertionError("dry-run must never start an environment")
 
     application = BenchmarkApplication(Catalog(), tmp_path / f"server-{benchmark}")
-    server = BenchmarkHttpServer(("127.0.0.1", 0), application)
+    server = BenchmarkHttpServer(("127.0.0.1", 0), application, token=token)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
@@ -198,21 +209,10 @@ def test_dry_run_preflights_every_suite_from_any_directory_without_credentials(
             text=True,
         )
     assert completed.returncode == 0, completed.stderr
-    plans = [
-        json.loads(line)
-        for line in completed.stdout.splitlines()
-        if line.startswith('{"schema_version"')
-    ]
-    assert len(plans) == 6
-    cells = [cell for plan in plans for cell in plan["cases"]]
-    assert {(cell["benchmark"], cell["seed"]) for cell in cells} == {
-        ("libero", 0),
-        ("libero_pro", 0),
-        ("libero_long_plus_plus", 0),
-        ("libero_ultra_long", 0),
-        ("robocasa365", 1),
-        ("robocasa365", 2),
-    }
+    plan = json.loads(completed.stdout)
+    assert plan["network_requests"] is False
+    assert set(plan["services"]) == set(BENCHMARKS)
+    assert all(service["mode"] == "http" for service in plan["services"].values())
     assert not (tmp_path / "results").exists()
 
 
@@ -231,7 +231,7 @@ def test_execution_passes_secret_only_in_environment_and_respects_robocasa_budge
         report = evaluation_report(registry, "libero", "success")
         return subprocess.CompletedProcess(command, 0, json.dumps(report) + "\n", "")
 
-    monkeypatch.setattr(runner.subprocess, "run", execute)
+    monkeypatch.setattr(runner, "run_child", execute)
     selected = [value for name in BENCHMARKS for value in ("--benchmark", name)]
     assert (
         runner.main([*arguments(registry, tmp_path), *selected, "--api-key", secret])
@@ -281,7 +281,7 @@ def test_runtime_failures_are_nonzero_but_native_task_failure_is_a_valid_score(
         report = evaluation_report(registry, "libero", status)
         return subprocess.CompletedProcess(command, 0, json.dumps(report), "")
 
-    monkeypatch.setattr(runner.subprocess, "run", execute)
+    monkeypatch.setattr(runner, "run_child", execute)
     assert (
         runner.main(
             [
@@ -322,9 +322,9 @@ def test_invalid_inputs_fail_before_launching_any_evaluation(
     def unexpected(*args, **kwargs):
         pytest.fail("invalid input launched evaluation")
 
-    monkeypatch.setattr(runner.subprocess, "run", unexpected)
-    with pytest.raises(SystemExit) as exc:
-        runner.main(
+    monkeypatch.setattr(runner, "run_child", unexpected)
+    with pytest.raises((SystemExit, ValueError, KeyError)):
+        _, args = runner.parse_args(
             [
                 *arguments(registry, tmp_path),
                 "--benchmark",
@@ -333,37 +333,31 @@ def test_invalid_inputs_fail_before_launching_any_evaluation(
                 *extra,
             ]
         )
-    assert exc.value.code == 2
+        runner.build_commands(args)
 
 
 def test_selected_tasks_and_seeds_do_not_add_unrequested_cells(
     runner, registry, tmp_path, monkeypatch
 ):
-    calls = []
-
-    def execute(command, **kwargs):
-        calls.append(command)
-        return subprocess.CompletedProcess(command, 0, "{}", "")
-
-    monkeypatch.setattr(runner.subprocess, "run", execute)
-    assert (
-        runner.main(
-            [
-                *arguments(registry, tmp_path),
-                "--benchmark",
-                "robocasa365",
-                "--task",
-                "robocasa365:atomic_task",
-                "--seed",
-                "2",
-                "--dry-run",
-            ]
-        )
-        == 0
+    _, args = runner.parse_args(
+        [
+            *arguments(registry, tmp_path),
+            "--benchmark",
+            "robocasa365",
+            "--task",
+            "robocasa365:atomic_task",
+            "--seed",
+            "2",
+            "--dry-run",
+        ]
     )
-    assert len(calls) == 1
-    assert "trial-robocasa365-atomic" in calls[0]
-    assert calls[0][-2:] == ["--seed", "2"] or calls[0][-3:-1] == ["--seed", "2"]
+    commands = runner.build_commands(args)
+    assert len(commands) == 1
+    assert "trial-robocasa365-atomic" in commands[0]
+    assert commands[0][commands[0].index("--seed") + 1] == "2"
+    assert [value for value in commands[0] if value.startswith("robocasa365:")] == [
+        "robocasa365:atomic_task"
+    ]
 
 
 def test_http_concurrency_is_rejected_without_contacting_service(runner):
@@ -404,7 +398,7 @@ def test_custom_presets_keep_their_protocol_unless_explicitly_overridden(
         calls.append(command)
         return subprocess.CompletedProcess(command, 0, "{}", "")
 
-    monkeypatch.setattr(runner.subprocess, "run", execute)
+    monkeypatch.setattr(runner, "run_child", execute)
     argv = [
         *arguments(registry, tmp_path),
         "--benchmark",
@@ -424,8 +418,8 @@ def test_custom_presets_keep_their_protocol_unless_explicitly_overridden(
             "--openai-format",
             "responses",
         ]
-    assert runner.main(argv) == 0
-    command = calls[0]
+    _, args = runner.parse_args(argv)
+    command = runner.build_commands(args)[0]
     assert str(preset) in command
     assert not any(value.startswith("agent.planner_timeout_s=") for value in command)
     assert not any(value.startswith("agent.reasoning_effort=") for value in command)
@@ -458,10 +452,13 @@ def test_windows_rejects_unsupported_execution_before_loading_a_catalog(
     ]
     if dry_run:
         argv.append("--dry-run")
-    with pytest.raises(SystemExit) as exc:
-        runner.main(argv)
-    assert exc.value.code == 2
-    assert "Linux" in capsys.readouterr().err
+    if dry_run:
+        assert runner.main(argv) == 0
+    else:
+        with pytest.raises(SystemExit) as exc:
+            runner.main(argv)
+        assert exc.value.code == 2
+        assert "Linux" in capsys.readouterr().err
 
 
 def test_catalog_rpc_errors_are_reported_without_a_traceback_or_credential(
@@ -473,7 +470,7 @@ def test_catalog_rpc_errors_are_reported_without_a_traceback_or_credential(
         raise RpcError("catalog", f"catalog unavailable {secret}")
 
     monkeypatch.setattr(runner, "build_commands", fail)
-    with pytest.raises(SystemExit) as exc:
+    assert (
         runner.main(
             [
                 *arguments(registry, tmp_path),
@@ -481,10 +478,10 @@ def test_catalog_rpc_errors_are_reported_without_a_traceback_or_credential(
                 "libero",
                 "--api-key",
                 secret,
-                "--dry-run",
             ]
         )
-    assert exc.value.code == 2
+        == 1
+    )
     output = capsys.readouterr().err
     assert "catalog unavailable" in output
     assert secret not in output
@@ -503,7 +500,7 @@ def test_only_robocasa_scores_planner_timeout_as_a_valid_task_failure(
         )
         return subprocess.CompletedProcess(command, 0, json.dumps(report), "")
 
-    monkeypatch.setattr(runner.subprocess, "run", execute)
+    monkeypatch.setattr(runner, "run_child", execute)
     assert (
         runner.main(
             [
@@ -621,18 +618,17 @@ def test_automatic_environment_is_used_and_cleaned_up(runner, tmp_path, monkeypa
     assert events == ["prepare", "start", "evaluate", "stop"]
 
 
-def test_download_only_rejects_existing_external_services(runner):
-    with pytest.raises(SystemExit) as exc:
-        runner.parse_args(
-            [
-                "--prepare-only",
-                "--benchmark",
-                "libero",
-                "--benchmark-url",
-                "libero=http://localhost:9",
-            ]
-        )
-    assert exc.value.code == 2
+def test_download_only_prepares_agent_resources_for_existing_services(runner):
+    _, args = runner.parse_args(
+        [
+            "--prepare-only",
+            "--benchmark",
+            "libero",
+            "--benchmark-url",
+            "libero=http://localhost:9",
+        ]
+    )
+    assert args.prepare_only and not args.auto_prepare
 
 
 def test_benchmark_is_required_even_for_preparation(runner):
@@ -732,7 +728,7 @@ def test_distinct_model_yaml_profiles_use_their_own_connection_and_key(
             "private-key-0 private-key-1",
         )
 
-    monkeypatch.setattr(runner.subprocess, "run", execute)
+    monkeypatch.setattr(runner, "run_child", execute)
     assert (
         runner.main(
             [

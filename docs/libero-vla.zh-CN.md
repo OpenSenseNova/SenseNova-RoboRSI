@@ -43,6 +43,7 @@ api_key_env: OPENAI_API_KEY
 openai_format: chat
 vla:
   backend: openpi
+  endpoint: null  # 已有兼容 HTTP 地址；null 表示自动部署
   openpi_revision: 215abfb217dbac7d5f1273282331b9b1866c0479
   policy_config: pi05_libero
   checkpoint: gs://openpi-assets/checkpoints/pi05_libero
@@ -131,10 +132,15 @@ Agent 读取当前 case 校验过的两路图像和 8 维状态，请求 VLA 后
 每个 case 的 `vla.jsonl` 记录指令、来源和实际动作。
 
 同一配置在一次调用中共享 VLA 服务；退出、失败或中断时只清理本次启动的容器，缓存保留。
-已有兼容 HTTP 服务可设置 `ROBORSI_LIBERO_VLA_URL=http://host:port`，跳过下载和部署。
+已有兼容 HTTP 服务可在模型 YAML 设置 `vla.endpoint: http://host:port`，
+或用 `ROBORSI_LIBERO_VLA_URL=http://host:port` 覆盖，跳过 VLA 下载和部署。
 这是本仓库的 HTTP `/v1/health`、`/v1/infer` 协议，**不是上游 WebSocket 地址**。
 已有 `ROBORSI_VLA_MCP_URL`（或 `vla_url_env` 指定变量）时，继续走原有 MCP 接法，
 不自动部署 OpenPI。两种服务地址均与主模型 `OPENAI_BASE_URL` 分开。
+benchmark 使用已有 HTTP 服务时仍会准备本地 ICL、tokenizer 和所选 VLA。
+增强 LIBERO 首次提取 ICL 可能需要拉取包含资源的固定镜像并使用 Docker，但不会启动
+仿真环境。自动 VLA 地址通过运行时环境变量绑定，端口变化不会改变 Agent 标识，支持续跑。
+清理容器前会保存服务日志。
 
 上游参考：[OpenPI 权重与安装](https://github.com/Physical-Intelligence/openpi)、
 [LIBERO 输入与执行示例](https://github.com/Physical-Intelligence/openpi/blob/215abfb217dbac7d5f1273282331b9b1866c0479/examples/libero/main.py)。

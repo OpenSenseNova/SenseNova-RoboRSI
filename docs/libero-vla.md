@@ -36,6 +36,7 @@ api_key_env: OPENAI_API_KEY
 openai_format: chat
 vla:
   backend: openpi
+  endpoint: null  # Existing compatible HTTP origin, or automatic deployment.
   openpi_revision: 215abfb217dbac7d5f1273282331b9b1866c0479
   policy_config: pi05_libero
   checkpoint: gs://openpi-assets/checkpoints/pi05_libero
@@ -129,12 +130,18 @@ scoring remain owned by the Benchmark. Each case records `vla.jsonl` evidence.
 
 Identical profiles share one VLA server within an invocation. Normal exit,
 errors and interruptions remove only owned containers and preserve caches.
-Set `ROBORSI_LIBERO_VLA_URL=http://host:port` to attach an existing compatible
+Set model `vla.endpoint: http://host:port` (or override with
+`ROBORSI_LIBERO_VLA_URL=http://host:port`) to attach an existing compatible
 HTTP server instead of downloading/deploying. This is this repository's
 `/v1/health` and `/v1/infer` protocol, not upstream's WebSocket endpoint.
 An existing `ROBORSI_VLA_MCP_URL` (or the variable named by `vla_url_env`)
 retains the original MCP mode and skips automatic OpenPI setup. Both addresses
 are separate from the main model's `OPENAI_BASE_URL`.
+HTTP simulator mode still prepares local ICL/tokenizer and the selected VLA.
+First-time enhanced LIBERO ICL extraction may pull the pinned package-bearing
+image and use Docker without starting the simulator. VLA URLs allocated at run
+time use environment bindings, so changing a managed port does not invalidate resume.
+Service logs are saved before owned containers are removed.
 
 Upstream references: [OpenPI](https://github.com/Physical-Intelligence/openpi),
 [LIBERO observation and execution example](https://github.com/Physical-Intelligence/openpi/blob/215abfb217dbac7d5f1273282331b9b1866c0479/examples/libero/main.py).

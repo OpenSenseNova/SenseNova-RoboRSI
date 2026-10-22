@@ -46,8 +46,12 @@ class LiberoVlaAgent:
         self.profile = parse_profile(
             config.parameters["vla_model"], base_dir=case_dir, resolve=False
         )
-        endpoint = config.parameters.get("vla_endpoint") or os.environ.get(
-            "ROBORSI_LIBERO_VLA_URL"
+        endpoint = (
+            config.parameters.get("vla_endpoint")
+            or os.environ.get(
+                config.parameters.get("vla_endpoint_env", "ROBORSI_LIBERO_VLA_URL")
+            )
+            or self.profile.endpoint
         )
         if not endpoint:
             raise ValueError(

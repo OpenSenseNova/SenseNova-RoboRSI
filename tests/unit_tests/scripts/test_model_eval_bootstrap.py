@@ -162,6 +162,10 @@ def test_service_overrides_combined_entrypoint_and_cleans_up_on_error(
     assert "127.0.0.1::8000" in start
     own_name = start[start.index("--name") + 1]
     assert calls[-1] == ["docker", "rm", "--force", own_name]
+    assert calls[-2] == ["docker", "logs", "--timestamps", own_name]
+    assert (
+        tmp_path / "logs/services" / f"{own_name}.log"
+    ).read_text() == "container-id\n"
 
 
 def test_partial_service_start_failure_removes_all_owned_containers(
