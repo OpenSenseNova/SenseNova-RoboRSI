@@ -8,6 +8,7 @@ Benchmark task definitions and scoring belong to each native runtime.
 | Guide | English | 简体中文 |
 | --- | --- | --- |
 | Installation and first evaluation | [Getting started](getting-started.md) | [快速开始](getting-started.zh-CN.md) |
+| One-command evaluation of a deployed model | [Model evaluation](model-evaluation.md) | [模型一键评测](model-evaluation.zh-CN.md) |
 | Model, prompt, context and budgets | [Agents](agents.md) | [Agent 配置](agents.zh-CN.md) |
 | Batch execution, results and comparison | [Evaluation](evaluation.md) | [评测](evaluation.zh-CN.md) |
 

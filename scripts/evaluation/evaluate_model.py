@@ -1,0 +1,462 @@
+#!/usr/bin/env python3
+# Copyright 2026 The HEART Authors.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# https://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Evaluate an already deployed vision/tool model with RoboRSI's existing runner.
+
+Use --dry-run to validate catalogs and Agent presets without starting an Agent
+or a Benchmark. HTTP catalogs must already be reachable, including in dry runs.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import os
+import re
+import subprocess
+import sys
+from collections import defaultdict
+from datetime import datetime, timezone
+from pathlib import Path
+from urllib.parse import urlsplit
+from uuid import uuid4
+
+ROOT = Path(__file__).resolve().parents[2]
+IS_WINDOWS = sys.platform == "win32"
+BENCHMARKS = (
+    "libero",
+    "libero_pro",
+    "libero_long_plus_plus",
+    "libero_ultra_long",
+    "robocasa365",
+)
+LONG_BENCHMARKS = {"libero_pro", "libero_long_plus_plus", "libero_ultra_long"}
+DEFAULT_PRESET = ROOT / "configs/agents/embodied/default.yaml"
+
+
+def positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return parsed
+
+
+def positive_float(value: str) -> float:
+    parsed = float(value)
+    if not math.isfinite(parsed) or parsed <= 0:
+        raise argparse.ArgumentTypeError("must be a finite positive number")
+    return parsed
+
+
+def validate_url(value: str, *, origin: bool = False) -> str:
+    """Reject URL credentials and query parameters before anything is printed."""
+    try:
+        parsed = urlsplit(value)
+        port = parsed.port
+        valid = (
+            parsed.scheme in {"http", "https"}
+            and parsed.hostname
+            and parsed.username is None
+            and parsed.password is None
+            and not parsed.query
+            and not parsed.fragment
+            and not any(char.isspace() or ord(char) < 32 for char in value)
+            and "\\" not in value
+            and (port is None or port > 0)
+            and (not origin or parsed.path in {"", "/"})
+        )
+    except ValueError:
+        valid = False
+    if not valid:
+        raise ValueError(
+            "URLs must be HTTP(S), without credentials, query strings or fragments"
+            + ("; Benchmark URLs must be service origins" if origin else "")
+        )
+    return value.rstrip("/")
+
+
+def named_values(
+    values: list[str] | None, allowed: list[str], option: str
+) -> dict[str, str]:
+    result = {}
+    for value in values or ():
+        name, separator, selected = value.partition("=")
+        if (
+            not separator
+            or name not in allowed
+            or name in result
+            or not selected.strip()
+        ):
+            raise ValueError(
+                f"{option} must be unique selected-benchmark=VALUE entries"
+            )
+        result[name] = selected
+    return result
+
+
+def parse_args(
+    argv: list[str] | None,
+) -> tuple[argparse.ArgumentParser, argparse.Namespace]:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--base-url", default=os.environ.get("OPENAI_BASE_URL"))
+    parser.add_argument(
+        "--api-key",
+        default=os.environ.get("OPENAI_API_KEY"),
+        help="prefer OPENAI_API_KEY in the environment; use EMPTY for unauthenticated APIs",
+    )
+    parser.add_argument("--model-name", default=os.environ.get("MODEL_NAME"))
+    parser.add_argument(
+        "--openai-format",
+        choices=("chat", "responses"),
+        help="default: chat for the generic preset; preserve custom presets",
+    )
+    parser.add_argument(
+        "--benchmark",
+        action="append",
+        choices=BENCHMARKS,
+        help="repeat to select suites; default: all five suites",
+    )
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--registry-root", type=Path)
+    source.add_argument("--benchmark-url", action="append", metavar="NAME=URL")
+    parser.add_argument(
+        "--benchmark-token-env",
+        help="environment variable containing the Benchmark token",
+    )
+    parser.add_argument(
+        "--agent-config",
+        action="append",
+        metavar="NAME=PATH",
+        help="per-benchmark preset; default: configs/agents/embodied/default.yaml",
+    )
+    parser.add_argument("--task", action="append", metavar="NAME:ID")
+    parser.add_argument(
+        "--seed",
+        action="append",
+        type=int,
+        help="repeat to select seeds; default: each catalog's declared seeds",
+    )
+    parser.add_argument(
+        "--results-root", type=Path, default=ROOT / "work/model_eval/results"
+    )
+    parser.add_argument(
+        "--run-id",
+        default=f"model-{datetime.now(timezone.utc):%Y%m%dT%H%M%SZ}-{uuid4().hex[:8]}",
+    )
+    parser.add_argument("--max-concurrent", type=positive_int, default=1)
+    parser.add_argument("--timeout-s", type=positive_float, default=1800)
+    parser.add_argument(
+        "--case-timeout-s",
+        type=positive_float,
+        help="default: 43200 for PRO/Long++/Ultra, 4500 otherwise",
+    )
+    parser.add_argument(
+        "--max-turns", type=positive_int, help="generic preset default: 100"
+    )
+    parser.add_argument(
+        "--max-tokens", type=positive_int, help="generic preset default: 2048"
+    )
+    parser.add_argument(
+        "--keep-turns", type=positive_int, help="generic preset default: 8"
+    )
+    parser.add_argument("--dry-run", action="store_true")
+    args = parser.parse_args(argv)
+    try:
+        if not args.base_url or not args.model_name or not args.model_name.strip():
+            raise ValueError(
+                "set --base-url / OPENAI_BASE_URL and --model-name / MODEL_NAME"
+            )
+        args.base_url = validate_url(args.base_url)
+        if not args.dry_run and (not args.api_key or not args.api_key.strip()):
+            raise ValueError(
+                "set OPENAI_API_KEY or --api-key (use EMPTY for an unauthenticated model API)"
+            )
+        args.benchmark = args.benchmark or list(BENCHMARKS)
+        if len(args.benchmark) != len(set(args.benchmark)):
+            raise ValueError("--benchmark values must be unique")
+        if not re.fullmatch(r"[A-Za-z0-9_-]+", args.run_id):
+            raise ValueError(
+                "--run-id must contain only letters, digits, underscores and hyphens"
+            )
+        if args.seed is not None and (
+            len(args.seed) != len(set(args.seed)) or min(args.seed) < 0
+        ):
+            raise ValueError("--seed values must be unique nonnegative integers")
+        args.endpoints = named_values(
+            args.benchmark_url, args.benchmark, "--benchmark-url"
+        )
+        if args.benchmark_url:
+            if set(args.endpoints) != set(args.benchmark):
+                raise ValueError("provide --benchmark-url for every selected benchmark")
+            if args.max_concurrent != 1:
+                raise ValueError("HTTP Benchmarks require --max-concurrent 1")
+            args.endpoints = {
+                name: validate_url(url, origin=True)
+                for name, url in args.endpoints.items()
+            }
+        if args.benchmark_token_env:
+            if not args.benchmark_url or not os.environ.get(args.benchmark_token_env):
+                raise ValueError(
+                    "--benchmark-token-env requires HTTP Benchmarks and a populated environment variable"
+                )
+        args.presets = {
+            name: str(Path(path).expanduser().resolve())
+            for name, path in named_values(
+                args.agent_config, args.benchmark, "--agent-config"
+            ).items()
+        }
+        args.tasks = defaultdict(list)
+        for value in args.task or ():
+            name, separator, task = value.partition(":")
+            if (
+                not separator
+                or name not in args.benchmark
+                or not task.strip()
+                or task in args.tasks[name]
+            ):
+                raise ValueError("--task must be a unique selected-benchmark:task_id")
+            args.tasks[name].append(task)
+        args.results_root = args.results_root.expanduser().resolve()
+        if args.registry_root:
+            args.registry_root = args.registry_root.expanduser().resolve()
+        if IS_WINDOWS and not (args.dry_run and args.endpoints):
+            raise ValueError(
+                "evaluation requires Linux/WSL; native Windows supports --help and HTTP --dry-run only"
+            )
+    except ValueError as exc:
+        parser.error(str(exc))
+    return parser, args
+
+
+def build_commands(args: argparse.Namespace) -> list[list[str]]:
+    # The script works from any cwd; the repository supplies the installed runner.
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    from roborsi.benchmarks.registry import BenchmarkRegistry
+    from roborsi.evaluation.batch import expand_cases
+    from roborsi.evaluation.http_benchmark import HttpBenchmarkRegistry
+
+    registry = (
+        HttpBenchmarkRegistry(
+            args.endpoints,
+            token=os.environ.get(args.benchmark_token_env)
+            if args.benchmark_token_env
+            else None,
+            timeout_s=args.timeout_s,
+        )
+        if args.endpoints
+        else BenchmarkRegistry([args.registry_root])
+    )
+    cells = expand_cases(
+        registry, args.benchmark, task_ids=args.tasks or None, seeds=args.seed
+    )
+    groups: dict[tuple[str, str, int | None], list[str]] = {}
+    budgets = {}
+    for benchmark in args.benchmark:
+        lock = registry.lock(benchmark)
+        for cell in (cell for cell in cells if cell.benchmark == benchmark):
+            budget = None if benchmark in args.presets else 3600
+            suffix = benchmark
+            if benchmark == "robocasa365":
+                budget = lock.task(cell.task_id, cell.seed).native.get("timeout_s")
+                if isinstance(budget, bool) or budget not in {1800, 3600}:
+                    raise ValueError(
+                        "RoboCasa365 catalogs must declare Target50 timeout_s of 1800 or 3600 per task"
+                    )
+                budget = int(budget)
+                suffix += "-atomic" if budget == 1800 else "-composite"
+            task_key = (benchmark, cell.task_id)
+            if task_key in budgets and budgets[task_key] != budget:
+                raise ValueError(
+                    "a task must have the same planner budget for all selected seeds"
+                )
+            budgets[task_key] = budget
+            tasks = groups.setdefault((benchmark, suffix, budget), [])
+            if cell.task_id not in tasks:
+                tasks.append(cell.task_id)
+
+    commands = []
+    for (benchmark, suffix, budget), tasks in groups.items():
+        custom = benchmark in args.presets
+        overrides = {
+            "runtime.llm.provider": "openai",
+            "runtime.llm.base_url": args.base_url,
+            "runtime.llm.model": args.model_name,
+        }
+        for key, explicit, default in (
+            ("runtime.llm.openai_format", args.openai_format, "chat"),
+            ("agent.max_turns", args.max_turns, 100),
+            ("agent.max_tokens", args.max_tokens, 2048),
+            ("runtime.context.keep_turns", args.keep_turns, 8),
+        ):
+            if explicit is not None or not custom:
+                overrides[key] = explicit if explicit is not None else default
+        if not custom:
+            overrides["agent.reasoning_effort"] = "none"
+        if budget is not None:
+            overrides["agent.planner_timeout_s"] = budget
+        case_timeout = args.case_timeout_s or (
+            43200 if benchmark in LONG_BENCHMARKS else 4500
+        )
+        command = [
+            sys.executable,
+            "-m",
+            "roborsi.evaluation.cli",
+            "eval",
+            "--agent-config",
+            args.presets.get(benchmark, str(DEFAULT_PRESET)),
+            "--benchmark",
+            benchmark,
+            "--run-id",
+            f"{args.run_id}-{suffix}",
+            "--results-root",
+            str(args.results_root),
+            "--max-concurrent",
+            str(args.max_concurrent),
+            "--timeout-s",
+            str(args.timeout_s),
+            "--case-timeout-s",
+            str(case_timeout),
+        ]
+        if args.endpoints:
+            command += ["--benchmark-url", f"{benchmark}={args.endpoints[benchmark]}"]
+            if args.benchmark_token_env:
+                command += ["--benchmark-token-env", args.benchmark_token_env]
+        else:
+            command += ["--registry-root", str(args.registry_root)]
+        for key, value in overrides.items():
+            command += ["--agent-set", f"{key}={json.dumps(value, ensure_ascii=False)}"]
+        for task in tasks:
+            command += ["--task", f"{benchmark}:{task}"]
+        for seed in args.seed or ():
+            command += ["--seed", str(seed)]
+        commands.append(command)
+    return commands
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser, args = parse_args(argv)
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    from roborsi.utils.rpc import RpcError
+
+    secrets = [
+        value
+        for value in (
+            args.api_key,
+            os.environ.get(args.benchmark_token_env)
+            if args.benchmark_token_env
+            else None,
+        )
+        if value
+    ]
+
+    def redact(value: str) -> str:
+        for secret in secrets:
+            value = value.replace(secret, "[REDACTED]")
+        return value
+
+    try:
+        commands = build_commands(args)
+    except (ValueError, OSError, KeyError, RpcError) as exc:
+        parser.error(redact(str(exc)))
+    environment = os.environ.copy()
+    environment["PYTHONUTF8"] = "1"
+    if args.api_key:
+        environment["OPENAI_API_KEY"] = args.api_key
+    print(redact(f"Model: {args.model_name} | API: {args.base_url}"), flush=True)
+    for command in commands:
+        run_id = command[command.index("--run-id") + 1]
+        print(redact(f"Results: {args.results_root / run_id}"), flush=True)
+
+    # Validate every group before starting the first expensive evaluation.
+    phases = [True] if args.dry_run else [True, False]
+    failed = False
+    for dry_run in phases:
+        for command in commands:
+            run_id = command[command.index("--run-id") + 1]
+            print(f"{'Preflight' if dry_run else 'Evaluate'}: {run_id}", flush=True)
+            try:
+                completed = subprocess.run(
+                    command + (["--dry-run"] if dry_run else []),
+                    cwd=ROOT,
+                    env=environment,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    capture_output=True,
+                )
+            except OSError as exc:
+                print(redact(str(exc)), file=sys.stderr)
+                return 1
+            if completed.stdout:
+                print(
+                    redact(completed.stdout),
+                    end="" if completed.stdout.endswith("\n") else "\n",
+                    flush=True,
+                )
+            if completed.stderr:
+                print(
+                    redact(completed.stderr),
+                    file=sys.stderr,
+                    end="" if completed.stderr.endswith("\n") else "\n",
+                )
+            if completed.returncode:
+                return completed.returncode
+            if not dry_run:
+                try:
+                    report = json.loads(completed.stdout.strip().splitlines()[-1])
+                    results = [record["result"] for record in report["cases"]]
+                    if not results:
+                        raise ValueError("empty evaluation report")
+                    has_errors = False
+                    for result in results:
+                        status = result["status"]
+                        # Match benchmarks/robocasa365/score.py: protocol planner
+                        # budget exhaustion is a scored task failure in Target50.
+                        protocol_timeout = (
+                            result["task"]["benchmark"] == "robocasa365"
+                            and status == "agent_error"
+                            and "planner timed out"
+                            in ((result.get("error") or {}).get("message") or "")
+                        )
+                        if status not in {
+                            "success",
+                            "task_failure",
+                            "agent_error",
+                            "infrastructure_error",
+                            "cancelled",
+                        }:
+                            raise ValueError("unrecognized evaluation status")
+                        has_errors |= (
+                            status
+                            in {"agent_error", "infrastructure_error", "cancelled"}
+                            and not protocol_timeout
+                        )
+                except (ValueError, KeyError, IndexError, TypeError, AttributeError):
+                    print(
+                        "Runner did not return a valid evaluation report.",
+                        file=sys.stderr,
+                    )
+                    return 1
+                if has_errors:
+                    print(
+                        f"Runtime errors recorded in {run_id}; inspect the case results.",
+                        file=sys.stderr,
+                    )
+                    failed = True
+    return int(failed)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

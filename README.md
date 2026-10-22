@@ -118,6 +118,30 @@ simulator installation.
 To deploy SenseNova-RoboRSI-27B-Preview, follow the
 [model deployment instructions](docs/sensenova-roborsi-27b-preview.md#1-deploy-the-model).
 
+### Evaluate a deployed model with one command
+
+After installing the framework and preparing the benchmark images, assets and
+registry, connect an existing model API that supports images and tool calling.
+Run the evaluation commands in Linux/WSL:
+
+```bash
+export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
+export OPENAI_API_KEY='YOUR_API_KEY'
+export MODEL_NAME='YOUR_SERVED_MODEL'
+python scripts/evaluation/evaluate_model.py --registry-root /absolute/path/to/registry
+```
+
+By default, this runs **LIBERO, LIBERO-PRO, LIBERO-Long++, LIBERO-Ultra-Long and
+RoboCasa365** using the tasks and seeds exposed by their prepared catalogs. The
+registry must contain all five integrations; add `--benchmark libero` or
+`--benchmark robocasa365` to run only one. The script does not install simulators
+or deploy a model. If you need to deploy first, fill in the reserved
+[model deployment entry point](scripts/deploy/README.md) with your verified
+serving command, then start the API service. See the
+[model evaluation guide](docs/model-evaluation.md) for HTTP services, single-task
+checks, options and results. This is a general model API workflow; reproducing
+published scores also requires the corresponding benchmark and Harness settings.
+
 ## BenchZoo
 
 Available benchmark integrations and upcoming releases. Supported services share
