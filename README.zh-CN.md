@@ -191,8 +191,8 @@ SenseNova-RoboRSI 在 RoboDojo-Sim 上取得 **60.08 的平均得分**和 **54.1
 RoboCasa365 上开展评测，并展示了仿真与真机任务能力。开放的模型权重为社区部署、复现和
 继续训练提供起点。
 
-[🤗 模型权重](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview) ·
-[评测结果、演示与部署复现指南](docs/sensenova-roborsi-27b-preview.zh-CN.md)
+模型权重已在 [🤗 Hugging Face](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview) 开放。
+详细评测结果、演示与使用说明请参阅[模型指南](docs/sensenova-roborsi-27b-preview.zh-CN.md)。
 
 ## Release Plan & Roadmap
 

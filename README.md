@@ -209,8 +209,8 @@ evaluations on RoboDojo, LIBERO-Pro, and RoboCasa365, and demonstrations in
 simulation and on real robots. The open weights provide a starting point for
 community deployment, reproduction, and continued training.
 
-[🤗 Model weights](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview) ·
-[Results, demos, deployment and reproduction](docs/sensenova-roborsi-27b-preview.md)
+Model weights are available on [🤗 Hugging Face](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview).
+See the [model guide](docs/sensenova-roborsi-27b-preview.md) for detailed results, demos, and usage instructions.
 
 ## Release Plan & Roadmap
 
