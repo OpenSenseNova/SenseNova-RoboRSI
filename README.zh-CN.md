@@ -25,6 +25,8 @@
 
 ## News
 
+- **2026-10-22** — **SenseNova-RoboRSI-27B-Preview** 已在包括真机与仿真在内的不同环境中运行！[🤗 模型权重](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview)与[使用指南](docs/sensenova-roborsi-27b-preview.zh-CN.md)现已发布，技术报告即将发布。
+
 - **2026-10-22** — 本分支已提供 [**RoboCasa365 Target50**](benchmarks/robocasa365/README.zh-CN.md) 的首批代码与使用指南。
 
 - **2026-10-21** — 已在 [BenchZoo](#benchzoo) 中补充 **benchmark 镜像与 ICL 经验包**，提供镜像地址和资源包下载链接。
@@ -34,7 +36,6 @@
 - **2026-10-16** — 本分支已提供 [**LIBERO**](benchmarks/libero/README.md)、[**LIBERO-PRO**](benchmarks/libero_pro/README.md)、[**LIBERO-Long++**](benchmarks/libero_lilo/README.md) 和 [**LIBERO-Ultra-Long**](benchmarks/libero_lilo/README.md) 的首批代码与使用指南，详见[快速开始](docs/getting-started.zh-CN.md)。
 
 - **2026-10-16** — SenseNova-RoboRSI 作为实验框架支持了实证研究 [**Has GPT-6 Achieved Embodied Intelligence?**](https://www.sensenova.ai/has-gpt-6-astra-achieved-embodied-intelligence)。
-- **2026-10-16** — [**🤗 SenseNova-RoboRSI-27B-Preview**](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview) 已在包括真机与仿真在内的不同环境中运行！模型权重预计于 **2026 年 10 月 20 日**开源，技术报告随后发布。
 
 - **2026-10-09** — SenseNova-RoboRSI 在 RoboDojo 上取得 **60.08 的平均得分**和 **54.17% 的成功率**，平均得分较 GPT-6 Astra 基线（**28.97**）提升 **+31.11 分**。结果正在提交至 RoboDojo 官方榜单。更多评测对比见 [Harness 结果](#harness-results)。
 
@@ -179,26 +180,16 @@ SenseNova-RoboRSI 在 RoboDojo-Sim 上取得 **60.08 的平均得分**和 **54.1
 
 ## SenseNova-RoboRSI-27B-Preview
 
-[🤗 开源 Preview 模型](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview)预计于 **2026 年 10 月 20 日**发布。详细的 **RoboRSI 技术报告**将在模型发布后推出。
+**SenseNova-RoboRSI-27B-Preview** 是我们开源的 **27B 具身视觉语言模型**，将 RoboRSI
+从 Harness 改进进一步拓展到模型训练。通过**模型与 Harness 协同 RSI**，模型从经过验证的
+交互经验中学习，让目标理解、动作决策与反馈纠错逐步成为模型自身的能力。
 
-RoboRSI-27B-Preview 通过模型与 Harness 的协同 RSI，将经过验证的交互经验转化为
-可复用的模型能力。模型权重开放后将支持社区部署、复现和继续训练。
+模型支持 **VLA 配合执行与 VLM 直接控制**两种架构，已在 RoboDojo、LIBERO-Pro 和
+RoboCasa365 上开展评测，并展示了仿真与真机任务能力。开放的模型权重为社区部署、复现和
+继续训练提供起点。
 
-![SenseNova-RoboRSI-27B-Preview 在 RoboDojo、LIBERO-Pro 与 RoboCasa365 上的评测结果](assets/roborsi-27b-preview-benchmarks.webp)
-
-- **RoboDojo：** 在配合 VLA 执行的设置下取得 **26.13 的平均得分**和 **20.83% 的任务成功率**，平均得分仅比 RoboDojo 团队评测的 GPT-6 Astra 低 **2.84 分**。模型能够主动观察视觉细节、推理空间关系，并根据执行反馈纠正动作，展现了解决复杂操作任务的能力。
-- **LIBERO-Pro：** 在 VLA 配合执行（System-2 + System-1）与 VLM 直接控制（System-2）两种架构下，成功率分别达到 **95.0%** 和 **96.1%**，在图中两种设置的对比模型中均仅次于 GPT-6 Astra，展现了跨执行架构的具身规划与决策能力。
-- **RoboCasa365：** 相较于 Qwen3.8-27B 基座模型，RSI 训练后成功率由 **26.0% 提升至 46.5%**，平均输出 Token 由 **59.5K 降至 15.9K**，减少 **73.3%**。模型将交互经验转化为更强任务能力，同时提升推理效率。
-
-### 演示视频
-
-**仿真演示 · RoboDojo**
-
-![仿真演示 · RoboDojo](assets/robodojo-27b-preview.webp)
-
-**真机演示**
-
-![真机演示](assets/real-robot-27b-preview.webp)
+[🤗 模型权重](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview) ·
+[评测结果、演示与部署复现指南](docs/sensenova-roborsi-27b-preview.zh-CN.md)
 
 ## Release Plan & Roadmap
 
@@ -208,8 +199,8 @@ RoboRSI-27B-Preview 通过模型与 Harness 的协同 RSI，将经过验证的�
 - [x] [GPT-6 Astra 具身能力实证调研](https://www.sensenova.ai/has-gpt-6-astra-achieved-embodied-intelligence)
 - [x] 首批代码：Agent 运行时与 LIBERO 系列评测
 - [x] [使用文档](docs/README.md)
+- [x] [SenseNova-RoboRSI-27B-Preview 发布](docs/sensenova-roborsi-27b-preview.zh-CN.md)
 - [ ] Harness demo
-- [ ] SenseNova-RoboRSI-27B-Preview 模型权重——预计 2026 年 10 月 20 日发布
 - [ ] RoboRSI 技术报告
 
 ### 后续研究方向

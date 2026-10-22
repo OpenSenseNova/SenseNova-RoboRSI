@@ -25,6 +25,8 @@
 
 ## News
 
+- **2026-10-22** — **SenseNova-RoboRSI-27B-Preview** now runs across different environments, including on real robots and in simulation! [🤗 Model weights](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview) and [usage guides](docs/sensenova-roborsi-27b-preview.md) are now available. The technical report is coming soon.
+
 - **2026-10-22** — Initial code and usage guides for [**RoboCasa365 Target50**](benchmarks/robocasa365/README.md) are available in this branch.
 
 - **2026-10-21** — Added **benchmark images and ICL experience packages** to [BenchZoo](#benchzoo), including image references and package download links.
@@ -34,7 +36,6 @@
 - **2026-10-16** — Initial code and usage guides for [**LIBERO**](benchmarks/libero/README.md), [**LIBERO-PRO**](benchmarks/libero_pro/README.md), [**LIBERO-Long++**](benchmarks/libero_lilo/README.md) and [**LIBERO-Ultra-Long**](benchmarks/libero_lilo/README.md) are available in this branch. See the [getting started guide](docs/getting-started.md).
 
 - **2026-10-16** — SenseNova-RoboRSI has been used in the empirical report [**Has GPT-6 Achieved Embodied Intelligence?**](https://www.sensenova.ai/has-gpt-6-astra-achieved-embodied-intelligence).
-- **2026-10-16** — [**🤗 SenseNova-RoboRSI-27B-Preview**](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview) now runs across different environments, including on real robots and in simulation! The open-weight release is expected on **October 20, 2026**, with the technical report to follow.
 
 - **2026-10-09** — SenseNova-RoboRSI achieves an **average score of 60.08** and a **success rate of 54.17%** on RoboDojo, a gain of **+31.11 points** over the GPT-6 Astra baseline (**28.97**). Results are being submitted to the official RoboDojo leaderboard. See [Harness Results](#harness-results) for benchmark comparisons.
 
@@ -194,38 +195,19 @@ Reference results: [official RoboCasa leaderboard](https://robocasa.ai/leaderboa
 
 ## SenseNova-RoboRSI-27B-Preview
 
-[🤗 The open-weight of SenseNova-RoboRSI-27B-Preview](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview) is expected on **October 20, 2026**. A detailed **RoboRSI report** will follow the model release.
+**SenseNova-RoboRSI-27B-Preview** is an open-weight **27B embodied VLM** that
+extends RoboRSI from Harness improvement to model training. Through **joint
+model–Harness RSI**, it learns from validated interaction experience, bringing
+goal understanding, action decisions, and feedback-based correction into the
+model itself.
 
-RoboRSI-27B-Preview turns validated interaction experience into reusable model
-capabilities through joint model–Harness RSI. The open-weight release will support
+The model supports **VLA-assisted execution and direct VLM control**, with
+evaluations on RoboDojo, LIBERO-Pro, and RoboCasa365, and demonstrations in
+simulation and on real robots. The open weights provide a starting point for
 community deployment, reproduction, and continued training.
 
-![SenseNova-RoboRSI-27B-Preview results on RoboDojo, LIBERO-Pro, and RoboCasa365](assets/roborsi-27b-preview-benchmarks.webp)
-
-- **RoboDojo:** Achieves an **average score of 26.13** and a **task success rate of
-  20.83%** with VLA-assisted execution. Its average score is just **2.84 points**
-  below GPT-6 Astra's score in the RoboDojo team's evaluation. The model actively
-  inspects visual details, reasons about spatial relationships, and corrects
-  actions based on execution feedback during complex manipulation tasks.
-- **LIBERO-Pro:** Reaches **95.0% success** with VLA-assisted execution
-  (System 2 + System 1) and **96.1%** with direct VLM control (System 2), ranking
-  second to GPT-6 Astra among the compared models in both settings. These results
-  demonstrate embodied planning and decision-making across different execution
-  architectures.
-- **RoboCasa365:** RSI training raises success from **26.0% to 46.5%** over the
-  Qwen3.8-27B base model, while reducing average output tokens from **59.5K to
-  15.9K**, a **73.3% reduction**. Learning from interaction experience improves
-  both task performance and inference efficiency.
-
-### Demonstrations
-
-**Simulation · RoboDojo**
-
-![Simulation · RoboDojo](assets/robodojo-27b-preview.webp)
-
-**Real-robot demonstration**
-
-![Real-robot demonstration](assets/real-robot-27b-preview.webp)
+[🤗 Model weights](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview) ·
+[Results, demos, deployment and reproduction](docs/sensenova-roborsi-27b-preview.md)
 
 ## Release Plan & Roadmap
 
@@ -235,8 +217,8 @@ community deployment, reproduction, and continued training.
 - [x] [Empirical Study](https://www.sensenova.ai/has-gpt-6-astra-achieved-embodied-intelligence)
 - [x] Initial code release: Agent runtime and LIBERO-family evaluation
 - [x] [Usage documentation](docs/README.md)
+- [x] [SenseNova-RoboRSI-27B-Preview release](docs/sensenova-roborsi-27b-preview.md)
 - [ ] Harness demo
-- [ ] SenseNova-RoboRSI-27B-Preview weights — expected October 20, 2026
 - [ ] RoboRSI Technical Report
 
 ### Research roadmap
