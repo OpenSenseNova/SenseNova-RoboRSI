@@ -115,6 +115,9 @@ simulator installation.
 - **Agent configuration:** [Models, prompts, context and budgets](docs/agents.md).
 - **Evaluation:** [Batch execution, results and resume](docs/evaluation.md).
 
+To deploy SenseNova-RoboRSI-27B-Preview, follow the
+[model deployment instructions](docs/sensenova-roborsi-27b-preview.md#1-deploy-the-model).
+
 ## BenchZoo
 
 Available benchmark integrations and upcoming releases. Supported services share

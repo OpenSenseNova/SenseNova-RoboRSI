@@ -121,27 +121,9 @@ curl --fail http://127.0.0.1:8000/v1/chat/completions \
 
 ### 2. Connect RoboRSI Harness and run evaluations
 
-Follow the [model evaluation guide](model-evaluation.md) to install RoboRSI
-Harness and the benchmark environments, then run evaluations with the following
-commands:
+Follow the existing [LIBERO-Pro](../benchmarks/libero_pro/README.md) and
+[RoboCasa365](../benchmarks/robocasa365/README.md) evaluation guides to connect
+your model to RoboRSI Harness and run evaluations.
 
-```bash
-export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
-export OPENAI_API_KEY='EMPTY'
-export MODEL_NAME='sensenova-roborsi-27b-preview'
-
-# LIBERO-Pro: VLM + VLA (System 2 + System 1); configuration TBD
-python scripts/evaluation/evaluate_model.py --benchmark libero_pro --config xxx
-
-# LIBERO-Pro: Direct VLM control (System 2); configuration TBD
-python scripts/evaluation/evaluate_model.py --benchmark libero_pro --config xxx
-
-# RoboCasa365; configuration TBD
-python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --config xxx
-
-# RoboDojo: evaluation support coming soon in a RoboRSI Harness update
-```
-
-The script automatically prepares benchmark environments, ICL, and Agent
-configurations. Results are saved under `work/model_eval/results/`. The guide
-covers task selection, custom Agent configurations, and result scoring.
+We are developing one-command reproduction scripts to simplify evaluation with
+custom models and will release them soon.

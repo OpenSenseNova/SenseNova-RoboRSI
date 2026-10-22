@@ -104,6 +104,9 @@ Windows 使用 `.venv\Scripts\Activate.ps1` 激活环境。
 - **Agent 配置：** [模型、提示词、上下文与预算](docs/agents.zh-CN.md)。
 - **评测：** [批量执行、结果查看与中断恢复](docs/evaluation.zh-CN.md)。
 
+SenseNova-RoboRSI-27B-Preview 的部署方法见
+[模型部署说明](docs/sensenova-roborsi-27b-preview.zh-CN.md#1-部署模型)。
+
 ## BenchZoo
 
 列出已提供的 benchmark 接入与即将开源的内容。已支持的服务共用可配置的 EmbodiedAgent

@@ -105,25 +105,8 @@ curl --fail http://127.0.0.1:8000/v1/chat/completions \
 
 ### 2. 接入 RoboRSI Harness 并运行评测
 
-按照[模型评测指南](model-evaluation.zh-CN.md)安装 RoboRSI Harness 和配套评测环境，
-使用下面指令运行评测：
+可参照现有的 [LIBERO-Pro](../benchmarks/libero_pro/README.md) 和
+[RoboCasa365](../benchmarks/robocasa365/README.zh-CN.md) 评测指南，
+将模型接入 RoboRSI Harness 并运行评测。
 
-```bash
-export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
-export OPENAI_API_KEY='EMPTY'
-export MODEL_NAME='sensenova-roborsi-27b-preview'
-
-# LIBERO-Pro：VLM + VLA（System 2 + System 1）；配置待补充
-python scripts/evaluation/evaluate_model.py --benchmark libero_pro --config xxx
-
-# LIBERO-Pro：VLM 直接控制（System 2）；配置待补充
-python scripts/evaluation/evaluate_model.py --benchmark libero_pro --config xxx
-
-# RoboCasa365；配置待补充
-python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --config xxx
-
-# RoboDojo：评测支持将随后续 RoboRSI Harness 更新开放
-```
-
-脚本自动准备 benchmark 环境、ICL 和对应的 Agent 配置，结果保存在
-`work/model_eval/results/`。任务选择、自定义 Agent 配置与结果评分见上述指南。
+我们正在开发和整理便于适配自研模型的一键复现代码，将很快发布。
