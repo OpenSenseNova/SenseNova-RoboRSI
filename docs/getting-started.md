@@ -38,10 +38,12 @@ build an image, obtain the required assets, and write a manifest under a local
 registry directory. A manifest identifies the image digest, tasks, seeds,
 action schema, evaluation limits and native score rules.
 
-LIBERO-PRO requires a separately obtained evaluation asset tree with the exact
-digest specified in its recipe. This repository does not provide that dataset
-or an automatic download for it. A successful source installation alone does
-not make the PRO image runnable.
+LIBERO-PRO requires its evaluation asset tree at the exact digest specified in
+its recipe. The repository downloader obtains the pinned public Task/Swap BDDL
+and init files from the official Hugging Face dataset and verifies the complete
+tree before image construction; no private cluster path or account token is
+required. Follow the LIBERO-PRO or three-LIBERO single-image recipe before
+running the benchmark.
 
 ## Check the evaluation path
 

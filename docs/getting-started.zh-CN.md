@@ -35,8 +35,10 @@ pytest tests/unit_tests -q
 获取所需资产，并在本地 registry 目录写入 manifest。Manifest 记录镜像摘要、任务、
 种子、动作协议、评测步数及原生评分规则。
 
-LIBERO-PRO 需要另外获取完整的评测资产目录，且校验和必须符合构建说明。
-本仓库不提供这份数据或自动下载入口。完成源码安装并不代表已经具备运行 PRO 的资产。
+LIBERO-PRO 的评测资产目录必须符合构建说明中的固定校验和。仓库下载脚本会从官方
+Hugging Face 数据集获取版本锁定的 Task/Swap BDDL 和 init 文件，并在构建镜像前校验
+完整目录；不依赖私有集群路径或账号 token。运行评测前，请按 LIBERO-PRO 或三个
+LIBERO 单镜像构建说明完成准备。
 
 ## 检查评测流程
 
