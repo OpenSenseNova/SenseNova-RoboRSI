@@ -52,9 +52,6 @@ support in RoboRSI.
 
 ### 1. Deploy the model
 
-Reference configuration: **vLLM 0.21.0**, **4 × NVIDIA H100 80 GB** on one
-Linux server, **BF16**, and **tensor parallelism 4**.
-
 #### Install vLLM
 
 In your inference environment, install the CUDA 12.9 build with a compatible
@@ -141,6 +138,8 @@ python scripts/evaluation/evaluate_model.py --benchmark libero_pro --config xxx
 
 # RoboCasa365; configuration TBD
 python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --config xxx
+
+# RoboDojo: evaluation support coming soon in a RoboRSI Harness update
 ```
 
 The script automatically prepares benchmark environments, ICL, and Agent

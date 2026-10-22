@@ -38,9 +38,6 @@ RoboDojo 的复现流程将随后续 RoboRSI 对该 benchmark 的支持一同开
 
 ### 1. 部署模型
 
-参考配置：单台 Linux 服务器，**vLLM 0.21.0**、**4 × NVIDIA H100 80 GB**、
-**BF16**，**张量并行度为 4**。
-
 #### 安装 vLLM
 
 在推理环境中安装 CUDA 12.9 版本，服务器需已有兼容的 NVIDIA 驱动：
@@ -124,6 +121,8 @@ python scripts/evaluation/evaluate_model.py --benchmark libero_pro --config xxx
 
 # RoboCasa365；配置待补充
 python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --config xxx
+
+# RoboDojo：评测支持将随后续 RoboRSI Harness 更新开放
 ```
 
 脚本自动准备 benchmark 环境、ICL 和对应的 Agent 配置，结果保存在
