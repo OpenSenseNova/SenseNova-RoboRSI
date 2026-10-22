@@ -21,9 +21,14 @@ its lifecycle. Configuration paths and test selection are resolved before setup.
   it inherits the canonical environment. Explicit references resolve from that YAML.
 - `evaluation.tasks`, `evaluation.seeds` and a Python `evaluation.selector` filter
   existing task/seed cells. A selector cannot introduce cells absent from the catalog.
-- Agent `resources.vla_profile` references `configs/models/pi05_libero.yaml`.
-  `parameters.enable_vla: true` activates it. Existing external VLA MCP URLs retain
-  their behavior. VLA stays disabled in released presets by default.
+- The selected model YAML contains the main API connection and a nested `vla`
+  section. Agent `parameters.enable_vla: true` activates that model. Existing
+  external VLA MCP URLs retain their behavior. Released presets disable VLA.
+- All VLA weight/tokenizer downloads live in `scripts/evaluation/downloads.py`;
+  the serving entry point validates and loads prepared local assets.
+- Benchmark YAML `endpoint` optionally selects an existing image's HTTP service.
+  Null retains automatic preparation. CLI URL/registry sources override YAML;
+  HTTP mode retains its existing requirement for prepared Agent/ICL resources.
 - `--prepare-only` builds/downloads without loading a model on a GPU; `--dry-run`
   creates no files and starts no services.
 - VLA only predicts; native actions still pass through the Runner and Benchmark.
@@ -82,3 +87,21 @@ its lifecycle. Configuration paths and test selection are resolved before setup.
   was unchanged by this feature.
 - Actual OpenPI image build, multi-GB weight download, GPU warmup/inference and
   full native benchmark evaluation were not run on this Windows workstation.
+
+## Unified-model and configured-endpoint follow-up verification
+
+- Moved VLA settings into `configs/models/default.yaml`; removed the standalone
+  VLA profile and Agent resource references. Custom `--model-config` paths select
+  main and VLA models together; resolved runtime bindings travel with the Agent.
+- Centralized VLA download execution/cleanup in `downloads.py`, copied it into
+  the OpenPI image and included it in image cache identity. Serving checks cached
+  weights/tokenizer before importing the policy implementation.
+- Added optional `endpoint` to benchmark YAML, with CLI overrides and the same
+  external HTTP catalog, authentication and concurrency constraints.
+- 145 configuration/evaluation/bootstrap/VLA/RoboCasa tests passed, including
+  independent VLA selections, CLI model-path planning, download failure cleanup,
+  prepared-cache resolution and configured HTTP source precedence.
+- 27 downloader-cache and 66 LIBERO export/native/runtime tests passed: 238 total.
+- Ruff and formatting passed for all 13 changed Python files; 43 documented
+  evaluation commands and local guide links validated. GPU integration remains
+  untested locally and is reserved for the user's hardware run.

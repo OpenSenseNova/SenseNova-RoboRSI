@@ -141,7 +141,7 @@ Enhanced LIBERO uses the released `migration_subset` catalogs.
 Configuration is centralized under [`configs/`](configs/README.md): each
 `configs/benchmarks/<name>.yaml` selects its environment, model and Agent.
 Edit [`configs/models/default.yaml`](configs/models/default.yaml) for the shared
-model connection, and `configs/agents/` for Agent policies. The environment
+model connection and optional `vla` model settings, and `configs/agents/` for Agent policies. The environment
 variables above still override the model YAML; API keys stay in the environment.
 
 Optional `--benchmark-config`, `--agent-config` and `--model-config` accept paths
@@ -149,6 +149,8 @@ Optional `--benchmark-config`, `--agent-config` and `--model-config` accept path
 task/seed lists and [user Python selectors](configs/benchmarks/examples/select_first.py).
 LIBERO Agents can opt into [automatic pi05 VLA download and deployment](docs/libero-vla.md)
 with `parameters.enable_vla: true`; the simple `--benchmark NAME` entry remains.
+Set `endpoint: http://host:18800` in a benchmark YAML to connect an existing
+image's HTTP service; `endpoint: null` keeps automatic environment setup.
 
 After the smoke check, run all 340 RoboCasa cells without task/seed filters:
 

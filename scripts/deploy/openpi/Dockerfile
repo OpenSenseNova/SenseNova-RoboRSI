@@ -16,4 +16,5 @@ RUN uv venv --python 3.11.9 .venv && uv sync --frozen --no-dev
 # Upstream requires these patches for its optional PyTorch checkpoint loader.
 RUN .venv/bin/python -c "import pathlib,shutil,transformers; shutil.copytree('src/openpi/models_pytorch/transformers_replace',pathlib.Path(transformers.__file__).parent,dirs_exist_ok=True)"
 COPY robots/libero/vla_server.py /app/vla_server.py
+COPY scripts/evaluation/downloads.py /app/scripts/evaluation/downloads.py
 ENTRYPOINT ["/opt/openpi/.venv/bin/python", "/app/vla_server.py"]

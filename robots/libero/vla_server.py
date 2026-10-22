@@ -123,31 +123,13 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--policy-config", default="pi05_libero")
-    parser.add_argument("--prepare-only", action="store_true")
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args(argv)
-    # Heavy imports exist only in the isolated OpenPI environment.
-    from openpi.shared import download
+    from scripts.evaluation.downloads import prepared_openpi_checkpoint
 
-    checkpoint = download.maybe_download(args.checkpoint, gs={"token": "anon"})
-    if not (checkpoint / "assets").is_dir() or not (
-        (checkpoint / "params").is_dir() or (checkpoint / "model.safetensors").is_file()
-    ):
-        raise ValueError(
-            "OpenPI checkpoint is incomplete: expected assets and params/model.safetensors"
-        )
-    if args.prepare_only:
-        # The policy's text tokenizer is a separate small upstream download.
-        download.maybe_download(
-            "gs://big_vision/paligemma_tokenizer.model", gs={"token": "anon"}
-        )
-        print(
-            json.dumps(
-                {"checkpoint": str(checkpoint), "policy_config": args.policy_config}
-            )
-        )
-        return 0
+    checkpoint = prepared_openpi_checkpoint(args.checkpoint)
+    # Heavy imports exist only in the isolated OpenPI environment.
     from openpi.policies import policy_config
     from openpi.training import config
     from openpi_client import image_tools

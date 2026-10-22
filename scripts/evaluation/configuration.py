@@ -21,6 +21,7 @@ from pathlib import Path
 import yaml
 
 from roborsi.utils.config_values import json_value, reject_secrets
+from robots.libero.vla_client import OpenPiProfile, parse_profile
 
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG_ROOT = ROOT / "configs"
@@ -44,6 +45,7 @@ class BenchmarkConfig:
     case_timeout_s: float = 4500
     agent_overrides: dict = field(default_factory=dict)
     evaluation: dict = field(default_factory=dict)
+    endpoint: str | None = None
 
 
 @dataclass(frozen=True)
@@ -53,6 +55,7 @@ class ModelConfig:
     api_key: str | None = field(repr=False)
     openai_format: str | None = None
     api_key_env: str = "OPENAI_API_KEY"
+    vla: OpenPiProfile | None = None
 
 
 def _read(path: Path, allowed: set[str], required: set[str]) -> dict:
@@ -219,6 +222,7 @@ def _model_document(path: Path) -> dict:
             "model_name_env",
             "api_key_env",
             "openai_format",
+            "vla",
         },
         {"schema_version", "provider"},
     )
@@ -266,6 +270,7 @@ def load_benchmark(
             "case_timeout_s",
             "agent_overrides",
             "evaluation",
+            "endpoint",
         },
         {"schema_version", "benchmark"}
         if custom
@@ -288,6 +293,9 @@ def load_benchmark(
     )
     if any(not isinstance(v, dict) for v in overrides.values()):
         raise ValueError("agent_overrides sections must be mappings")
+    endpoint = document.get("endpoint", base.endpoint if base else None)
+    if endpoint is not None and (not isinstance(endpoint, str) or not endpoint.strip()):
+        raise ValueError("Benchmark endpoint must be an HTTP origin or null")
     return BenchmarkConfig(
         path,
         name,
@@ -299,6 +307,7 @@ def load_benchmark(
         timeout,
         overrides,
         _evaluation(path, document.get("evaluation", base.evaluation if base else {})),
+        endpoint,
     )
 
 
@@ -379,4 +388,7 @@ def resolve_model(
         choose(api_key, "api_key", "OPENAI_API_KEY"),
         openai_format if openai_format is not None else document.get("openai_format"),
         document.get("api_key_env", "OPENAI_API_KEY"),
+        parse_profile(document["vla"], base_dir=Path(path).parent)
+        if document.get("vla") is not None
+        else None,
     )

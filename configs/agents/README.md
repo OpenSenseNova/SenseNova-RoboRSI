@@ -20,8 +20,9 @@ and installed bundles continue to use the selected Agent's own model settings.
 | `libero/standard.yaml` | Standard LIBERO, optional pi05 VLA |
 | `libero/pro_vla.yaml` | PRO with automatic pi05 VLA assistance enabled |
 
-LIBERO presets declare `resources.vla_profile`; `parameters.enable_vla: true`
-opts into automatic download and serving. See [LIBERO VLA](../../docs/libero-vla.md)
+LIBERO presets use `parameters.enable_vla: true` to opt into automatic download
+and serving. The selected model YAML's `vla` section controls the execution model;
+Agent YAML does not reference a separate model profile. See [LIBERO VLA](../../docs/libero-vla.md)
 / [VLA 中文指南](../../docs/libero-vla.zh-CN.md). An explicit `--agent-config` skips
 benchmark policy overrides while retaining automatic local resource bindings.
 

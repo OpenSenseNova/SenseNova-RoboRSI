@@ -35,6 +35,7 @@ from scripts.evaluation.configuration import (
     BenchmarkConfig,
     catalog_setting,
     load_benchmark,
+    resolve_model,
 )
 from scripts.evaluation.downloads import download_snapshot
 
@@ -67,6 +68,9 @@ def preparation_plan(benchmarks, work_dir: Path, *, configurations=None) -> dict
         "benchmarks": list(benchmarks),
         "vla": vla.plan(
             {name: str(config.agent) for name, config in configs.items()},
+            models={
+                name: resolve_model(config.model) for name, config in configs.items()
+            },
             parameter_overrides={
                 name: config.agent_overrides.get("parameters", {})
                 for name, config in configs.items()
@@ -390,8 +394,10 @@ def prepare_benchmarks(benchmarks, work_dir: Path, *, configurations=None) -> Pr
     from scripts.evaluation import vla
 
     # Check enabled profiles and factories before downloading native environments.
+    models = {name: resolve_model(config.model) for name, config in configs.items()}
     vla.plan(
         {name: str(config.agent) for name, config in configs.items()},
+        models=models,
         parameter_overrides={
             name: config.agent_overrides.get("parameters", {})
             for name, config in configs.items()
@@ -466,7 +472,7 @@ def prepare_benchmarks(benchmarks, work_dir: Path, *, configurations=None) -> Pr
         else:
             raise ValueError(f"Unsupported automatic benchmark: {name}")
         prepared.images[name] = image
-    prepared.vla = vla.prepare_agents(prepared.presets, work_dir)
+    prepared.vla = vla.prepare_agents(prepared.presets, work_dir, models=models)
     return prepared
 
 

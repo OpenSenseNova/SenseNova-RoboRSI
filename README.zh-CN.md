@@ -126,7 +126,7 @@ python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
 并准备可用的 ICL 包。增强 LIBERO 使用已发布的 `migration_subset` catalog。
 
 配置统一放在 [`configs/`](configs/README.md)：每个 `configs/benchmarks/<name>.yaml`
-选择环境、模型和 Agent。共享模型连接修改 [`configs/models/default.yaml`](configs/models/default.yaml)，
+选择环境、模型和 Agent。主模型连接和 `vla` 模型统一修改 [`configs/models/default.yaml`](configs/models/default.yaml)，
 Agent 策略修改 `configs/agents/` 中的预设。上面的环境变量仍会覆盖模型 YAML，密钥保留在环境变量中。
 
 可选 `--benchmark-config`、`--agent-config`、`--model-config` 直接指定配置地址；
@@ -134,6 +134,8 @@ Agent 策略修改 `configs/agents/` 中的预设。上面的环境变量仍会�
 [用户 Python 筛选器](configs/benchmarks/examples/select_first.py)。LIBERO Agent 设置
 `parameters.enable_vla: true` 后会[自动下载、部署 π0.5 VLA](docs/libero-vla.zh-CN.md)，
 仍可保持只传 `--benchmark NAME` 的入口。
+benchmark YAML 的 `endpoint: http://host:18800` 可连接已有镜像的 HTTP 服务，
+默认 `endpoint: null` 自动准备环境；已有 HTTP 模式的 ICL 用法见[评测指南](docs/model-evaluation.zh-CN.md)。
 
 单任务检查通过后，去掉任务和种子过滤，运行 RoboCasa 全部 340 个 cell：
 

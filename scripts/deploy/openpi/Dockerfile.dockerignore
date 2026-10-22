@@ -3,6 +3,8 @@
 !robots/libero/
 !robots/libero/vla_server.py
 !scripts/
+!scripts/evaluation/
+!scripts/evaluation/downloads.py
 !scripts/deploy/
 !scripts/deploy/openpi/
 !scripts/deploy/openpi/Dockerfile

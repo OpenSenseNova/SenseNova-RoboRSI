@@ -23,10 +23,29 @@ Standard LIBERO's simulator can still render on CPU. Released presets remain
 VLA-disabled; they do not build or download OpenPI. The optional
 [PRO VLA preset](../configs/agents/libero/pro_vla.yaml) simply enables
 `parameters.enable_vla: true`. The standard, PRO, Long++ and Ultra-Long presets
-support the same flag and declare `resources.vla_profile` pointing to
-[models/pi05_libero.yaml](../configs/models/pi05_libero.yaml).
+support the same flag. Main model connection and VLA settings live together in
+[models/default.yaml](../configs/models/default.yaml), or your own `model.yaml`
+selected by `--model-config`. Agent YAML only enables the capability.
 
-That profile controls the OpenPI commit, policy config, checkpoint, GPUs,
+```yaml
+schema_version: 1
+provider: openai
+base_url: http://127.0.0.1:8000/v1
+model_name: YOUR_MODEL
+api_key_env: OPENAI_API_KEY
+openai_format: chat
+vla:
+  backend: openpi
+  openpi_revision: 215abfb217dbac7d5f1273282331b9b1866c0479
+  policy_config: pi05_libero
+  checkpoint: gs://openpi-assets/checkpoints/pi05_libero
+  gpus: all
+  startup_timeout_s: 1800
+  request_timeout_s: 120
+  action_steps: 5
+```
+
+The `vla` section controls the OpenPI commit, policy config, checkpoint, GPUs,
 startup/request timeouts and `action_steps`. OpenPI source is pinned and uses its
 `uv.lock`. The official GCS checkpoint URI is not an immutable weights revision;
 upstream caching and recorded source do not constitute a weights SHA-256 lock.
@@ -51,6 +70,12 @@ ROBORSI_VLA_GPUS=device=1 python scripts/evaluation/evaluate_model.py \
 local checkpoint directory; local checkpoints are mounted read-only. Downloads
 use `<work-dir>/vla/openpi-cache/` (`work/model_eval/` by default). JAX, Torch and
 OpenPI stay in the isolated container. Main model API keys are not passed to it.
+Relative local checkpoints resolve from the model YAML's directory.
+All VLA weight/tokenizer download logic is in
+[`scripts/evaluation/downloads.py`](../scripts/evaluation/downloads.py).
+The serving entry point checks the prepared local cache before loading the model.
+An enabled Agent requires `vla` in the selected model file; files without that
+section still work when VLA is disabled or the existing MCP mode is used.
 
 ## Independent configuration paths and Python task selection
 

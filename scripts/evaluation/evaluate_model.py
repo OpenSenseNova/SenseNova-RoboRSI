@@ -167,7 +167,7 @@ def parse_args(
         "--model-config",
         action="append",
         metavar="[NAME=]PATH",
-        help="model connection YAML",
+        help="model YAML: main API connection and optional VLA model",
     )
     parser.add_argument("--task", action="append", metavar="NAME:ID")
     parser.add_argument(
@@ -258,6 +258,18 @@ def parse_args(
             first_model.model_name,
             first_model.api_key,
         )
+        configured_endpoints = {
+            name: config.endpoint
+            for name, config in args.configurations.items()
+            if config.endpoint is not None
+        }
+        if not args.registry_root:
+            configured_endpoints.update(
+                named_values(args.benchmark_url, args.benchmark, "--benchmark-url")
+            )
+            args.benchmark_url = [
+                f"{name}={url}" for name, url in configured_endpoints.items()
+            ]
         args.auto_prepare = not (args.registry_root or args.benchmark_url)
         if args.prepare_only and not args.auto_prepare:
             raise ValueError(
@@ -292,7 +304,9 @@ def parse_args(
         )
         if args.benchmark_url:
             if set(args.endpoints) != set(args.benchmark):
-                raise ValueError("provide --benchmark-url for every selected benchmark")
+                raise ValueError(
+                    "provide endpoint in benchmark YAML or --benchmark-url for every selected benchmark"
+                )
             if args.max_concurrent != 1:
                 raise ValueError("HTTP Benchmarks require --max-concurrent 1")
             args.endpoints = {
@@ -306,7 +320,13 @@ def parse_args(
                 )
         args.presets = {
             name: str(args.configurations[name].agent)
-            for name in set(agent_paths) | set(benchmark_paths)
+            for name in set(agent_paths)
+            | set(benchmark_paths)
+            | {
+                name
+                for name, config in args.configurations.items()
+                if config.endpoint is not None and not args.registry_root
+            }
         }
         args.tasks = defaultdict(list)
         for value in args.task or ():
@@ -508,9 +528,11 @@ def main(argv: list[str] | None = None) -> int:
 
         try:
             if args.dry_run:
-                vla.plan(args.presets)
+                vla.plan(args.presets, models=args.models)
                 return run_evaluation(parser, args)
-            deployments = vla.prepare_agents(args.presets, args.work_dir)
+            deployments = vla.prepare_agents(
+                args.presets, args.work_dir, models=args.models
+            )
             with vla.services(deployments, args.presets, args.work_dir) as bound:
                 args.presets = {**args.presets, **bound}
                 return run_evaluation(parser, args)

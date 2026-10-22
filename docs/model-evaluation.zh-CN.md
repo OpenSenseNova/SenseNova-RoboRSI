@@ -70,6 +70,11 @@ openai_format: chat
 不同 benchmark 可以引用不同模型配置，评测子进程分别接收各自的密钥，统一映射为
 `OPENAI_API_KEY`，不会把密钥写入生成配置。
 
+同一模型 YAML 的 `vla` 段配置 VLA 权重、OpenPI 版本、GPU 和超时；`--model-config`
+同时选择主模型和 VLA。Agent 只设置 `parameters.enable_vla`，完整模型示例见
+[VLA 指南](libero-vla.zh-CN.md)。VLA 权重和 tokenizer 由
+[`downloads.py`](../scripts/evaluation/downloads.py) 先下载，部署服务随后加载本地文件。
+
 镜像、构建参数、资源下载版本和 catalog 默认值放在 benchmark YAML。
 Agent 策略统一放在 `configs/agents/`，LIBERO 预设迁至
 `libero/{base,v13,pro,long_plus_plus,ultra_long}.yaml`，context map 也放在该目录。
@@ -195,6 +200,30 @@ ROBORSI_ROBOCASA_CELLS=all python scripts/evaluation/evaluate_model.py \
 原生 Windows 仅支持 `--help` 及自动/HTTP 模式的 `--dry-run`，准备与执行评测请使用 Linux/WSL。
 
 ## 已有环境和自定义 Agent
+
+也可直接在 benchmark YAML 填写已有镜像的 HTTP 服务地址：
+
+```yaml
+schema_version: 1
+benchmark: libero
+endpoint: http://127.0.0.1:18800
+evaluation:
+  seeds: [0]
+```
+
+默认 `endpoint: null` 自动准备并启动环境；填写地址后走 HTTP 模式，请求已有服务的
+catalog、reset、step 等接口。可直接修改 `configs/benchmarks/libero.yaml`，保留
+`python scripts/evaluation/evaluate_model.py --benchmark libero` 入口；或者选择示例：
+
+```bash
+python scripts/evaluation/evaluate_model.py --benchmark libero \
+  --benchmark-config configs/benchmarks/examples/libero_http.yaml
+```
+
+`--benchmark-url NAME=URL` 覆盖对应 YAML 地址；`--registry-root` 覆盖全部 YAML 地址。
+多 benchmark HTTP 模式需为每项在 YAML 或命令行提供地址。`endpoint` 只包含协议、
+主机和端口，不包含模型 `/v1` 前缀，也不是镜像仓库地址。配置 `endpoint` 后使用该
+benchmark 引用的 Agent；HTTP 模式跳过自动环境与 ICL 准备，ICL 资源需已准备。
 
 传入一种外部 source 后，跳过自动环境与 ICL 准备：
 

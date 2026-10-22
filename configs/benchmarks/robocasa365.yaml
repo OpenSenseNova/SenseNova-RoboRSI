@@ -1,5 +1,7 @@
 schema_version: 1
 benchmark: robocasa365
+# Existing simulator HTTP origin, or null to prepare/start automatically.
+endpoint: null
 model: ../models/default.yaml
 agent: ../agents/robocasa365/icl.yaml
 environment:

@@ -9,3 +9,16 @@ model_name_env: MODEL_NAME
 api_key_env: OPENAI_API_KEY
 # null preserves the Agent format; automatic presets default to Chat Completions.
 openai_format: null
+
+# Optional execution model. Downloaded/deployed only when the Agent enables VLA.
+# OpenPI runs in an isolated container, separate from the main model API above.
+vla:
+  backend: openpi
+  openpi_revision: 215abfb217dbac7d5f1273282331b9b1866c0479
+  policy_config: pi05_libero
+  checkpoint: gs://openpi-assets/checkpoints/pi05_libero
+  # ROBORSI_VLA_GPUS and ROBORSI_LIBERO_VLA_CHECKPOINT override these settings.
+  gpus: all
+  startup_timeout_s: 1800
+  request_timeout_s: 120
+  action_steps: 5

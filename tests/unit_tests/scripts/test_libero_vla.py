@@ -13,6 +13,16 @@ import yaml
 ROOT = Path(__file__).resolve().parents[3]
 
 
+def models(*names):
+    from scripts.evaluation.configuration import resolve_model
+
+    return {name: resolve_model(ROOT / "configs/models/default.yaml") for name in names}
+
+
+def default_profile():
+    return models("libero")["libero"].vla
+
+
 def preset(tmp_path, *, enabled=True, **parameters):
     path = tmp_path / "agent.json"
     path.write_text(
@@ -52,7 +62,9 @@ def test_existing_vla_endpoint_skips_build_and_download(tmp_path, monkeypatch):
         "_run",
         lambda *args, **kwargs: pytest.fail("external service triggered Docker"),
     )
-    prepared = vla.prepare_agents({"libero": preset(tmp_path)}, tmp_path / "cache")
+    prepared = vla.prepare_agents(
+        {"libero": preset(tmp_path)}, tmp_path / "cache", models=models("libero")
+    )
     assert prepared["libero"].endpoint == "http://127.0.0.1:32100"
     assert not (tmp_path / "cache").exists()
 
@@ -79,18 +91,18 @@ def test_external_mcp_remains_an_independent_opt_in(tmp_path, monkeypatch):
     ],
 )
 def test_invalid_profile_is_rejected_before_commands(tmp_path, field, value):
-    from robots.libero.vla_client import load_profile
+    from scripts.evaluation.configuration import resolve_model
 
-    document = yaml.safe_load((ROOT / "configs/models/pi05_libero.yaml").read_text())
-    document[field] = value
+    document = yaml.safe_load((ROOT / "configs/models/default.yaml").read_text())
+    document["vla"][field] = value
     path = tmp_path / "invalid.yaml"
     path.write_text(yaml.safe_dump(document))
     with pytest.raises(ValueError):
-        load_profile(path)
+        resolve_model(path)
 
 
 def test_preparation_builds_once_and_downloads_without_gpu(tmp_path, monkeypatch):
-    from scripts.evaluation import vla
+    from scripts.evaluation import downloads, vla
 
     calls = []
     monkeypatch.delenv("ROBORSI_LIBERO_VLA_URL", raising=False)
@@ -100,15 +112,18 @@ def test_preparation_builds_once_and_downloads_without_gpu(tmp_path, monkeypatch
         calls.append(command)
         return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
 
-    monkeypatch.setattr(vla, "_run", run)
+    monkeypatch.setattr(downloads.subprocess, "run", run)
     monkeypatch.setattr(vla, "_ensure_image", lambda profile: "pinned-openpi-image")
     path = preset(tmp_path)
     prepared = vla.prepare_agents(
-        {"libero": path, "libero_pro": path}, tmp_path / "cache"
+        {"libero": path, "libero_pro": path},
+        tmp_path / "cache",
+        models=models("libero", "libero_pro"),
     )
     starts = [c for c in calls if c[:2] == ["docker", "run"]]
     assert len(starts) == 1
-    assert "--prepare-only" in starts[0]
+    assert "/app/scripts/evaluation/downloads.py" in starts[0]
+    assert "openpi" in starts[0]
     assert "--gpus" not in starts[0]
     assert "gs://openpi-assets/checkpoints/pi05_libero" in starts[0]
     assert prepared["libero"] is prepared["libero_pro"]
@@ -118,10 +133,9 @@ def test_shared_service_is_ready_before_binding_and_removed_on_failure(
     tmp_path, monkeypatch
 ):
     from roborsi.agents.config import AgentConfig
-    from robots.libero.vla_client import load_profile
     from scripts.evaluation import vla
 
-    profile = load_profile(ROOT / "configs/models/pi05_libero.yaml")
+    profile = default_profile()
     deployment = vla.Deployment(profile, "openpi-image", tmp_path / "cache")
     calls, ready = [], []
 
@@ -148,6 +162,12 @@ def test_shared_service_is_ready_before_binding_and_removed_on_failure(
                 AgentConfig.from_file(bound["libero"]).parameters["vla_endpoint"]
                 == "http://127.0.0.1:32123"
             )
+            assert (
+                AgentConfig.from_file(bound["libero"]).parameters["vla_model"][
+                    "checkpoint"
+                ]
+                == profile.checkpoint
+            )
             raise RuntimeError("failed evaluation")
     starts = [c for c in calls if c[:2] == ["docker", "run"]]
     assert len(starts) == 1
@@ -158,7 +178,6 @@ def test_shared_service_is_ready_before_binding_and_removed_on_failure(
 
 
 def test_readiness_failure_still_cleans_owned_service(tmp_path, monkeypatch):
-    from robots.libero.vla_client import load_profile
     from scripts.evaluation import vla
 
     calls = []
@@ -173,9 +192,7 @@ def test_readiness_failure_still_cleans_owned_service(tmp_path, monkeypatch):
     monkeypatch.setattr(
         vla, "_wait", lambda *args: (_ for _ in ()).throw(RuntimeError("not ready"))
     )
-    deployment = vla.Deployment(
-        load_profile(ROOT / "configs/models/pi05_libero.yaml"), "image", tmp_path
-    )
+    deployment = vla.Deployment(default_profile(), "image", tmp_path)
     with pytest.raises(RuntimeError, match="not ready"):
         with vla.services(
             {"libero": deployment}, {"libero": preset(tmp_path)}, tmp_path
@@ -236,7 +253,6 @@ def test_selected_agent_drives_automatic_preparation(tmp_path, monkeypatch):
 def test_openpi_commit_changes_image_identity_and_build_input(monkeypatch):
     from dataclasses import replace
 
-    from robots.libero.vla_client import load_profile
     from scripts.evaluation import vla
 
     commands = []
@@ -248,7 +264,7 @@ def test_openpi_commit_changes_image_identity_and_build_input(monkeypatch):
         )
 
     monkeypatch.setattr(vla, "_run", run)
-    profile = load_profile(ROOT / "configs/models/pi05_libero.yaml")
+    profile = default_profile()
     assert vla._ensure_image(profile) != vla._ensure_image(
         replace(profile, openpi_revision="a" * 40)
     )

@@ -10,7 +10,12 @@ import os
 from dataclasses import replace
 from pathlib import Path
 
-from robots.libero.vla_client import endpoint_url, load_profile, openpi_enabled, predict
+from robots.libero.vla_client import (
+    endpoint_url,
+    openpi_enabled,
+    parse_profile,
+    predict,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 VLA_SCHEMA = {
@@ -34,7 +39,13 @@ class LiberoVlaAgent:
     def __init__(self, inner, config, case_dir: Path):
         self.inner = inner
         self.case_dir = case_dir
-        self.profile = load_profile(config.resources["vla_profile"])
+        if "vla_model" not in config.parameters:
+            raise ValueError(
+                "VLA model is unbound; use evaluate_model.py --model-config"
+            )
+        self.profile = parse_profile(
+            config.parameters["vla_model"], base_dir=case_dir, resolve=False
+        )
         endpoint = config.parameters.get("vla_endpoint") or os.environ.get(
             "ROBORSI_LIBERO_VLA_URL"
         )

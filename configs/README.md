@@ -10,7 +10,7 @@ that declares them. The command works from any current directory.
 ```text
 configs/
   benchmarks/       # Environment, downloads, catalog and model/Agent selection
-  models/           # Shared model connection profiles
+  models/           # Main API connection and optional VLA model in one file
   agents/
     embodied/       # Generic Agent presets
     libero/         # LIBERO presets and context_maps/
@@ -20,8 +20,8 @@ configs/
 
 | Change / 修改内容 | File / 文件 |
 | --- | --- |
-| Model endpoint, name and API format / 模型地址、名称、API 格式 | [models/default.yaml](models/default.yaml) |
-| Optional LIBERO VLA deployment / LIBERO VLA 按需部署 | [models/pi05_libero.yaml](models/pi05_libero.yaml) |
+| Main API and VLA model / 主模型连接和 VLA 模型 | [models/default.yaml](models/default.yaml)，VLA 使用其中的 `vla` 段 |
+| Existing Benchmark HTTP service / 已有镜像 HTTP 服务地址 | benchmark YAML 的 `endpoint`，默认 `null` 自动部署 |
 | Native image, downloads, default catalog / 原生镜像、下载源、默认 catalog | `benchmarks/<benchmark>.yaml` |
 | Prompt, budgets, context and factory / 提示词、预算、上下文与 factory | `agents/` 中对应 YAML |
 | Per-benchmark Agent adjustments / benchmark 对 Agent 的覆盖 | benchmark YAML 的 `agent_overrides` |
@@ -48,13 +48,32 @@ the corresponding YAML lists; the selector then filters the remaining cells.
 显式 `--agent-config` 保留该 Agent 的策略参数，跳过 benchmark 的 `agent_overrides`，
 但仍绑定自动准备的 ICL、tokenizer 和 VLA 服务地址。模型与显式 CLI 参数继续覆盖 Agent。
 
-Setting `parameters.enable_vla: true` on a LIBERO Agent activates its
-`resources.vla_profile`. The Runner builds the isolated OpenPI environment,
-downloads weights, starts/warmups the service and removes its container on exit.
+Setting `parameters.enable_vla: true` on a LIBERO Agent activates the `vla`
+section of the selected model YAML. The Agent does not select model files.
+The Runner builds the isolated OpenPI environment, delegates weights/tokenizer
+downloads to [`downloads.py`](../scripts/evaluation/downloads.py), starts/warms
+the service and removes its container on exit.
 `--prepare-only` downloads without GPU inference; `--dry-run` plans only.
 The optional [PRO VLA preset](agents/libero/pro_vla.yaml) is ready to select;
 other LIBERO presets support the same flag. See the
 [VLA guide](../docs/libero-vla.md) / [VLA 中文指南](../docs/libero-vla.zh-CN.md).
+
+主模型连接和 VLA 的权重、OpenPI 版本、GPU 等配置统一写入同一个模型 YAML；
+`--model-config PATH` 同时选择两者。Agent 只通过 `parameters.enable_vla` 控制启用，
+下载由 `scripts/evaluation/downloads.py` 负责，部署服务加载已经准备好的本地文件。
+未启用 VLA 时不会下载或部署它；启用后所选模型文件必须包含 `vla` 段。
+
+An optional benchmark `endpoint: http://host:18800` connects an already running
+image's Benchmark HTTP service. `null` keeps automatic environment preparation.
+CLI `--benchmark-url NAME=URL` overrides the corresponding endpoint;
+`--registry-root` overrides all YAML endpoints. HTTP mode skips automatic native
+environment/ICL preparation, so provide a prepared Agent when ICL is needed.
+For multiple benchmarks, provide an endpoint for every selected name.
+
+benchmark YAML 可填写 `endpoint: http://host:18800` 请求已有镜像的 HTTP 服务；
+默认 `null` 自动准备环境。`--benchmark-url` 优先，`--registry-root` 覆盖所有配置地址。
+HTTP 模式跳过自动环境与 ICL 准备，使用 ICL 时需选择已经准备好的 Agent；
+多 benchmark HTTP 模式需为每项填写地址。此地址与模型的 `base_url` 不同。
 
 Model priority is **CLI > named environment variable > model YAML**. Set
 `base_url` and `model_name` in the model file, or use `OPENAI_BASE_URL` and

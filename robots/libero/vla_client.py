@@ -16,8 +16,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlsplit
 
-import yaml
-
 PROTOCOL = "roborsi-libero-openpi-v1"
 
 
@@ -32,17 +30,12 @@ class OpenPiProfile:
     action_steps: int = 5
 
 
-def load_profile(path: Path) -> OpenPiProfile:
-    """Validate a deployment profile without importing inference dependencies."""
+def parse_profile(document: dict, *, base_dir: Path, resolve=True) -> OpenPiProfile:
+    """Validate model.yaml's VLA section, or an already resolved runtime binding."""
     from roborsi.utils.config_values import json_value, reject_secrets
 
-    try:
-        document = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
-    except yaml.YAMLError:
-        raise ValueError("Invalid VLA profile YAML") from None
-    allowed = {"schema_version", "backend", *OpenPiProfile.__dataclass_fields__}
+    allowed = {"backend", *OpenPiProfile.__dataclass_fields__}
     required = {
-        "schema_version",
         "backend",
         "openpi_revision",
         "policy_config",
@@ -56,12 +49,9 @@ def load_profile(path: Path) -> OpenPiProfile:
         raise ValueError("Unknown or missing VLA profile fields")
     json_value(document)
     reject_secrets(document)
-    if (
-        type(document["schema_version"]) is not int
-        or document["schema_version"] != 1
-        or document["backend"] != "openpi"
-    ):
-        raise ValueError("VLA profile requires schema_version: 1 and backend: openpi")
+    document = dict(document)
+    if document["backend"] != "openpi":
+        raise ValueError("model.vla requires backend: openpi")
     if not isinstance(document["openpi_revision"], str) or not re.fullmatch(
         r"[0-9a-f]{40}", document["openpi_revision"]
     ):
@@ -70,7 +60,11 @@ def load_profile(path: Path) -> OpenPiProfile:
         r"[A-Za-z0-9_]+", document["policy_config"]
     ):
         raise ValueError("Invalid OpenPI policy_config")
-    checkpoint = os.environ.get("ROBORSI_LIBERO_VLA_CHECKPOINT", document["checkpoint"])
+    checkpoint = (
+        os.environ.get("ROBORSI_LIBERO_VLA_CHECKPOINT", document["checkpoint"])
+        if resolve
+        else document["checkpoint"]
+    )
     if not isinstance(checkpoint, str) or not checkpoint.strip():
         raise ValueError("VLA checkpoint must be a GCS URI or local directory")
     if checkpoint.startswith("gs://"):
@@ -78,12 +72,16 @@ def load_profile(path: Path) -> OpenPiProfile:
             r"gs://[A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+", checkpoint
         ) or ".." in checkpoint.split("/"):
             raise ValueError("Invalid VLA checkpoint GCS URI")
-    else:
-        checkpoint = str((Path(path).parent / Path(checkpoint).expanduser()).resolve())
+    elif resolve:
+        checkpoint = str((base_dir / Path(checkpoint).expanduser()).resolve())
         if not Path(checkpoint).is_dir():
             raise ValueError("Local VLA checkpoint directory is missing")
     document["checkpoint"] = checkpoint
-    document["gpus"] = os.environ.get("ROBORSI_VLA_GPUS", document.get("gpus", "all"))
+    document["gpus"] = (
+        os.environ.get("ROBORSI_VLA_GPUS", document.get("gpus", "all"))
+        if resolve
+        else document.get("gpus", "all")
+    )
     if not isinstance(document["gpus"], str) or not re.fullmatch(
         r"all|device=[A-Za-z0-9_,.-]+|[1-9][0-9]*", document["gpus"]
     ):
@@ -95,9 +93,7 @@ def load_profile(path: Path) -> OpenPiProfile:
     steps = document.get("action_steps", 5)
     if type(steps) is not int or not 1 <= steps <= 50:
         raise ValueError("VLA action_steps must be an integer in [1, 50]")
-    return OpenPiProfile(
-        **{k: v for k, v in document.items() if k not in {"schema_version", "backend"}}
-    )
+    return OpenPiProfile(**{k: v for k, v in document.items() if k != "backend"})
 
 
 def endpoint_url(value: str) -> str:
@@ -124,7 +120,7 @@ def endpoint_url(value: str) -> str:
 
 
 def openpi_enabled(config) -> bool:
-    """Retain the existing external MCP mode; otherwise use the declared profile."""
+    """Retain the existing external MCP mode; otherwise request model-config VLA."""
     enabled = config.parameters.get("enable_vla", False)
     if type(enabled) is not bool:
         raise ValueError("parameters.enable_vla must be a boolean")
@@ -135,10 +131,6 @@ def openpi_enabled(config) -> bool:
         raise ValueError("parameters.vla_url_env must name an environment variable")
     if os.environ.get(variable):
         return False
-    if "vla_profile" not in config.resources:
-        raise ValueError(
-            "VLA requires resources.vla_profile or an existing VLA MCP URL"
-        )
     return True
 
 

@@ -76,6 +76,11 @@ The shipped profile leaves the address/name empty for environment configuration.
 can reference different model profiles; each evaluation child receives its own
 resolved key as `OPENAI_API_KEY`. No key is written to generated presets.
 
+The same model file holds optional `vla` deployment settings; `--model-config`
+selects both main and VLA models. The Agent only sets `parameters.enable_vla`.
+See the [complete model example](libero-vla.md). VLA weights and tokenizer are
+prepared by [`downloads.py`](../scripts/evaluation/downloads.py) before serving.
+
 Environment images, build arguments, resource download pins and catalog defaults
 are in the benchmark YAML. Agent policies are under `configs/agents/`, including
 the migrated `libero/{base,v13,pro,long_plus_plus,ultra_long}.yaml` and context maps.
@@ -216,6 +221,32 @@ Native Windows supports `--help` and automatic/HTTP `--dry-run` only;
 preparation and evaluation require Linux/WSL.
 
 ## Existing environments and custom Agents
+
+The benchmark YAML can select an already running image's HTTP service:
+
+```yaml
+schema_version: 1
+benchmark: libero
+endpoint: http://127.0.0.1:18800
+evaluation:
+  seeds: [0]
+```
+
+`endpoint: null` (default) prepares and starts the environment automatically.
+An HTTP origin uses the existing service's catalog, reset and step interfaces.
+Edit the canonical benchmark YAML to keep `--benchmark libero`, or use:
+
+```bash
+python scripts/evaluation/evaluate_model.py --benchmark libero \
+  --benchmark-config configs/benchmarks/examples/libero_http.yaml
+```
+
+CLI `--benchmark-url NAME=URL` overrides the corresponding YAML endpoint;
+`--registry-root` overrides all YAML endpoints. Multi-benchmark HTTP mode requires
+an endpoint for every selected name. This is a simulator service origin, without
+the model API's `/v1` prefix, and is not a container registry URL. A configured
+endpoint selects the benchmark's referenced Agent. HTTP mode skips native
+environment/ICL preparation; Agents using ICL need prepared local resources.
 
 Pass exactly one external source to skip automatic environment/ICL preparation:
 

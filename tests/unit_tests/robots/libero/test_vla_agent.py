@@ -12,6 +12,19 @@ from roborsi.evaluation.media import CaseMediaChannel
 from roborsi.evaluation.messages import Action, Observation, Task
 
 
+def runtime_model():
+    from dataclasses import asdict
+    from pathlib import Path
+
+    from scripts.evaluation.configuration import resolve_model
+
+    root = Path(__file__).resolve().parents[4]
+    return {
+        "backend": "openpi",
+        **asdict(resolve_model(root / "configs/models/default.yaml").vla),
+    }
+
+
 def observation(tmp_path, *, enhanced=True):
     media = CaseMediaChannel(tmp_path / "media")
     pixels = np.array(
@@ -100,8 +113,10 @@ def test_vla_action_is_translated_to_native_protocol(
             calls.append("close")
 
     config = SimpleNamespace(
-        parameters={"vla_endpoint": "http://localhost:1234"},
-        resources={"vla_profile": vla_agent.ROOT / "configs/models/pi05_libero.yaml"},
+        parameters={
+            "vla_endpoint": "http://localhost:1234",
+            "vla_model": runtime_model(),
+        },
     )
     inner = Inner()
     monkeypatch.setattr(
@@ -138,8 +153,10 @@ def test_native_action_does_not_call_vla(tmp_path, monkeypatch):
     )
     inner = SimpleNamespace(act=lambda _: action)
     config = SimpleNamespace(
-        parameters={"vla_endpoint": "http://localhost:1234"},
-        resources={"vla_profile": vla_agent.ROOT / "configs/models/pi05_libero.yaml"},
+        parameters={
+            "vla_endpoint": "http://localhost:1234",
+            "vla_model": runtime_model(),
+        },
     )
     monkeypatch.setattr(
         vla_agent, "predict", lambda *args: pytest.fail("native action used VLA")
@@ -196,16 +213,18 @@ def test_prepare_only_downloads_without_importing_policy_or_loading_gpu(
     import sys
     from types import ModuleType
 
-    from robots.libero.vla_server import main
+    from scripts.evaluation.downloads import main
 
     checkpoint = tmp_path / "checkpoint"
     (checkpoint / "assets").mkdir(parents=True)
     (checkpoint / "params").mkdir()
+    tokenizer = tmp_path / "tokenizer.model"
+    tokenizer.write_bytes(b"fixture-tokenizer")
     calls = []
 
     def download(url, **kwargs):
         calls.append((url, kwargs))
-        return checkpoint
+        return tokenizer if url.endswith(".model") else checkpoint
 
     package = ModuleType("openpi")
     package.__path__ = []
@@ -216,9 +235,9 @@ def test_prepare_only_downloads_without_importing_policy_or_loading_gpu(
     assert (
         main(
             [
+                "openpi",
                 "--checkpoint",
                 "gs://openpi-assets/checkpoints/pi05_libero",
-                "--prepare-only",
             ]
         )
         == 0
@@ -232,6 +251,8 @@ def test_prepare_only_downloads_without_importing_policy_or_loading_gpu(
 def test_real_standard_factory_enables_vla_without_calling_main_model(
     tmp_path, monkeypatch
 ):
+    import json
+
     from roborsi.agents.config import AgentConfig
     from robots.libero.vla_agent import ROOT, LiberoVlaAgent
 
@@ -240,6 +261,7 @@ def test_real_standard_factory_enables_vla_without_calling_main_model(
         overrides=[
             "parameters.enable_vla=true",
             'parameters.vla_endpoint="http://127.0.0.1:32100"',
+            "parameters.vla_model=" + json.dumps(runtime_model()),
         ],
     )
     agent = config.create_agent(tmp_path)

@@ -9,19 +9,115 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Download a pinned Hugging Face dataset package using its checksum manifest."""
+"""Download benchmark packages and model assets, without loading inference models."""
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
+import os
 import re
 import shutil
 import stat
+import subprocess
+import sys
 import tempfile
 from pathlib import Path, PureWindowsPath
+from uuid import uuid4
 
 MARKER = ".download.json"
+OPENPI_TOKENIZER = "gs://big_vision/paligemma_tokenizer.model"
+
+
+def _openpi_cache_path(source: str) -> Path:
+    if not source.startswith("gs://"):
+        return Path(source).expanduser().resolve()
+    if not re.fullmatch(r"gs://[A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+", source) or any(
+        part in {"", ".", ".."} for part in source[5:].split("/")
+    ):
+        raise ValueError("Invalid OpenPI GCS source")
+    if not os.environ.get("OPENPI_DATA_HOME"):
+        raise ValueError("Set OPENPI_DATA_HOME to the prepared OpenPI download cache")
+    return Path(os.environ["OPENPI_DATA_HOME"]).expanduser() / source[5:]
+
+
+def _validate_openpi_checkpoint(checkpoint: Path) -> Path:
+    if not (checkpoint / "assets").is_dir() or not (
+        (checkpoint / "params").is_dir() or (checkpoint / "model.safetensors").is_file()
+    ):
+        raise ValueError(
+            "OpenPI checkpoint is incomplete; use evaluate_model.py --prepare-only "
+            "to download assets and params/model.safetensors first"
+        )
+    return checkpoint
+
+
+def prepared_openpi_checkpoint(source: str) -> Path:
+    """Resolve local assets for serving; never contact a download service."""
+    checkpoint = _validate_openpi_checkpoint(_openpi_cache_path(source))
+    tokenizer = _openpi_cache_path(OPENPI_TOKENIZER)
+    if not tokenizer.is_file() or not tokenizer.stat().st_size:
+        raise ValueError(
+            "OpenPI tokenizer is missing; use evaluate_model.py --prepare-only to download it"
+        )
+    return checkpoint
+
+
+def download_openpi(checkpoint: str) -> Path:
+    """Run only inside the isolated OpenPI environment; no policy/GPU imports."""
+    from openpi.shared import download
+
+    path = _validate_openpi_checkpoint(
+        Path(download.maybe_download(checkpoint, gs={"token": "anon"}))
+    )
+    tokenizer = Path(download.maybe_download(OPENPI_TOKENIZER, gs={"token": "anon"}))
+    if not tokenizer.is_file() or not tokenizer.stat().st_size:
+        raise ValueError("OpenPI tokenizer download is incomplete")
+    return path
+
+
+def prepare_openpi(image: str, cache_dir: Path, checkpoint: str) -> None:
+    """Download weights/tokenizer in a disposable CPU container, preserving cache."""
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    mounts = ["--mount", f"type=bind,src={cache_dir.resolve()},dst=/cache"]
+    if not checkpoint.startswith("gs://"):
+        mounts += ["--mount", f"type=bind,src={checkpoint},dst=/checkpoint,readonly"]
+        checkpoint = "/checkpoint"
+    container = "roborsi-vla-download-" + uuid4().hex[:12]
+    print(f"Preparing VLA checkpoint: {checkpoint}", file=sys.stderr)
+    try:
+        subprocess.run(
+            [
+                "docker",
+                "run",
+                "--rm",
+                "--platform",
+                "linux/amd64",
+                "--name",
+                container,
+                *mounts,
+                "--entrypoint",
+                "/opt/openpi/.venv/bin/python",
+                image,
+                "/app/scripts/evaluation/downloads.py",
+                "openpi",
+                "--checkpoint",
+                checkpoint,
+            ],
+            text=True,
+            check=True,
+        )
+    finally:
+        try:
+            subprocess.run(
+                ["docker", "rm", "--force", container],
+                text=True,
+                check=False,
+                capture_output=True,
+            )
+        except OSError:
+            print(f"Could not stop download container: {container}", file=sys.stderr)
 
 
 def _safe_path(value: str) -> str:
@@ -229,3 +325,20 @@ def download_snapshot(
                 return _validate_cache(destination, source)
             raise
     return destination
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    subcommands = parser.add_subparsers(dest="kind", required=True)
+    openpi = subcommands.add_parser(
+        "openpi", help="Download OpenPI weights and tokenizer"
+    )
+    openpi.add_argument("--checkpoint", required=True)
+    args = parser.parse_args(argv)
+    checkpoint = download_openpi(args.checkpoint)
+    print(json.dumps({"checkpoint": str(checkpoint)}))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

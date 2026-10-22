@@ -1,7 +1,7 @@
 # Copyright 2026 The HEART Authors.
 # Licensed under the Apache License, Version 2.0 (the "License");
 
-"""Download OpenPI on demand and own its evaluation-scoped serving containers."""
+"""Bind model-config VLA settings and own evaluation-scoped serving containers."""
 
 from __future__ import annotations
 
@@ -23,9 +23,9 @@ from robots.libero.vla_client import (
     PROTOCOL,
     OpenPiProfile,
     endpoint_url,
-    load_profile,
     openpi_enabled,
 )
+from scripts.evaluation.downloads import prepare_openpi
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -43,7 +43,7 @@ def _run(command, **kwargs):
     return subprocess.run(command, text=True, **kwargs)
 
 
-def requests(presets, *, parameter_overrides=None) -> dict:
+def requests(presets, *, models=None, parameter_overrides=None) -> dict:
     """Validate every enabled profile before performing Docker or network work."""
     selected = {}
     for name, path in presets.items():
@@ -63,7 +63,12 @@ def requests(presets, *, parameter_overrides=None) -> dict:
             raise ValueError(
                 "OpenPI VLA requires a LIBERO Agent factory that translates VLA actions"
             )
-        profile = load_profile(agent.resources["vla_profile"])
+        model = (models or {}).get(name)
+        if model is None or model.vla is None:
+            raise ValueError(
+                f"{name}: enable_vla requires a vla section in the selected --model-config"
+            )
+        profile = model.vla
         url = agent.parameters.get("vla_endpoint") or os.environ.get(
             "ROBORSI_LIBERO_VLA_URL"
         )
@@ -71,7 +76,7 @@ def requests(presets, *, parameter_overrides=None) -> dict:
     return selected
 
 
-def plan(presets, *, parameter_overrides=None) -> dict:
+def plan(presets, *, models=None, parameter_overrides=None) -> dict:
     return {
         name: {
             **asdict(profile),
@@ -80,7 +85,7 @@ def plan(presets, *, parameter_overrides=None) -> dict:
             "protocol": PROTOCOL,
         }
         for name, (profile, url) in requests(
-            presets, parameter_overrides=parameter_overrides
+            presets, models=models, parameter_overrides=parameter_overrides
         ).items()
     }
 
@@ -92,6 +97,7 @@ def _ensure_image(profile):
         + dockerfile.read_bytes()
         + dockerfile.with_name("Dockerfile.dockerignore").read_bytes()
         + (ROOT / "robots/libero/vla_server.py").read_bytes()
+        + (ROOT / "scripts/evaluation/downloads.py").read_bytes()
     ).hexdigest()
     image = f"roborsi-openpi:{digest[:24]}"
     inspected = _run(
@@ -133,8 +139,8 @@ def _remove(container):
         print(f"Could not stop managed VLA container: {container}", file=sys.stderr)
 
 
-def prepare_agents(presets, work_dir: Path) -> dict[str, Deployment]:
-    selected = requests(presets)
+def prepare_agents(presets, work_dir: Path, *, models=None) -> dict[str, Deployment]:
+    selected = requests(presets, models=models)
     deployments, shared = {}, {}
     for name, (profile, url) in selected.items():
         identity = (profile, url)
@@ -145,33 +151,7 @@ def prepare_agents(presets, work_dir: Path) -> dict[str, Deployment]:
             if not url:
                 image = _ensure_image(profile)
                 deployment = Deployment(profile, image, deployment.cache_dir)
-                deployment.cache_dir.mkdir(parents=True, exist_ok=True)
-                mounts, checkpoint = _mounts(deployment)
-                container = "roborsi-vla-download-" + uuid4().hex[:12]
-                print(
-                    f"Preparing VLA checkpoint: {profile.checkpoint}", file=sys.stderr
-                )
-                try:
-                    _run(
-                        [
-                            "docker",
-                            "run",
-                            "--rm",
-                            "--platform",
-                            "linux/amd64",
-                            "--name",
-                            container,
-                            *mounts,
-                            image,
-                            "--prepare-only",
-                            "--checkpoint",
-                            checkpoint,
-                            "--policy-config",
-                            profile.policy_config,
-                        ]
-                    )
-                finally:
-                    _remove(container)
+                prepare_openpi(image, deployment.cache_dir, profile.checkpoint)
             shared[identity] = deployment
         deployments[name] = shared[identity]
     return deployments
@@ -267,7 +247,13 @@ def services(deployments, presets, work_dir):
                             [str(source.source_root), str(work_dir.resolve())]
                         ),
                         "extends": str(source.path),
-                        "parameters": {"vla_endpoint": urls[deployment]},
+                        "parameters": {
+                            "vla_endpoint": urls[deployment],
+                            "vla_model": {
+                                "backend": "openpi",
+                                **asdict(deployment.profile),
+                            },
+                        },
                     },
                     indent=2,
                 )

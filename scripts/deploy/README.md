@@ -17,6 +17,12 @@ Agent enables it; see [the guide](../../docs/libero-vla.md) /
 [VLA 自动下载与部署](../../docs/libero-vla.zh-CN.md). This is independent of the
 main-model placeholder above. 所选 Agent 启用 VLA 时，无需手动执行部署命令。
 
+Main API and VLA configuration share the selected `configs/models/default.yaml`
+(or `--model-config PATH`). Weight/tokenizer downloads belong to
+[`scripts/evaluation/downloads.py`](../evaluation/downloads.py); the OpenPI
+serving entry point loads prepared local assets.
+主模型和 VLA 使用同一个模型 YAML；下载逻辑统一在下载脚本，部署入口负责加载与服务。
+
 Keep serving dependencies in a separate environment from the evaluation Runner.
 Run the completed deployment script in one terminal, wait until the API is ready,
 and run the evaluation script in another terminal. The model service must remain

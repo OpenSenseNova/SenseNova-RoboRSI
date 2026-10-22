@@ -30,11 +30,32 @@ parameters:
 
 标准 LIBERO 使用 [`standard.yaml`](../configs/agents/libero/standard.yaml)，PRO、Long++、
 Ultra-Long 分别使用 `pro.yaml`、`long_plus_plus.yaml`、`ultra_long.yaml`。
-这些 Agent 都引用 [`configs/models/pi05_libero.yaml`](../configs/models/pi05_libero.yaml)，
-同样可以将 `enable_vla` 改为 `true`。也可通过 benchmark 的 `agent_overrides.parameters`
+这些 Agent 同样可以将 `enable_vla` 改为 `true`；Agent 不再引用单独的模型文件。
+主模型和 VLA 统一配置在 [`configs/models/default.yaml`](../configs/models/default.yaml)，
+或使用 `--model-config` 选择自己的 `model.yaml`：
+
+```yaml
+schema_version: 1
+provider: openai
+base_url: http://127.0.0.1:8000/v1
+model_name: YOUR_MODEL
+api_key_env: OPENAI_API_KEY
+openai_format: chat
+vla:
+  backend: openpi
+  openpi_revision: 215abfb217dbac7d5f1273282331b9b1866c0479
+  policy_config: pi05_libero
+  checkpoint: gs://openpi-assets/checkpoints/pi05_libero
+  gpus: all
+  startup_timeout_s: 1800
+  request_timeout_s: 120
+  action_steps: 5
+```
+
+也可通过 benchmark 的 `agent_overrides.parameters`
 启用；显式指定 `--agent-config` 时，以选择的 Agent 为准。
 
-VLA profile 设置 OpenPI 提交版本、`policy_config`、`checkpoint`、GPU、启动/请求超时
+模型文件中的 `vla` 段设置 OpenPI 提交版本、`policy_config`、`checkpoint`、GPU、启动/请求超时
 和 `action_steps`。默认使用官方 `pi05_libero` 检查点，OpenPI 代码固定到提交，
 依赖使用其 `uv.lock`。官方 GCS 权重地址本身不是不可变版本；缓存使用上游 OpenPI
 机制，记录的来源不能视为权重 SHA-256 锁定。需要固定自己的权重时提供受控本地目录。
@@ -58,6 +79,10 @@ ROBORSI_VLA_GPUS=device=1 python scripts/evaluation/evaluate_model.py \
 本地路径以只读卷挂载；远端 GCS 地址自动下载。缓存默认位于
 `work/model_eval/vla/openpi-cache/`，可通过 `--work-dir` 改变。
 不向 Runner 安装 JAX、Torch 或 OpenPI；VLA 容器也不接收主模型 API 密钥。
+本地相对权重路径以模型 YAML 所在目录为基准。VLA 权重和 tokenizer 下载统一由
+[`scripts/evaluation/downloads.py`](../scripts/evaluation/downloads.py) 完成；部署入口
+先检查本地缓存，再加载模型。Agent 启用 VLA 时，所选模型文件必须含 `vla` 段；
+未启用 VLA 或使用原有 MCP 接法时可以省略。
 
 ## 独立指定三个配置
 

@@ -9,5 +9,3 @@ code:
   - ../../../robots/libero/three_benchmark_agent.py
 parameters:
   enable_vla: false
-resources:
-  vla_profile: ../../models/pi05_libero.yaml

@@ -157,15 +157,13 @@ def make_three_benchmark_agent(
         "enable_sam3",
         "vla_url_env",
         "vla_endpoint",
+        "vla_model",
         "sam3_url_env",
     }
     if set(parameters) - allowed:
         raise ValueError("unknown LIBERO three-benchmark Agent parameter")
-    if "context_map" not in config.resources or set(config.resources) - {
-        "context_map",
-        "vla_profile",
-    }:
-        raise ValueError("Agent resources need context_map and optional vla_profile")
+    if set(config.resources) != {"context_map"}:
+        raise ValueError("Agent resources need context_map")
     packages = load_package_map(
         config.resources["context_map"], _context_root(parameters)
     )
