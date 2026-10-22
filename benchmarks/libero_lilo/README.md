@@ -72,3 +72,5 @@ run fewer cases. Use `libero_ultra_long` to select the other family. The
 
 See [Evaluation](../../docs/evaluation.md), [tests](../../tests/README.md), and
 [third-party notices](THIRD_PARTY_NOTICES.md).
+For a scheduler that accepts only one job image, use the
+[three-LIBERO single-image target](../libero_three_combined/README.md).

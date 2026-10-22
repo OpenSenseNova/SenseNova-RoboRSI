@@ -1,0 +1,35 @@
+# Shared model, factory and trace settings for the three frozen LIBERO policies.
+schema_version: 1
+source_root: ../../..
+factory: robots.libero.three_benchmark_agent:make_three_benchmark_agent
+code:
+  - ../../../robots/libero/three_benchmark_agent.py
+agent:
+  max_turns: 10000
+  max_tokens: 128000
+  action_timeout_s: 600
+  reasoning_effort: max
+runtime:
+  llm:
+    provider: openai
+    model: gpt-6-astra/YOUR_DEPLOYMENT
+    openai_format: responses
+    prompt_cache_mode: explicit
+    parallel_tool_calls: false
+    retry:
+      max_retries: 3
+      initial_delay_s: 1
+      max_delay_s: 8
+  context:
+    image_history_groups: 2
+    cache_initial_task: true
+    cache_initial_context: true
+    cache_latest_tool_feedback: true
+  trace:
+    mode: full
+parameters:
+  enable_vla: false
+  enable_sam3: false
+dependencies:
+  - roborsi[runtime]
+  - tokenizers==0.22.2

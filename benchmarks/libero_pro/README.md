@@ -11,15 +11,17 @@ The Dockerfile records source hashes and package versions, including Python
 
 ## Required evaluation assets
 
-Obtain a complete evaluation directory containing `bddl_files/` and
-`init_files/` before building. The upstream source checkout does not contain the
-exact complete evaluation data required by this recipe. This repository does
-not include that data or provide an automatic download for it.
+The required Task/Swap BDDL and init files are public in the official
+[`zhouxueyang/LIBERO-Pro`](https://huggingface.co/datasets/zhouxueyang/LIBERO-Pro)
+dataset. The build pins revision
+`c86fc3b8293185a6f373677018ff3e37f8391602` and selects only the eight suites
+used by this evaluation: 80 BDDL files and 80 init files. Unrelated files from
+an existing LIBERO checkout never enter the image.
 
 The asset preparer and Docker build require directory SHA-256:
 
 ```text
-381f91eec4ec26bc2a0bd06e32da8713f56367c5431d7a8cfa74d69439b57be9
+d4a0a1ddbe8137cbcb410a41d9ec0296f27cb709e03f0ae6f9bd3fb11da7b59d
 ```
 
 A different or partial tree is rejected. Do not replace this digest merely to
@@ -33,10 +35,9 @@ Run from the installed framework checkout with Docker available:
 export ROBORSI_WORKSPACE=/absolute/path/to/libero-pro-work
 python -m benchmarks.package --benchmark libero_pro \
   --output "$ROBORSI_WORKSPACE/build"
-python -m benchmarks.libero_pro.assets \
-  --source /absolute/path/to/complete-evaluation-assets \
-  --output-dir "$ROBORSI_WORKSPACE/assets" \
-  --build-context "$ROBORSI_WORKSPACE/build"
+python scripts/libero_three/download_assets.py \
+  --output "$ROBORSI_WORKSPACE/public-assets" \
+  --pro-build-context "$ROBORSI_WORKSPACE/build"
 docker build -t YOUR_REGISTRY/roborsi-libero-pro:BUILD "$ROBORSI_WORKSPACE/build"
 docker push YOUR_REGISTRY/roborsi-libero-pro:BUILD
 export ROBORSI_IMAGE=$(docker image inspect YOUR_REGISTRY/roborsi-libero-pro:BUILD \
@@ -44,8 +45,9 @@ export ROBORSI_IMAGE=$(docker image inspect YOUR_REGISTRY/roborsi-libero-pro:BUI
 mkdir -p "$ROBORSI_WORKSPACE/registry/libero_pro"
 ```
 
-Replace `YOUR_REGISTRY` and `BUILD` before running. The preparer copies only the
-verified evaluation folders into `evaluation-assets/`. The image embeds them
+Replace `YOUR_REGISTRY` and `BUILD` before running. The downloader also stages
+the public ICL packages and tokenizer under `public-assets/agent-assets` for the
+Agent image. The PRO image embeds only the verified eight evaluation suites
 under `/opt/libero-pro-evaluation`; execution needs no separate asset mount.
 Mutable path configuration uses `/tmp`.
 
@@ -81,3 +83,5 @@ Use [Agents](../../docs/agents.md) / [Agent 配置](../../docs/agents.zh-CN.md)
 for the public presets and [Evaluation](../../docs/evaluation.md) for outputs.
 Offline adapter checks do not establish native task success. See
 [tests](../../tests/README.md) and [third-party notices](THIRD_PARTY_NOTICES.md).
+For a scheduler that accepts only one job image, use the
+[three-LIBERO single-image target](../libero_three_combined/README.md).

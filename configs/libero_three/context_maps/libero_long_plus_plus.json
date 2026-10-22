@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "packages": {
+    "t00-i01": "libero-icl-v12-efficiency-aligned-longpp-task-00",
+    "t01-i01": "libero-icl-v12-efficiency-aligned-longpp-task-01",
+    "t02-i01": "libero-icl-v12-efficiency-aligned-longpp-task-02",
+    "t03-i01": "libero-icl-v12-efficiency-aligned-longpp-task-03",
+    "t04-i01": "libero-icl-v12-efficiency-aligned-longpp-task-04",
+    "t05-i01": "libero-icl-v12-efficiency-aligned-longpp-task-05",
+    "t06-i01": "libero-icl-v12-efficiency-aligned-longpp-task-06",
+    "t07-i01": "libero-icl-v12-efficiency-aligned-longpp-task-07",
+    "t08-i01": "libero-icl-v12-efficiency-aligned-longpp-task-08",
+    "t09-i01": "libero-icl-v12-efficiency-aligned-longpp-task-09",
+    "t10-i01": "libero-icl-v12-efficiency-aligned-longpp-task-10",
+    "t11-i01": "libero-icl-v12-efficiency-aligned-longpp-task-11"
+  }
+}

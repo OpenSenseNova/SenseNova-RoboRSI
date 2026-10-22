@@ -10,15 +10,16 @@ def test_libero_pro_assets_are_content_addressed(tmp_path, monkeypatch):
     from benchmarks.libero_pro import assets
 
     source = tmp_path / "source"
-    (source / "bddl_files").mkdir(parents=True)
-    (source / "init_files").mkdir()
-    (source / "bddl_files/task.bddl").write_text("task")
-    (source / "init_files/task.init").write_text("state")
     staged = tmp_path / "staged"
-    (staged / "bddl_files").mkdir(parents=True)
-    (staged / "init_files").mkdir()
-    (staged / "bddl_files/task.bddl").write_text("task")
-    (staged / "init_files/task.init").write_text("state")
+    for root in (source, staged):
+        for kind, suffix in (("bddl_files", "bddl"), ("init_files", "init")):
+            for suite in assets.REQUIRED_SUITES:
+                directory = root / kind / suite
+                directory.mkdir(parents=True)
+                (directory / f"task.{suffix}").write_text(f"{kind}:{suite}")
+    extra = source / "bddl_files/unrelated_internal_suite"
+    extra.mkdir()
+    (extra / "unused.bddl").write_text("must not enter the public snapshot")
     digest = directory_sha256(staged)
     monkeypatch.setattr(assets, "ASSET_SHA256", digest)
 
@@ -38,12 +39,22 @@ def test_libero_pro_assets_are_content_addressed(tmp_path, monkeypatch):
 
 
 def test_libero_pro_assets_reject_unlocked_content(tmp_path):
+    from benchmarks.libero_pro.assets import REQUIRED_SUITES, prepare_asset
+
+    source = tmp_path / "source"
+    for kind in ("bddl_files", "init_files"):
+        for suite in REQUIRED_SUITES:
+            (source / kind / suite).mkdir(parents=True)
+
+    with pytest.raises(ValueError, match="evaluation assets differ"):
+        prepare_asset(source, tmp_path / "output")
+
+
+def test_libero_pro_assets_require_every_public_suite(tmp_path):
     from benchmarks.libero_pro.assets import prepare_asset
 
     source = tmp_path / "source"
     (source / "bddl_files").mkdir(parents=True)
     (source / "init_files").mkdir()
-    (source / "bddl_files/unexpected.bddl").write_text("different")
-
-    with pytest.raises(ValueError, match="evaluation assets differ"):
+    with pytest.raises(FileNotFoundError, match="libero_spatial_task"):
         prepare_asset(source, tmp_path / "output")

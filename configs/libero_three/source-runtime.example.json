@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "system_packages": [
+    "python3.10",
+    "libgl1",
+    "libegl1",
+    "libglib2.0-0"
+  ],
+  "agent_python": "/path/to/python-or-wrapper",
+  "llm": {
+    "base_url": "https://your-openai-compatible-endpoint/v1",
+    "api_key_file": "/path/to/secret-key-file"
+  },
+  "icl_roots": {
+    "libero_long_plus_plus": "/path/to/longpp-icl/packages",
+    "libero_ultra_long": "/path/to/ultra-icl/packages",
+    "libero_pro": "/path/to/pro-icl/packages"
+  },
+  "runtime_assets": {
+    "context_tokenizer": "/path/to/tokenizer.json"
+  },
+  "tools": {
+    "enable_vla": false,
+    "enable_sam3": false,
+    "manage_local_services": false
+  },
+  "benchmarks": {
+    "libero_long_plus_plus": {
+      "python": "/path/to/lilo-python",
+      "pythonpath": [
+        "/path/to/LiLo-VLA",
+        "/path/to/LIBERO",
+        "/path/to/extra/site-packages"
+      ],
+      "environment": {
+        "ROBORSI_LILO_ROOT": "/path/to/LiLo-VLA",
+        "ROBORSI_LIBERO_ROOT": "/path/to/LIBERO",
+        "ROBORSI_LILO_COMMIT": "64aa29d77f5457afb3d1642cfc84534dc1e81fad",
+        "ROBORSI_LIBERO_COMMIT": "f78abd68ee283de9f9be3c8f7e2a9ad60246e95c",
+        "ROBORSI_LIBERO_VERSION": "public-pinned-v1"
+      },
+      "libero_config": {
+        "assets": "/path/to/LIBERO/libero/libero/assets",
+        "benchmark_root": "/path/to/LIBERO/libero/libero",
+        "datasets": "/path/to/LIBERO/libero/datasets",
+        "bddl_files": "/path/to/LiLo-VLA/configs/bddl",
+        "init_states": "/path/to/LiLo-VLA/configs/init_states"
+      }
+    },
+    "libero_ultra_long": {
+      "inherit": "libero_long_plus_plus"
+    },
+    "libero_pro": {
+      "python": "/path/to/libero-pro-python",
+      "pythonpath": [
+        "/path/to/LIBERO-PRO-checkout"
+      ],
+      "environment": {
+        "LIBERO_TYPE": "pro",
+        "ROBORSI_LIBERO_PRO_ROOT": "/path/to/LIBERO-PRO-checkout",
+        "ROBORSI_LIBERO_PRO_COMMIT": "d1e11fb181b8544487d27742c0caa3a4d46452ad",
+        "ROBORSI_LIBERO_VERSION": "libero-pro-d1e11fb181b8544487d27742c0caa3a4d46452ad"
+      },
+      "libero_config": {
+        "assets": "/path/to/LIBERO-PRO-checkout/liberopro/liberopro/assets",
+        "benchmark_root": "/path/to/LIBERO-PRO-checkout/liberopro/liberopro",
+        "datasets": "/path/to/LIBERO-PRO-checkout/liberopro/datasets",
+        "bddl_files": "/path/to/complete-LIBERO-PRO-evaluation-assets/bddl_files",
+        "init_states": "/path/to/complete-LIBERO-PRO-evaluation-assets/init_files"
+      }
+    }
+  }
+}

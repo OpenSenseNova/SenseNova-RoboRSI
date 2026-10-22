@@ -14,8 +14,15 @@ from pathlib import Path
 from roborsi.benchmarks.registry import directory_sha256, snapshot_directory
 from roborsi.evaluation.result import write_json_atomic
 
-ASSET_VERSION = "zxy-libero-pro-eafdb809426b13153aa1e4c42d6601844217dfec-eval-v1"
-ASSET_SHA256 = "381f91eec4ec26bc2a0bd06e32da8713f56367c5431d7a8cfa74d69439b57be9"
+DATASET_REPOSITORY = "zhouxueyang/LIBERO-Pro"
+DATASET_REVISION = "c86fc3b8293185a6f373677018ff3e37f8391602"
+REQUIRED_SUITES = tuple(
+    f"libero_{family}_{variant}"
+    for family in ("spatial", "object", "goal", "10")
+    for variant in ("task", "swap")
+)
+ASSET_VERSION = f"hf-{DATASET_REPOSITORY}@{DATASET_REVISION}-task-swap-v1"
+ASSET_SHA256 = "d4a0a1ddbe8137cbcb410a41d9ec0296f27cb709e03f0ae6f9bd3fb11da7b59d"
 
 
 def prepare_asset(source: Path, output: Path) -> dict[str, str]:
@@ -24,16 +31,20 @@ def prepare_asset(source: Path, output: Path) -> dict[str, str]:
     output = output.expanduser().resolve()
     required = ("bddl_files", "init_files")
     for name in required:
-        if not (source / name).is_dir():
-            raise FileNotFoundError(
-                f"LIBERO-PRO asset directory is missing: {source / name}"
-            )
+        for suite in REQUIRED_SUITES:
+            path = source / name / suite
+            if not path.is_dir():
+                raise FileNotFoundError(
+                    f"LIBERO-PRO asset directory is missing: {path}"
+                )
     output.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="libero-pro-", dir=output) as temporary:
         staging = Path(temporary) / "evaluation"
         staging.mkdir()
         for name in required:
-            shutil.copytree(source / name, staging / name)
+            (staging / name).mkdir()
+            for suite in REQUIRED_SUITES:
+                shutil.copytree(source / name / suite, staging / name / suite)
         actual = directory_sha256(staging)
         if actual != ASSET_SHA256:
             raise ValueError(

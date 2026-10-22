@@ -1,0 +1,15 @@
+# Historical no-tool, token-accurate policy shared by Long++ and Ultra-Long.
+schema_version: 1
+extends: base.yaml
+agent:
+  planner_timeout_s: 43200
+runtime:
+  context:
+    strategy: summary
+    keep_turns: 8
+    context_window: 1050000
+    output_reserve: 128000
+    overhead_reserve: 32768
+    summary_max_tokens: 128000
+    summary_trigger_ratio: 0.75
+    adaptive_retention: true

@@ -1,0 +1,19 @@
+schema_version: 1
+extends: v13.yaml
+agent:
+  max_turns: 100
+  planner_timeout_s: 5000
+  system_prompt: >-
+    Complete the robot task using the sealed persistent-memory ICL context for
+    the PRO condition. The roborsi_action schema exposes raw action chunks and
+    the direct move_to, move_pose, rotate_wrist, rotate_pitch, release, and
+    set_gripper primitives referenced by the context. Solve the task without
+    VLA or SAM3. The Benchmark owns stopping and score.
+runtime:
+  llm:
+    retry:
+      max_retries: 0
+resources:
+  context_map: ../../../configs/libero_three/context_maps/libero_pro.json
+parameters:
+  context_root_env: ROBORSI_LIBERO_PRO_ICL_ROOT

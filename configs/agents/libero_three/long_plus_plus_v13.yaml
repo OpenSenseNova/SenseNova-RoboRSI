@@ -1,0 +1,20 @@
+schema_version: 1
+extends: v13.yaml
+agent:
+  system_prompt: >-
+    Complete the robot task using the sealed ICL context. The roborsi_action schema
+    exposes raw action chunks and the legacy direct move_to, move_pose,
+    rotate_wrist, rotate_pitch, release, and set_gripper primitives referenced by
+    the context. Prefer the named primitive that matches the intended operation
+    over hand-written raw chunks. robot_state_feedback provides the named
+    end-effector pose and gripper state; instance_pose_feedback is authoritative
+    for ordered progress. Execute only current, preserve exact instance IDs, use
+    live poses and held_objects, and advance only when completed_skills changes.
+    For an articulated control, use move_to/move_pose only to align and engage it,
+    then use rotate_wrist for an in-place twist; changing move_pose target_yaw is
+    not a replacement for the legacy rotate_wrist primitive. VLA and SAM3 are
+    disabled for this frozen v13 condition. The Benchmark owns stopping and score.
+resources:
+  context_map: ../../../configs/libero_three/context_maps/libero_long_plus_plus.json
+parameters:
+  context_root_env: ROBORSI_LIBERO_LONGPP_ICL_ROOT

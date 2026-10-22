@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "packages": {
+    "t00-i01": "libero-icl-v12-efficiency-aligned-ultra-task-00",
+    "t01-i01": "libero-icl-v12-efficiency-aligned-ultra-task-01",
+    "t02-i01": "libero-icl-v12-efficiency-aligned-ultra-task-02",
+    "t03-i01": "libero-icl-v12-efficiency-aligned-ultra-task-03",
+    "t04-i01": "libero-icl-v12-efficiency-aligned-ultra-task-04",
+    "t05-i01": "libero-icl-v12-efficiency-aligned-ultra-task-05",
+    "t06-i01": "libero-icl-v12-efficiency-aligned-ultra-task-06",
+    "t07-i01": "libero-icl-v12-efficiency-aligned-ultra-task-07",
+    "t08-i01": "libero-icl-v12-efficiency-aligned-ultra-task-08"
+  }
+}

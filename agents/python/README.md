@@ -6,6 +6,7 @@ The Dockerfile provides three stages:
 | --- | --- |
 | `runtime` | Framework source and the selected hash-locked dependencies |
 | `configured` | Runtime plus an installed Agent bundle wheel; checks dependencies |
+| `libero_three` | Configured runtime plus all three LIBERO bundles, ICL, and tokenizer |
 | `example` | Runtime plus the fixed-action LIBERO Agent; default build target |
 
 The Agent runs separately from the native benchmark. `DockerAgentLauncher`
@@ -105,3 +106,58 @@ Bearer token; do not pass that token to the Agent.
 See [Agents](../../docs/agents.md) / [Agent 配置](../../docs/agents.zh-CN.md),
 [Evaluation](../../docs/evaluation.md) / [评测](../../docs/evaluation.zh-CN.md),
 and [native opt-in tests](../../tests/README.md#libero-cpu-evaluation-check).
+
+## Build the three-LIBERO Agent
+
+Acquire the public, revision-pinned ICL packages and tokenizer first:
+
+```bash
+python scripts/libero_three/download_assets.py \
+  --output dist/agent/public-assets
+```
+
+Export one bundle wheel per benchmark. The tokenizer path is the final in-image
+path, and its digest is checked again during the Docker build:
+
+```bash
+TOKENIZER_SHA=0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3
+mkdir -p ../work/libero-three/bundles dist/agent
+
+python -m roborsi.agents.package \
+  --config configs/agents/libero_three/long_plus_plus_v13.yaml \
+  --name libero_long_plus_plus_v13 \
+  --set 'runtime.context.tokenizer_file="/opt/roborsi-agent-assets/tokenizer.json"' \
+  --set "runtime.context.tokenizer_sha256=\"$TOKENIZER_SHA\"" \
+  --output ../work/libero-three/bundles/longpp
+python -m roborsi.agents.package \
+  --config configs/agents/libero_three/ultra_long_v13.yaml \
+  --name libero_ultra_long_v13 \
+  --set 'runtime.context.tokenizer_file="/opt/roborsi-agent-assets/tokenizer.json"' \
+  --set "runtime.context.tokenizer_sha256=\"$TOKENIZER_SHA\"" \
+  --output ../work/libero-three/bundles/ultra
+python -m roborsi.agents.package \
+  --config configs/agents/libero_three/pro.yaml --name libero_pro \
+  --set 'runtime.context.tokenizer_file="/opt/roborsi-agent-assets/tokenizer.json"' \
+  --set "runtime.context.tokenizer_sha256=\"$TOKENIZER_SHA\"" \
+  --output ../work/libero-three/bundles/pro
+
+python -m build --wheel --outdir dist/agent ../work/libero-three/bundles/longpp
+python -m build --wheel --outdir dist/agent ../work/libero-three/bundles/ultra
+python -m build --wheel --outdir dist/agent ../work/libero-three/bundles/pro
+```
+
+Resolve a Python 3.11 hash-locked requirements file from all three generated
+`requirements.in` files using the same local RoboRSI-wheel override shown in
+the configured-Agent section. Then build:
+
+```bash
+docker build --target libero_three -f agents/python/Dockerfile \
+  --build-arg AGENT_REQUIREMENTS=dist/agent/requirements.txt \
+  --build-arg 'AGENT_WHEEL=dist/agent/roborsi_agent_bundle_libero_*.whl' \
+  --build-arg LIBERO_THREE_ASSETS=dist/agent/public-assets/agent-assets \
+  -t roborsi-libero-three-agent:local .
+```
+
+The image contains neither model weights nor credentials. Override the model
+and endpoint at deployment when the default preset name is not available in
+your API service.

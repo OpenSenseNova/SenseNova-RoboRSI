@@ -37,7 +37,7 @@ RUN echo "${LIBERO_PRO_ARCHIVE_SHA256}  /tmp/libero-pro.tar.gz" | sha256sum -c -
 WORKDIR /opt/roborsi
 COPY benchmark-runtime/ /opt/roborsi/
 COPY evaluation-assets/ /opt/libero-pro-evaluation/
-RUN python -B -c "from pathlib import Path; from roborsi.benchmarks.registry import directory_sha256; root = Path('/opt/libero-pro-evaluation'); expected = '381f91eec4ec26bc2a0bd06e32da8713f56367c5431d7a8cfa74d69439b57be9'; actual = directory_sha256(root); assert actual == expected, (actual, expected)"
+RUN python -B -c "from pathlib import Path; from roborsi.benchmarks.registry import directory_sha256; root = Path('/opt/libero-pro-evaluation'); expected = 'd4a0a1ddbe8137cbcb410a41d9ec0296f27cb709e03f0ae6f9bd3fb11da7b59d'; actual = directory_sha256(root); assert actual == expected, (actual, expected)"
 ENV PYTHONPATH=/opt/roborsi PYTHONDONTWRITEBYTECODE=1 \
     LIBERO_CONFIG_PATH=/tmp/libero-config MPLCONFIGDIR=/tmp/matplotlib \
     ROBORSI_LIBERO_BENCHMARK=libero_pro \
@@ -46,7 +46,7 @@ ENV PYTHONPATH=/opt/roborsi PYTHONDONTWRITEBYTECODE=1 \
     ROBORSI_LIBERO_DATASETS_ROOT=/opt/libero-pro/liberopro/datasets \
     ROBORSI_LIBERO_BDDL_ROOT=/opt/libero-pro-evaluation/bddl_files \
     ROBORSI_LIBERO_INIT_ROOT=/opt/libero-pro-evaluation/init_files \
-    ROBORSI_LIBERO_EVALUATION_ASSET_SHA256=381f91eec4ec26bc2a0bd06e32da8713f56367c5431d7a8cfa74d69439b57be9
+    ROBORSI_LIBERO_EVALUATION_ASSET_SHA256=d4a0a1ddbe8137cbcb410a41d9ec0296f27cb709e03f0ae6f9bd3fb11da7b59d
 RUN python -B -c "from pathlib import Path; from roborsi.benchmarks.runtime_source import verify_benchmark_runtime; verify_benchmark_runtime(Path('/opt/roborsi'), 'libero_pro')"
 RUN LIBERO_CONFIG_PATH=/tmp/libero-import-check python -B -c "import bddl, gym, h5py, liberopro, matplotlib; from liberopro.liberopro.envs import OffScreenRenderEnv; print('LIBERO-PRO native imports verified')" \
     && rm -rf /tmp/libero-import-check

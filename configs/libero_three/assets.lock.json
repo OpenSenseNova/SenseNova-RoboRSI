@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "source_dependencies": {
+    "lilo_vla": {
+      "revision": "64aa29d77f5457afb3d1642cfc84534dc1e81fad"
+    },
+    "libero": {
+      "revision": "f78abd68ee283de9f9be3c8f7e2a9ad60246e95c"
+    },
+    "libero_pro": {
+      "revision": "d1e11fb181b8544487d27742c0caa3a4d46452ad"
+    }
+  },
+  "assets": {
+    "libero_pro_evaluation": {
+      "name": "libero_pro",
+      "repository": "zhouxueyang/LIBERO-Pro",
+      "repository_type": "dataset",
+      "revision": "c86fc3b8293185a6f373677018ff3e37f8391602",
+      "version": "hf-zhouxueyang-libero-pro-c86fc3-task-swap-v1",
+      "suite_count": 8,
+      "bddl_file_count": 80,
+      "init_file_count": 80,
+      "snapshot_sha256": "d4a0a1ddbe8137cbcb410a41d9ec0296f27cb709e03f0ae6f9bd3fb11da7b59d"
+    },
+    "libero_long_plus_plus_icl": {
+      "environment": "ROBORSI_LIBERO_LONGPP_ICL_ROOT",
+      "package_count": 12,
+      "repository": "sensenova/SenseNova-RoboRSI-Packages",
+      "repository_type": "dataset",
+      "revision": "e977b5ad667b4ce753ee947cbb0b95d4fc0fe98c",
+      "path": "libero-long-plus-plus/v1.0.0/packages",
+      "source_version": "v12-efficiency-aligned",
+      "source_revision": "7d7816a00c98fd75b02ad2fb1da843c5e9ff3b1e",
+      "snapshot_sha256": "78980eab0e2f344ee3dfc3417a6bc401eff600e78dbfc53a513b3a84a93f58e7"
+    },
+    "libero_ultra_long_icl": {
+      "environment": "ROBORSI_LIBERO_ULTRA_ICL_ROOT",
+      "package_count": 9,
+      "repository": "sensenova/SenseNova-RoboRSI-Packages",
+      "repository_type": "dataset",
+      "revision": "e977b5ad667b4ce753ee947cbb0b95d4fc0fe98c",
+      "path": "libero-ultra-long/v1.0.0/packages",
+      "source_version": "v12-efficiency-aligned",
+      "source_revision": "7d7816a00c98fd75b02ad2fb1da843c5e9ff3b1e",
+      "snapshot_sha256": "198433bb51b276182da28184d3c1ebc3844459daacc5d10f71b7336f0f02b3de"
+    },
+    "libero_pro_icl": {
+      "environment": "ROBORSI_LIBERO_PRO_ICL_ROOT",
+      "package_count": 40,
+      "mapped_case_count": 80,
+      "repository": "sensenova/SenseNova-RoboRSI-Packages",
+      "repository_type": "dataset",
+      "revision": "e977b5ad667b4ce753ee947cbb0b95d4fc0fe98c",
+      "path": "libero-pro/v1.0.0/packages",
+      "source_policy": "persistent-memory",
+      "package_audit_sha256": "8ec3ac433d86b089a3eb562745c20e40bc964b96f8dd133610d386ead666bc4f",
+      "memory_audit_sha256": "4e07afb250ca025103bc16911f8fa847f25c3921b6e0487292c252d8f3dba676",
+      "snapshot_sha256": "f6ab1bf600c78cc8d9361c58b8cf8a5049ef1fe49967d7e80a6f439529f5ac4c"
+    },
+    "context_tokenizer": {
+      "environment": "ROBORSI_CONTEXT_TOKENIZER_PATH",
+      "repository": "Qwen/Qwen3.8-Flash-Next",
+      "repository_type": "model",
+      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "path": "tokenizer.json",
+      "license": "qwen-community-1.0",
+      "sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3"
+    }
+  }
+}
