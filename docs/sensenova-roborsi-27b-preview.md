@@ -115,6 +115,7 @@ curl --fail http://127.0.0.1:8000/v1/chat/completions \
       "content": "A robot needs to place a mug on a coaster. Give a short plan and explain how to verify that the mug is stable before releasing it."
     }],
     "max_tokens": 8192,
+    "chat_template_kwargs": {"reasoning_effort": "medium"},
     "stream": false
   }'
 ```
