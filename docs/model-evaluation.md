@@ -85,6 +85,29 @@ settings over those presets. Local ICL/tokenizer paths are then written to
 CLI Agent options take precedence. `configs/evaluations/embodied.yaml` remains
 the existing Agent comparison matrix.
 
+You can also select each configuration by path:
+
+```bash
+python scripts/evaluation/evaluate_model.py --benchmark libero_pro \
+  --benchmark-config configs/benchmarks/examples/libero_pro_smoke.yaml \
+  --agent-config configs/agents/libero/pro_vla.yaml \
+  --model-config configs/models/default.yaml --openai-format chat
+```
+
+One benchmark accepts bare paths; several use repeated `NAME=PATH` entries.
+A minimal benchmark YAML inherits the native environment and selects tests with
+`evaluation.tasks`, `evaluation.seeds` or `evaluation.selector: path.py:function`.
+CLI task/seed lists override the corresponding YAML filters before the Python
+selector runs. Selectors return a nonempty unique list of existing catalog cells;
+different task-specific seed sets are preserved. See the
+[smoke config](../configs/benchmarks/examples/libero_pro_smoke.yaml) and
+[Python example](../configs/benchmarks/examples/select_first.py).
+
+LIBERO Agents with `parameters.enable_vla: true` additionally prepare isolated
+OpenPI dependencies, download pi05 weights, start and warm the VLA service.
+`--prepare-only` prepares resources without GPU inference. See the
+[LIBERO VLA guide](libero-vla.md) for configuration, GPU selection and existing services.
+
 ## One-command evaluation
 
 ```bash
@@ -213,6 +236,8 @@ and validates catalogs/plans without episodes or model calls. Use
 
 `--agent-config NAME=PATH` overrides the automatic ICL preset. With an external
 source the default is `configs/agents/embodied/default.yaml` (no automatic ICL).
+An explicit `--benchmark-config` selects its referenced Agent instead. Explicit
+VLA-enabled LIBERO Agents also get automatic VLA setup with external sources.
 Custom presets need their code, dependencies and context resources already
 available. Their format, context and budgets are retained unless explicitly
 overridden; the script always sets your model connection.

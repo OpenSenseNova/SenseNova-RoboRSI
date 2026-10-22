@@ -144,6 +144,12 @@ Edit [`configs/models/default.yaml`](configs/models/default.yaml) for the shared
 model connection, and `configs/agents/` for Agent policies. The environment
 variables above still override the model YAML; API keys stay in the environment.
 
+Optional `--benchmark-config`, `--agent-config` and `--model-config` accept paths
+(or `NAME=PATH` when selecting several benchmarks). Benchmark configs support
+task/seed lists and [user Python selectors](configs/benchmarks/examples/select_first.py).
+LIBERO Agents can opt into [automatic pi05 VLA download and deployment](docs/libero-vla.md)
+with `parameters.enable_vla: true`; the simple `--benchmark NAME` entry remains.
+
 After the smoke check, run all 340 RoboCasa cells without task/seed filters:
 
 ```bash

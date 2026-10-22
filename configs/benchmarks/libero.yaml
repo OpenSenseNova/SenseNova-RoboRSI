@@ -1,7 +1,7 @@
 schema_version: 1
 benchmark: libero
 model: ../models/default.yaml
-agent: ../agents/embodied/default.yaml
+agent: ../agents/libero/standard.yaml
 agent_overrides:
   agent:
     reasoning_effort: none

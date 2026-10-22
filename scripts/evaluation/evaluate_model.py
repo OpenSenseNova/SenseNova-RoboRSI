@@ -20,6 +20,7 @@ prints the automatic setup plan, or preflights an explicitly supplied catalog.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -139,12 +140,12 @@ def parse_args(
         "--work-dir",
         type=Path,
         default=ROOT / "work/model_eval",
-        help="cache for images, assets, ICL and generated presets",
+        help="cache for images, assets, ICL, optional VLA and generated presets",
     )
     parser.add_argument(
         "--prepare-only",
         action="store_true",
-        help="download/build environments and ICL; no model or simulator calls",
+        help="prepare environments, ICL and optional VLA; no model inference or episodes",
     )
     parser.add_argument(
         "--benchmark-token-env",
@@ -153,8 +154,20 @@ def parse_args(
     parser.add_argument(
         "--agent-config",
         action="append",
-        metavar="NAME=PATH",
-        help="per-benchmark preset; default: configs/agents/embodied/default.yaml",
+        metavar="[NAME=]PATH",
+        help="Agent YAML; automatic mode defaults to the benchmark configuration's Agent",
+    )
+    parser.add_argument(
+        "--benchmark-config",
+        action="append",
+        metavar="[NAME=]PATH",
+        help="benchmark YAML; may override test selection while inheriting the native environment",
+    )
+    parser.add_argument(
+        "--model-config",
+        action="append",
+        metavar="[NAME=]PATH",
+        help="model connection YAML",
     )
     parser.add_argument("--task", action="append", metavar="NAME:ID")
     parser.add_argument(
@@ -188,9 +201,29 @@ def parse_args(
     args = parser.parse_args(argv)
     try:
         configuration = load_configuration()
+        benchmark_paths = configuration_paths(
+            args.benchmark_config, args.benchmark, "--benchmark-config"
+        )
+        model_paths = configuration_paths(
+            args.model_config, args.benchmark, "--model-config"
+        )
+        agent_paths = configuration_paths(
+            args.agent_config, args.benchmark, "--agent-config"
+        )
         args.configurations = {
-            name: configuration.load_benchmark(name) for name in args.benchmark
+            name: configuration.load_benchmark(
+                name,
+                **({"path": benchmark_paths[name]} if name in benchmark_paths else {}),
+            )
+            for name in args.benchmark
         }
+        for name, config in args.configurations.items():
+            args.configurations[name] = replace(
+                config,
+                model=model_paths.get(name, config.model),
+                agent=agent_paths.get(name, config.agent),
+                agent_overrides={} if name in agent_paths else config.agent_overrides,
+            )
         args.models = {}
         for name, config in args.configurations.items():
             model = configuration.resolve_model(
@@ -272,10 +305,8 @@ def parse_args(
                     "--benchmark-token-env requires HTTP Benchmarks and a populated environment variable"
                 )
         args.presets = {
-            name: str(Path(path).expanduser().resolve())
-            for name, path in named_values(
-                args.agent_config, args.benchmark, "--agent-config"
-            ).items()
+            name: str(args.configurations[name].agent)
+            for name in set(agent_paths) | set(benchmark_paths)
         }
         args.tasks = defaultdict(list)
         for value in args.task or ():
@@ -303,6 +334,23 @@ def parse_args(
     return parser, args
 
 
+def configuration_paths(values, benchmarks, option):
+    """Accept an unqualified path only when exactly one benchmark is selected."""
+    scoped = []
+    for value in values or ():
+        if "=" not in value and len(benchmarks) == 1:
+            value = f"{benchmarks[0]}={value}"
+        scoped.append(value)
+    paths = {
+        name: Path(path).expanduser().resolve()
+        for name, path in named_values(scoped, benchmarks, option).items()
+    }
+    for path in paths.values():
+        if not path.is_file():
+            raise FileNotFoundError(f"{option} is missing: {path}")
+    return paths
+
+
 def build_commands(args: argparse.Namespace) -> list[list[str]]:
     # The script works from any cwd; the repository supplies the installed runner.
     if str(ROOT) not in sys.path:
@@ -310,6 +358,7 @@ def build_commands(args: argparse.Namespace) -> list[list[str]]:
     from roborsi.benchmarks.registry import BenchmarkRegistry
     from roborsi.evaluation.batch import expand_cases
     from roborsi.evaluation.http_benchmark import HttpBenchmarkRegistry
+    from scripts.evaluation.selection import select_cells
 
     registry = (
         HttpBenchmarkRegistry(
@@ -322,10 +371,23 @@ def build_commands(args: argparse.Namespace) -> list[list[str]]:
         if args.endpoints
         else BenchmarkRegistry([args.registry_root])
     )
-    cells = expand_cases(
-        registry, args.benchmark, task_ids=args.tasks or None, seeds=args.seed
-    )
-    groups: dict[tuple[str, str, int | None], list[str]] = {}
+    cells = []
+    for name in args.benchmark:
+        config = args.configurations[name]
+        tasks = args.tasks.get(name) or config.evaluation.get("tasks")
+        seeds = args.seed if args.seed is not None else config.evaluation.get("seeds")
+        cells.extend(
+            select_cells(
+                config,
+                expand_cases(
+                    registry,
+                    [name],
+                    task_ids={name: tasks} if tasks else None,
+                    seeds=seeds,
+                ),
+            )
+        )
+    groups = {}
     budgets = {}
     for benchmark in args.benchmark:
         lock = registry.lock(benchmark)
@@ -346,12 +408,23 @@ def build_commands(args: argparse.Namespace) -> list[list[str]]:
                     "a task must have the same planner budget for all selected seeds"
                 )
             budgets[task_key] = budget
-            tasks = groups.setdefault((benchmark, suffix, budget), [])
+            seeds = tuple(
+                sorted(
+                    c.seed
+                    for c in cells
+                    if c.benchmark == benchmark and c.task_id == cell.task_id
+                )
+            )
+            tasks = groups.setdefault((benchmark, suffix, budget, seeds), [])
             if cell.task_id not in tasks:
                 tasks.append(cell.task_id)
 
     commands = []
-    for (benchmark, suffix, budget), tasks in groups.items():
+    for (benchmark, suffix, budget, seeds), tasks in groups.items():
+        if sum(1 for key in groups if key[:3] == (benchmark, suffix, budget)) > 1:
+            suffix += (
+                "-seeds-" + hashlib.sha256(json.dumps(seeds).encode()).hexdigest()[:8]
+            )
         custom = benchmark in args.presets
         model = args.models[benchmark]
         overrides = {
@@ -404,7 +477,7 @@ def build_commands(args: argparse.Namespace) -> list[list[str]]:
             command += ["--agent-set", f"{key}={json.dumps(value, ensure_ascii=False)}"]
         for task in tasks:
             command += ["--task", f"{benchmark}:{task}"]
-        for seed in args.seed or ():
+        for seed in seeds:
             command += ["--seed", str(seed)]
         commands.append(command)
     return commands
@@ -431,17 +504,39 @@ def load_bootstrap():
 def main(argv: list[str] | None = None) -> int:
     parser, args = parse_args(argv)
     if not args.auto_prepare:
-        return run_evaluation(parser, args)
+        from scripts.evaluation import vla
+
+        try:
+            if args.dry_run:
+                vla.plan(args.presets)
+                return run_evaluation(parser, args)
+            deployments = vla.prepare_agents(args.presets, args.work_dir)
+            with vla.services(deployments, args.presets, args.work_dir) as bound:
+                args.presets = {**args.presets, **bound}
+                return run_evaluation(parser, args)
+        except (
+            ValueError,
+            RuntimeError,
+            OSError,
+            subprocess.CalledProcessError,
+        ) as exc:
+            parser.error(str(exc))
+        except KeyboardInterrupt:
+            return 130
     bootstrap = load_bootstrap()
     if args.dry_run:
-        print(
-            json.dumps(
-                bootstrap.preparation_plan(args.benchmark, args.work_dir), indent=2
+        try:
+            plan = bootstrap.preparation_plan(
+                args.benchmark, args.work_dir, configurations=args.configurations
             )
-        )
+        except (ValueError, RuntimeError, OSError) as exc:
+            parser.error(str(exc))
+        print(json.dumps(plan, indent=2))
         return 0
     try:
-        prepared = bootstrap.prepare_benchmarks(args.benchmark, args.work_dir)
+        prepared = bootstrap.prepare_benchmarks(
+            args.benchmark, args.work_dir, configurations=args.configurations
+        )
         if args.prepare_only:
             print(
                 json.dumps(
@@ -454,14 +549,22 @@ def main(argv: list[str] | None = None) -> int:
                 )
             )
             return 0
-        # Explicit user presets take precedence over automatically prepared ICL.
-        args.presets = {**prepared.presets, **args.presets}
+        # Preparation already selected explicit user presets and bound local assets.
+        args.presets = prepared.presets
         args.prepared_env = prepared.env
-        with bootstrap.benchmark_services(
-            prepared,
-            libero_suite=args.libero_suite,
-            robocasa_cells=args.robocasa_cells,
-        ) as endpoints:
+        from scripts.evaluation import vla
+
+        with (
+            bootstrap.benchmark_services(
+                prepared,
+                libero_suite=args.libero_suite,
+                robocasa_cells=args.robocasa_cells,
+            ) as endpoints,
+            vla.services(
+                getattr(prepared, "vla", {}), args.presets, args.work_dir
+            ) as bound,
+        ):
+            args.presets = {**args.presets, **bound}
             args.endpoints = endpoints
             args.benchmark_url = [f"{name}={url}" for name, url in endpoints.items()]
             return run_evaluation(parser, args)

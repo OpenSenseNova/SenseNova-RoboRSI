@@ -43,6 +43,7 @@ class BenchmarkConfig:
     environment: dict
     case_timeout_s: float = 4500
     agent_overrides: dict = field(default_factory=dict)
+    evaluation: dict = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -242,11 +243,18 @@ def _model_document(path: Path) -> dict:
     return document
 
 
-def load_benchmark(name: str, *, config_root: Path | None = None) -> BenchmarkConfig:
+def load_benchmark(
+    name: str, *, config_root: Path | None = None, path: Path | None = None
+) -> BenchmarkConfig:
     """Load one benchmark and validate references without running any services."""
     if name not in BENCHMARKS:
         raise ValueError(f"Unsupported benchmark: {name}")
-    path = ((config_root or CONFIG_ROOT) / "benchmarks" / f"{name}.yaml").resolve()
+    custom = path is not None
+    path = (
+        Path(path).expanduser()
+        if custom
+        else (config_root or CONFIG_ROOT) / "benchmarks" / f"{name}.yaml"
+    ).resolve()
     document = _read(
         path,
         {
@@ -257,19 +265,23 @@ def load_benchmark(name: str, *, config_root: Path | None = None) -> BenchmarkCo
             "environment",
             "case_timeout_s",
             "agent_overrides",
+            "evaluation",
         },
-        {"schema_version", "benchmark", "model", "agent", "environment"},
+        {"schema_version", "benchmark"}
+        if custom
+        else {"schema_version", "benchmark", "model", "agent", "environment"},
     )
     if document["benchmark"] != name:
         raise ValueError(f"Benchmark name differs from configuration file: {path}")
-    model = _reference(path, document["model"])
-    agent = _reference(path, document["agent"])
+    base = load_benchmark(name, config_root=config_root) if custom else None
+    model = _reference(path, document["model"]) if "model" in document else base.model
+    agent = _reference(path, document["agent"]) if "agent" in document else base.agent
     _model_document(model)
-    timeout = document.get("case_timeout_s", 4500)
+    timeout = document.get("case_timeout_s", base.case_timeout_s if base else 4500)
     if type(timeout) not in {int, float} or timeout <= 0:
         raise ValueError("case_timeout_s must be positive")
     overrides = _fields(
-        document.get("agent_overrides", {}),
+        document.get("agent_overrides", base.agent_overrides if base else {}),
         {"agent", "runtime", "parameters"},
         set(),
         "agent_overrides",
@@ -281,10 +293,53 @@ def load_benchmark(name: str, *, config_root: Path | None = None) -> BenchmarkCo
         name,
         model,
         agent,
-        _environment(path, name, document["environment"]),
+        _environment(path, name, document["environment"])
+        if "environment" in document
+        else base.environment,
         timeout,
         overrides,
+        _evaluation(path, document.get("evaluation", base.evaluation if base else {})),
     )
+
+
+def _evaluation(path: Path, value: dict) -> dict:
+    selected = dict(
+        _fields(
+            value, {"tasks", "seeds", "selector", "parameters"}, set(), "evaluation"
+        )
+    )
+    for key in ("tasks", "seeds"):
+        if key not in selected:
+            continue
+        values = selected[key]
+        if (
+            not isinstance(values, list)
+            or not values
+            or any(
+                not isinstance(item, str) or not item.strip()
+                if key == "tasks"
+                else type(item) is not int or item < 0
+                for item in values
+            )
+            or len(values) != len(set(values))
+        ):
+            raise ValueError(
+                f"evaluation.{key} must be a nonempty unique list of {'task IDs' if key == 'tasks' else 'nonnegative integers'}"
+            )
+    if "parameters" in selected and not isinstance(selected["parameters"], dict):
+        raise ValueError("evaluation.parameters must be a mapping")
+    if "selector" in selected:
+        reference = selected["selector"]
+        if not isinstance(reference, str):
+            raise ValueError("evaluation.selector must be path.py:function")
+        filename, separator, function = reference.rpartition(":")
+        if not separator or not re.fullmatch(r"[A-Za-z_]\w*", function):
+            raise ValueError("evaluation.selector must be path.py:function")
+        source = _reference(path, filename)
+        if source.suffix != ".py":
+            raise ValueError("evaluation.selector must reference a Python file")
+        selected["selector"] = f"{source}:{function}"
+    return selected
 
 
 def catalog_setting(config: BenchmarkConfig, key: str) -> str:

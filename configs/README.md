@@ -21,10 +21,40 @@ configs/
 | Change / 修改内容 | File / 文件 |
 | --- | --- |
 | Model endpoint, name and API format / 模型地址、名称、API 格式 | [models/default.yaml](models/default.yaml) |
+| Optional LIBERO VLA deployment / LIBERO VLA 按需部署 | [models/pi05_libero.yaml](models/pi05_libero.yaml) |
 | Native image, downloads, default catalog / 原生镜像、下载源、默认 catalog | `benchmarks/<benchmark>.yaml` |
 | Prompt, budgets, context and factory / 提示词、预算、上下文与 factory | `agents/` 中对应 YAML |
 | Per-benchmark Agent adjustments / benchmark 对 Agent 的覆盖 | benchmark YAML 的 `agent_overrides` |
 | Comparison matrix / 多 Agent 对比 | [evaluations/embodied.yaml](evaluations/embodied.yaml) |
+
+Override configuration paths without editing canonical files / 无需修改默认文件即可指定配置：
+
+```bash
+python scripts/evaluation/evaluate_model.py --benchmark libero_pro \
+  --benchmark-config configs/benchmarks/examples/libero_pro_smoke.yaml \
+  --agent-config configs/agents/libero/pro_vla.yaml \
+  --model-config configs/models/default.yaml --openai-format chat
+```
+
+For several benchmarks, repeat each option as `NAME=PATH`. A minimal custom
+benchmark YAML inherits the existing native environment and changes only
+`evaluation.tasks`, `evaluation.seeds` or a Python `evaluation.selector`.
+See [the smoke config](benchmarks/examples/libero_pro_smoke.yaml) and
+[its selector](benchmarks/examples/select_first.py). CLI task/seed filters override
+the corresponding YAML lists; the selector then filters the remaining cells.
+
+多个 benchmark 同时运行时，使用可重复的 `NAME=PATH` 写法。精简 benchmark YAML
+会继承现有环境，只需填写 `evaluation` 选择测试集；所有引用以声明文件所在目录为基准。
+显式 `--agent-config` 保留该 Agent 的策略参数，跳过 benchmark 的 `agent_overrides`，
+但仍绑定自动准备的 ICL、tokenizer 和 VLA 服务地址。模型与显式 CLI 参数继续覆盖 Agent。
+
+Setting `parameters.enable_vla: true` on a LIBERO Agent activates its
+`resources.vla_profile`. The Runner builds the isolated OpenPI environment,
+downloads weights, starts/warmups the service and removes its container on exit.
+`--prepare-only` downloads without GPU inference; `--dry-run` plans only.
+The optional [PRO VLA preset](agents/libero/pro_vla.yaml) is ready to select;
+other LIBERO presets support the same flag. See the
+[VLA guide](../docs/libero-vla.md) / [VLA 中文指南](../docs/libero-vla.zh-CN.md).
 
 Model priority is **CLI > named environment variable > model YAML**. Set
 `base_url` and `model_name` in the model file, or use `OPENAI_BASE_URL` and

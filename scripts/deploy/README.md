@@ -1,14 +1,21 @@
 # Model API deployment / 模型 API 部署
 
-This directory is reserved for the verified deployment script for
-SenseNova-RoboRSI models. [`deploy_model.sh`](deploy_model.sh) is currently an
+This directory contains the [OpenPI VLA Docker environment](openpi/Dockerfile)
+and reserves an entry point for the main SenseNova-RoboRSI model API.
+[`deploy_model.sh`](deploy_model.sh) is currently an
 **unimplemented placeholder**: it prints a message and exits with status 1.
 It does not install dependencies, download weights or start a server.
 
-此目录预留给 SenseNova-RoboRSI 模型的正式部署脚本。目前
+此目录包含已经接入一键评测的 [OpenPI VLA 容器环境](openpi/Dockerfile)，并预留
+SenseNova-RoboRSI 主模型的正式部署入口。目前
 [`deploy_model.sh`](deploy_model.sh) **尚未实现部署**，执行时会输出提示并以状态码 1
 退出。待确认推理框架、模型路径及硬件配置后，将其中的占位内容替换为经过验证的启动命令。
 已有可用模型 API 时，直接跳过此步骤。
+
+LIBERO VLA deployment is implemented and managed automatically when the selected
+Agent enables it; see [the guide](../../docs/libero-vla.md) /
+[VLA 自动下载与部署](../../docs/libero-vla.zh-CN.md). This is independent of the
+main-model placeholder above. 所选 Agent 启用 VLA 时，无需手动执行部署命令。
 
 Keep serving dependencies in a separate environment from the evaluation Runner.
 Run the completed deployment script in one terminal, wait until the API is ready,

@@ -78,6 +78,27 @@ ICL/tokenizer 路径，生成 `<work-dir>/presets/<benchmark>.json`。
 请修改源 YAML，生成文件会被重新写入；命令行 Agent 参数优先。
 `configs/evaluations/embodied.yaml` 继续用于已有的多 Agent 对比。
 
+也可以直接在启动命令中分别选择三个配置：
+
+```bash
+python scripts/evaluation/evaluate_model.py --benchmark libero_pro \
+  --benchmark-config configs/benchmarks/examples/libero_pro_smoke.yaml \
+  --agent-config configs/agents/libero/pro_vla.yaml \
+  --model-config configs/models/default.yaml --openai-format chat
+```
+
+单个 benchmark 支持直接路径；多个时重复使用 `NAME=PATH`。精简 benchmark YAML
+自动继承现有环境，`evaluation.tasks`、`evaluation.seeds` 选择测试集，
+`evaluation.selector: path.py:function` 支持自己的 Python 筛选代码。
+CLI 的 `--task`、`--seed` 优先于对应 YAML 列表，然后运行 selector，返回已有 catalog
+中的非空、无重复 cell。每个任务可以选择不同种子，不会扩展成其他组合。
+详见 [示例配置](../configs/benchmarks/examples/libero_pro_smoke.yaml)和
+[Python 示例](../configs/benchmarks/examples/select_first.py)。
+
+LIBERO Agent 设置 `parameters.enable_vla: true` 后，还会自动构建独立 OpenPI
+环境、下载 π0.5 权重、启动并预热服务；`--prepare-only` 只准备资源。
+配置、GPU 选择与已有服务接法见 [LIBERO VLA 指南](libero-vla.zh-CN.md)。
+
 ## 一键评测
 
 ```bash
@@ -192,7 +213,8 @@ HTTP 模式连接自行管理的服务。这两种外部 source 模式的 `--dry
 `--benchmark-token-env ENV_NAME` 指定 token 所在环境变量。
 
 `--agent-config NAME=PATH` 可替换自动 ICL 预设。外部 source 模式默认使用
-`configs/agents/embodied/default.yaml`，不会自动配置 ICL。
+`configs/agents/embodied/default.yaml`，不会自动配置 ICL。指定 `--benchmark-config`
+时会采用该配置选择的 Agent；启用 VLA 的显式 Agent 在已有环境模式下也会自动准备 VLA。
 自定义预设需已具备代码、依赖与上下文资源；脚本覆盖模型连接，其余格式、上下文与预算保留，
 除非显式传参覆盖。
 

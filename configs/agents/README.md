@@ -17,6 +17,13 @@ and installed bundles continue to use the selected Agent's own model settings.
 | `embodied/codex.yaml` | Codex SDK |
 | `embodied/codex_cli.yaml` | Separately installed, pinned Codex CLI |
 | `embodied/claude_code.yaml` | Claude SDK |
+| `libero/standard.yaml` | Standard LIBERO, optional pi05 VLA |
+| `libero/pro_vla.yaml` | PRO with automatic pi05 VLA assistance enabled |
+
+LIBERO presets declare `resources.vla_profile`; `parameters.enable_vla: true`
+opts into automatic download and serving. See [LIBERO VLA](../../docs/libero-vla.md)
+/ [VLA 中文指南](../../docs/libero-vla.zh-CN.md). An explicit `--agent-config` skips
+benchmark policy overrides while retaining automatic local resource bindings.
 
 Generic model names are placeholders; specialized presets retain their published
 model policy for direct reproduction. Credentials come from the Agent environment;

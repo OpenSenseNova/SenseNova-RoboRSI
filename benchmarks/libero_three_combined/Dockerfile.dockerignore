@@ -9,6 +9,10 @@
 !configs/agents/
 !configs/agents/libero/
 !configs/agents/libero/**
+!configs/agents/embodied/
+!configs/agents/embodied/default.yaml
+!configs/models/
+!configs/models/pi05_libero.yaml
 !benchmarks/
 !benchmarks/libero_three_combined/
 !benchmarks/libero_three_combined/run_combined.py

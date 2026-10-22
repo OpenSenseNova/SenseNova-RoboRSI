@@ -50,6 +50,7 @@ class Prepared:
     images: dict[str, str]
     standard_asset: Path | None = None
     configurations: dict[str, BenchmarkConfig] = field(default_factory=dict)
+    vla: dict = field(default_factory=dict)
 
 
 def _run(command: list[str], **kwargs) -> subprocess.CompletedProcess:
@@ -57,11 +58,21 @@ def _run(command: list[str], **kwargs) -> subprocess.CompletedProcess:
     return subprocess.run(command, text=True, **kwargs)
 
 
-def preparation_plan(benchmarks, work_dir: Path) -> dict:
+def preparation_plan(benchmarks, work_dir: Path, *, configurations=None) -> dict:
     """Read configured downloads without creating files or contacting services."""
-    configs = {name: load_benchmark(name) for name in benchmarks}
+    configs = configurations or {name: load_benchmark(name) for name in benchmarks}
+    from scripts.evaluation import vla
+
     return {
         "benchmarks": list(benchmarks),
+        "vla": vla.plan(
+            {name: str(config.agent) for name, config in configs.items()},
+            parameter_overrides={
+                name: config.agent_overrides.get("parameters", {})
+                for name, config in configs.items()
+            },
+        ),
+        "evaluation": {name: config.evaluation for name, config in configs.items()},
         "work_dir": str(work_dir),
         "service_source": "current checkout; enhanced LIBERO overlays its service on the pinned native image",
         "images": {
@@ -369,13 +380,23 @@ def _write_preset(
     return str(destination)
 
 
-def prepare_benchmarks(benchmarks, work_dir: Path) -> Prepared:
+def prepare_benchmarks(benchmarks, work_dir: Path, *, configurations=None) -> Prepared:
     """Download selected assets and ICL, and prepare images without episodes."""
-    configs = {name: load_benchmark(name) for name in benchmarks}
+    configs = configurations or {name: load_benchmark(name) for name in benchmarks}
     from roborsi.agents.config import AgentConfig
 
     for config in configs.values():
         AgentConfig.from_file(config.agent)
+    from scripts.evaluation import vla
+
+    # Check enabled profiles and factories before downloading native environments.
+    vla.plan(
+        {name: str(config.agent) for name, config in configs.items()},
+        parameter_overrides={
+            name: config.agent_overrides.get("parameters", {})
+            for name, config in configs.items()
+        },
+    )
     try:
         _run(["docker", "info"], capture_output=True)
     except (OSError, subprocess.CalledProcessError):
@@ -445,6 +466,7 @@ def prepare_benchmarks(benchmarks, work_dir: Path) -> Prepared:
         else:
             raise ValueError(f"Unsupported automatic benchmark: {name}")
         prepared.images[name] = image
+    prepared.vla = vla.prepare_agents(prepared.presets, work_dir)
     return prepared
 
 

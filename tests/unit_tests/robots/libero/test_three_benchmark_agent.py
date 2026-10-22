@@ -90,7 +90,9 @@ def test_reset_records_exact_external_context_identity(tmp_path: Path):
             self.task = task
 
     planner = Planner()
-    config = SimpleNamespace(embodied_agent=lambda *_args, **_kwargs: planner)
+    config = SimpleNamespace(
+        parameters={}, embodied_agent=lambda *_args, **_kwargs: planner
+    )
     package = SimpleNamespace(
         package_id="sealed-task-00",
         manifest_sha256="a" * 64,

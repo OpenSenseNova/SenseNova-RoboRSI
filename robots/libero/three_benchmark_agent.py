@@ -17,6 +17,7 @@ from roborsi.embodied_agent import EmbodiedAgent, McpServer
 from roborsi.evaluation.messages import Action, Observation, StepResult, Task
 from roborsi.evaluation.result import write_json_atomic
 from roborsi.utils.config import get_project_env
+from robots.libero.vla_client import openpi_enabled
 
 
 def _boolean(parameters: dict[str, Any], name: str, default: bool) -> bool:
@@ -116,6 +117,10 @@ class ThreeBenchmarkIclAgent:
             for title, path in package.memory
         )
         agent = self._config.embodied_agent(self._case_dir, mcp_servers=self._servers)
+        if openpi_enabled(self._config):
+            from robots.libero.vla_agent import vla_prompt
+
+            agent = vla_prompt(agent)
         agent = replace(
             agent,
             evaluation_skills=package.skills,
@@ -151,21 +156,35 @@ def make_three_benchmark_agent(
         "enable_vla",
         "enable_sam3",
         "vla_url_env",
+        "vla_endpoint",
         "sam3_url_env",
     }
     if set(parameters) - allowed:
         raise ValueError("unknown LIBERO three-benchmark Agent parameter")
-    if set(config.resources) != {"context_map"}:
-        raise ValueError("Agent resources need exactly context_map")
+    if "context_map" not in config.resources or set(config.resources) - {
+        "context_map",
+        "vla_profile",
+    }:
+        raise ValueError("Agent resources need context_map and optional vla_profile")
     packages = load_package_map(
         config.resources["context_map"], _context_root(parameters)
     )
     servers = tuple(
         server
         for server in (
-            _mcp_server(parameters, "vla", _boolean(parameters, "enable_vla", False)),
+            _mcp_server(
+                parameters,
+                "vla",
+                _boolean(parameters, "enable_vla", False)
+                and not openpi_enabled(config),
+            ),
             _mcp_server(parameters, "sam3", _boolean(parameters, "enable_sam3", False)),
         )
         if server is not None
     )
-    return ThreeBenchmarkIclAgent(case_dir, config, packages, servers)
+    agent = ThreeBenchmarkIclAgent(case_dir, config, packages, servers)
+    if openpi_enabled(config):
+        from robots.libero.vla_agent import LiberoVlaAgent
+
+        return LiberoVlaAgent(agent, config, case_dir)
+    return agent

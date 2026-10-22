@@ -1,0 +1,6 @@
+# Optional pi05-assisted policy; released pro.yaml remains VLA-disabled.
+schema_version: 1
+source_root: ../../..
+extends: pro.yaml
+parameters:
+  enable_vla: true

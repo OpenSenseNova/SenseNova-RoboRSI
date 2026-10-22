@@ -1,0 +1,9 @@
+**
+!robots/
+!robots/libero/
+!robots/libero/vla_server.py
+!scripts/
+!scripts/deploy/
+!scripts/deploy/openpi/
+!scripts/deploy/openpi/Dockerfile
+!scripts/deploy/openpi/Dockerfile.dockerignore

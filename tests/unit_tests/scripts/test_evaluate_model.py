@@ -246,7 +246,7 @@ def test_execution_passes_secret_only_in_environment_and_respects_robocasa_budge
         assert Path(kwargs["cwd"]) == ROOT
         assert 'agent.reasoning_effort="none"' in command
         assert 'runtime.llm.openai_format="chat"' in command
-        assert "--seed" not in command
+        assert "--seed" in command
     atomic = next(
         command for command, _ in calls[6:] if "trial-robocasa365-atomic" in command
     )
@@ -537,7 +537,7 @@ def test_automatic_dry_run_does_not_download_or_start_containers(
 
     class Bootstrap:
         @staticmethod
-        def preparation_plan(benchmarks, work_dir):
+        def preparation_plan(benchmarks, work_dir, **kwargs):
             calls.append((benchmarks, work_dir))
             return {"benchmarks": benchmarks, "download": "planned only"}
 
@@ -578,7 +578,7 @@ def test_automatic_environment_is_used_and_cleaned_up(runner, tmp_path, monkeypa
 
     class Bootstrap:
         @staticmethod
-        def prepare_benchmarks(benchmarks, work_dir):
+        def prepare_benchmarks(benchmarks, work_dir, **kwargs):
             events.append("prepare")
             return prepared
 

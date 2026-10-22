@@ -1,0 +1,13 @@
+# Standard LIBERO: the generic Agent plus optional OpenPI VLA assistance.
+schema_version: 1
+source_root: ../../..
+extends: ../embodied/default.yaml
+factory: robots.libero.vla_agent:make_agent
+code:
+  - ../../../robots/libero/vla_agent.py
+  - ../../../robots/libero/vla_client.py
+  - ../../../robots/libero/three_benchmark_agent.py
+parameters:
+  enable_vla: false
+resources:
+  vla_profile: ../../models/pi05_libero.yaml

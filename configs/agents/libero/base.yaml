@@ -4,6 +4,10 @@ source_root: ../../..
 factory: robots.libero.three_benchmark_agent:make_three_benchmark_agent
 code:
   - ../../../robots/libero/three_benchmark_agent.py
+  - ../../../robots/libero/vla_agent.py
+  - ../../../robots/libero/vla_client.py
+resources:
+  vla_profile: ../../models/pi05_libero.yaml
 agent:
   max_turns: 10000
   max_tokens: 128000

@@ -1,0 +1,8 @@
+# Inherit the canonical native environment, assets, Agent and model references.
+schema_version: 1
+benchmark: libero_pro
+evaluation:
+  seeds: [0]
+  selector: select_first.py:select_cases
+  parameters:
+    task_count: 1

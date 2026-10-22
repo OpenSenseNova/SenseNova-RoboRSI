@@ -31,7 +31,7 @@ def configuration():
 @pytest.mark.parametrize(
     "name,agent",
     [
-        ("libero", "embodied/default.yaml"),
+        ("libero", "libero/standard.yaml"),
         ("libero_pro", "libero/pro.yaml"),
         ("libero_long_plus_plus", "libero/long_plus_plus.yaml"),
         ("libero_ultra_long", "libero/ultra_long.yaml"),
