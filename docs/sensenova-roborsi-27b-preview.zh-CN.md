@@ -106,28 +106,25 @@ curl --fail http://127.0.0.1:8000/v1/chat/completions \
   }'
 ```
 
-第 2 步接入 Harness 时，使用服务地址 `http://127.0.0.1:8000/v1` 和模型名称
-`sensenova-roborsi-27b-preview`。
-
 ### 2. 接入 RoboRSI Harness 并运行评测
 
-完成 [RoboRSI Harness 安装](getting-started.zh-CN.md)后，按照以下指南复现
-**LIBERO-Pro** 和 **RoboCasa365** 的结果。通过 `OPENAI_BASE_URL` 和 `OPENAI_API_KEY`
-配置模型服务地址与凭据，再选择对应 benchmark 和执行设置的 [Agent 配置](agents.zh-CN.md)。
+按照[模型评测指南](model-evaluation.zh-CN.md)安装 RoboRSI Harness 和配套评测环境，
+使用下面指令运行评测：
 
-| Benchmark | 执行设置 | 复现指南 |
-| --- | --- | --- |
-| LIBERO-Pro | VLM + VLA（System 2 + System 1） | [LIBERO-Pro](#libero-pro) |
-| LIBERO-Pro | VLM 直接控制（System 2） | [LIBERO-Pro](#libero-pro) |
-| RoboCasa365 | VLM 驱动执行 | [RoboCasa365](#robocasa365) |
+```bash
+export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
+export OPENAI_API_KEY='EMPTY'
+export MODEL_NAME='sensenova-roborsi-27b-preview'
 
-#### LIBERO-Pro
+# LIBERO-Pro：VLM + VLA（System 2 + System 1）；配置待补充
+python scripts/evaluation/evaluate_model.py --benchmark libero_pro --config xxx
 
-- 现有环境配置：[LIBERO-Pro benchmark 指南](../benchmarks/libero_pro/README.md)。
-- **VLM + VLA（System 2 + System 1）：** 该设置的 Agent 配置：TBD。
-- **VLM 直接控制（System 2）：** 该设置的 Agent 配置：TBD。
+# LIBERO-Pro：VLM 直接控制（System 2）；配置待补充
+python scripts/evaluation/evaluate_model.py --benchmark libero_pro --config xxx
 
-#### RoboCasa365
+# RoboCasa365；配置待补充
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --config xxx
+```
 
-- 现有环境配置：TBD。
-- 该 benchmark 的 Agent 配置：TBD。
+脚本自动准备 benchmark 环境、ICL 和对应的 Agent 配置，结果保存在
+`work/model_eval/results/`。任务选择、自定义 Agent 配置与结果评分见上述指南。

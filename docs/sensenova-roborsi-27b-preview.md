@@ -122,30 +122,27 @@ curl --fail http://127.0.0.1:8000/v1/chat/completions \
   }'
 ```
 
-Use `http://127.0.0.1:8000/v1` and model name
-`sensenova-roborsi-27b-preview` when connecting the Harness in Step 2.
-
 ### 2. Connect RoboRSI Harness and run evaluations
 
-After [installing RoboRSI Harness](getting-started.md), follow the guides below
-to reproduce **LIBERO-Pro** and **RoboCasa365** results. Set the model endpoint
-and credentials through `OPENAI_BASE_URL` and `OPENAI_API_KEY`, then use the
-[Agent configuration](agents.md) for the selected benchmark and execution
-setting.
+Follow the [model evaluation guide](model-evaluation.md) to install RoboRSI
+Harness and the benchmark environments, then run evaluations with the following
+commands:
 
-| Benchmark | Execution setting | Reproduction guide |
-| --- | --- | --- |
-| LIBERO-Pro | VLM + VLA (System 2 + System 1) | [LIBERO-Pro](#libero-pro) |
-| LIBERO-Pro | Direct VLM control (System 2) | [LIBERO-Pro](#libero-pro) |
-| RoboCasa365 | VLM-driven execution | [RoboCasa365](#robocasa365) |
+```bash
+export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
+export OPENAI_API_KEY='EMPTY'
+export MODEL_NAME='sensenova-roborsi-27b-preview'
 
-#### LIBERO-Pro
+# LIBERO-Pro: VLM + VLA (System 2 + System 1); configuration TBD
+python scripts/evaluation/evaluate_model.py --benchmark libero_pro --config xxx
 
-- Existing environment setup: [LIBERO-Pro benchmark guide](../benchmarks/libero_pro/README.md).
-- **VLM + VLA (System 2 + System 1):** Agent configuration for this setting: TBD.
-- **Direct VLM control (System 2):** Agent configuration for this setting: TBD.
+# LIBERO-Pro: Direct VLM control (System 2); configuration TBD
+python scripts/evaluation/evaluate_model.py --benchmark libero_pro --config xxx
 
-#### RoboCasa365
+# RoboCasa365; configuration TBD
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --config xxx
+```
 
-- Existing environment setup: TBD.
-- Agent configuration for this benchmark: TBD.
+The script automatically prepares benchmark environments, ICL, and Agent
+configurations. Results are saved under `work/model_eval/results/`. The guide
+covers task selection, custom Agent configurations, and result scoring.
