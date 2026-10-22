@@ -125,6 +125,14 @@ python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
 ```
 
 省略 `--task` 和 `--seed` 时，运行所选 catalog 的任务与种子。
+单任务检查通过后，使用新的 run ID 运行 RoboCasa 全部 340 个 cell：
+
+```bash
+ROBORSI_ROBOCASA_CELLS=all python scripts/evaluation/evaluate_model.py \
+  --benchmark robocasa365 --run-id robocasa-001
+```
+
+命令前的 `all` 也会覆盖之前设置的 `ROBORSI_ROBOCASA_CELLS=seed1`。
 原生 Windows 仅支持 `--help` 及自动/HTTP 模式的 `--dry-run`，准备与执行评测请使用 Linux/WSL。
 
 ## 已有环境和自定义 Agent

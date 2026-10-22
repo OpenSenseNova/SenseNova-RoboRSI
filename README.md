@@ -121,22 +121,47 @@ To deploy SenseNova-RoboRSI-27B-Preview, follow the
 ### Evaluate a deployed model with one command
 
 After installing the framework, connect a deployed model API that supports images
-and tool calling. In Linux/WSL with Docker ready, select a benchmark:
+and tool calling. Use Linux/WSL with Docker ready; enhanced LIBERO and RoboCasa365
+also require NVIDIA GPU support in Docker. Start with one RoboCasa task to check
+the complete download, setup and evaluation workflow:
 
 ```bash
 export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
 export OPENAI_API_KEY='YOUR_API_KEY'
 export MODEL_NAME='YOUR_SERVED_MODEL'
-python scripts/evaluation/evaluate_model.py --benchmark libero_pro
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
+  --task robocasa365:OpenDrawer --seed 1 --run-id robocasa-smoke-001
 ```
 
 `--benchmark` is required: choose `libero`, `libero_pro`, `libero_long_plus_plus`,
 `libero_ultra_long` or `robocasa365`; repeat it to select several. The script
 downloads/builds the selected environment and prepares available ICL automatically.
-Enhanced LIBERO uses the released `migration_subset` catalogs. Set
-`ROBORSI_LIBERO_SUITE` (default `libero_spatial`) or `ROBORSI_ROBOCASA_CELLS`
-(`all` / `seed1`) in the environment to select those catalogs.
-Use `--prepare-only` to download/build without evaluation. GPU/Docker requirements,
+Enhanced LIBERO uses the released `migration_subset` catalogs.
+
+After the smoke check, run all 340 RoboCasa cells without task/seed filters:
+
+```bash
+ROBORSI_ROBOCASA_CELLS=all python scripts/evaluation/evaluate_model.py \
+  --benchmark robocasa365 --run-id robocasa-001
+```
+
+Select a standard LIBERO suite or the 50-cell RoboCasa seed-1 catalog through
+environment variables:
+
+```bash
+ROBORSI_LIBERO_SUITE=libero_90 python scripts/evaluation/evaluate_model.py --benchmark libero
+ROBORSI_ROBOCASA_CELLS=seed1 python scripts/evaluation/evaluate_model.py --benchmark robocasa365
+```
+
+`ROBORSI_LIBERO_SUITE` defaults to `libero_spatial`; `ROBORSI_ROBOCASA_CELLS`
+defaults to `all`. Results are saved under `work/model_eval/results/`; use a new
+`--run-id` for each run. To download/build without evaluation:
+
+```bash
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --prepare-only
+```
+
+GPU/Docker requirements,
 image access, task coverage, existing services and results are explained in the
 [model evaluation guide](docs/model-evaluation.md). To deploy first, fill in the
 reserved [model deployment entry point](scripts/deploy/README.md), then start the

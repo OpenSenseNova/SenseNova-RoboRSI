@@ -138,6 +138,14 @@ python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
 ```
 
 Omit `--task` and `--seed` to run the selected catalog's tasks and seeds.
+After the smoke check, run all 340 RoboCasa cells with a fresh run ID:
+
+```bash
+ROBORSI_ROBOCASA_CELLS=all python scripts/evaluation/evaluate_model.py \
+  --benchmark robocasa365 --run-id robocasa-001
+```
+
+The inline `all` setting also overrides an earlier `ROBORSI_ROBOCASA_CELLS=seed1`.
 Native Windows supports `--help` and automatic/HTTP `--dry-run` only;
 preparation and evaluation require Linux/WSL.
 

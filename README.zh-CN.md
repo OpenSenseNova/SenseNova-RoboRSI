@@ -110,21 +110,44 @@ SenseNova-RoboRSI-27B-Preview 的部署方法见
 ### 一键评测已部署模型
 
 完成框架安装后，即可接入支持图像输入与工具调用的已部署模型 API。
-请在已启动 Docker 的 Linux/WSL 环境中选择要评测的 benchmark：
+请使用已启动 Docker 的 Linux/WSL；增强 LIBERO 和 RoboCasa365 还需要 Docker GPU 支持。
+先运行一个 RoboCasa 任务，检查下载、环境准备与评测的完整流程：
 
 ```bash
 export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
 export OPENAI_API_KEY='YOUR_API_KEY'
 export MODEL_NAME='YOUR_SERVED_MODEL'
-python scripts/evaluation/evaluate_model.py --benchmark libero_pro
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
+  --task robocasa365:OpenDrawer --seed 1 --run-id robocasa-smoke-001
 ```
 
 必须显式传入 `--benchmark`，可选 `libero`、`libero_pro`、`libero_long_plus_plus`、
 `libero_ultra_long`、`robocasa365`，需要多项时重复传入。脚本自动下载/构建对应环境，
 并准备可用的 ICL 包。增强 LIBERO 使用已发布的 `migration_subset` catalog。
-通过环境变量 `ROBORSI_LIBERO_SUITE`（默认 `libero_spatial`）和
-`ROBORSI_ROBOCASA_CELLS`（`all` / `seed1`）选择相应 catalog。
-`--prepare-only` 可只下载/构建，不执行评测。GPU/Docker 要求、镜像访问权限、任务范围、
+
+单任务检查通过后，去掉任务和种子过滤，运行 RoboCasa 全部 340 个 cell：
+
+```bash
+ROBORSI_ROBOCASA_CELLS=all python scripts/evaluation/evaluate_model.py \
+  --benchmark robocasa365 --run-id robocasa-001
+```
+
+通过环境变量选择标准 LIBERO suite，或 RoboCasa 的 50-cell seed-1 catalog：
+
+```bash
+ROBORSI_LIBERO_SUITE=libero_90 python scripts/evaluation/evaluate_model.py --benchmark libero
+ROBORSI_ROBOCASA_CELLS=seed1 python scripts/evaluation/evaluate_model.py --benchmark robocasa365
+```
+
+`ROBORSI_LIBERO_SUITE` 默认 `libero_spatial`，`ROBORSI_ROBOCASA_CELLS` 默认 `all`。
+结果保存在 `work/model_eval/results/`，每次运行请使用新的 `--run-id`。
+只下载/构建环境与 ICL、不执行评测：
+
+```bash
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --prepare-only
+```
+
+GPU/Docker 要求、镜像访问权限、任务范围、
 已有服务接入与结果查看见[模型一键评测指南](docs/model-evaluation.zh-CN.md)。
 需要先部署时，将已验证的命令填入预留的[模型部署入口](scripts/deploy/README.md)，
 启动 API 服务后再评测。
