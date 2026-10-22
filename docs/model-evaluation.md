@@ -3,233 +3,194 @@
 [简体中文](model-evaluation.zh-CN.md) · [All guides](README.md)
 
 [`scripts/evaluation/evaluate_model.py`](../scripts/evaluation/evaluate_model.py)
-connects a deployed model API to the existing benchmark evaluator. The workflow is:
+downloads the selected benchmark environment and available ICL, starts its
+Benchmark service, evaluates your deployed model, and stops its containers on
+completion or failure. Downloads are cached for reuse.
 
 ```text
-Prepare the framework and benchmarks once
-    → Start the model API with your deployment script
-    → Configure base_url, api_key and model_name
-    → Run evaluate_model.py and inspect the saved results
+Your deployment script → Running model API
+    → Set base_url, api_key, model_name
+    → evaluate_model.py --benchmark NAME
+    → Download/build environment and ICL → Evaluate → Save results
 ```
 
-The deployment entry point is reserved in
-[`scripts/deploy/`](../scripts/deploy/README.md), and the evaluation entry point
-lives in `scripts/evaluation/`. Benchmark-specific images, assets and native
-protocols remain under `benchmarks/`.
+Deployment commands belong in [`scripts/deploy/`](../scripts/deploy/README.md).
+Evaluation and download orchestration live in `scripts/evaluation/`; native
+environments and protocols remain under `benchmarks/`.
 
-## 1. Prepare the environment and benchmarks
+## Install and deploy
 
-Use Python 3.10–3.12. Actual evaluation requires a **Linux/WSL Runner** in both
-Registry and HTTP modes. Native Windows Python can show `--help` and perform
-HTTP `--dry-run` checks, but cannot execute evaluation cases. From the repository
-root in Linux/WSL:
+Use **Linux/WSL, Python 3.10–3.12 and a running Docker daemon**. Enhanced LIBERO
+and RoboCasa365 require an NVIDIA GPU and Docker GPU support; standard LIBERO
+uses CPU rendering. From this checkout:
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install -e '.[runtime,test]'
+python -m pip install -e '.[runtime]'
 ```
 
-Then follow the relevant benchmark guides to prepare images, assets and a
-registry, or start existing Benchmark HTTP services. The script supports all
-five entries below and selects all five when `--benchmark` is omitted.
-
-| Benchmark | `--benchmark` value | Preparation guide |
-| --- | --- | --- |
-| LIBERO | `libero` | [LIBERO](../benchmarks/libero/README.md) |
-| LIBERO-PRO | `libero_pro` | [LIBERO-PRO](../benchmarks/libero_pro/README.md) |
-| LIBERO-Long++ | `libero_long_plus_plus` | [Long++ / Ultra-Long](../benchmarks/libero_lilo/README.md) |
-| LIBERO-Ultra-Long | `libero_ultra_long` | [Long++ / Ultra-Long](../benchmarks/libero_lilo/README.md) |
-| RoboCasa365 Target50 | `robocasa365` | [RoboCasa365](../benchmarks/robocasa365/README.md) |
-
-For branch-specific setup, use the current local `LIBERO` branch for LIBERO
-integration and the [remote `main` RoboCasa365 guide](https://github.com/OpenSenseNova/SenseNova-RoboRSI/blob/main/benchmarks/robocasa365/README.md)
-for RoboCasa365. The local LIBERO entry points may evolve with ongoing changes.
-
-Use exactly one execution mode:
-
-- **Registry:** `--registry-root /absolute/path/to/registry`. The prepared registry
-  must contain every selected benchmark. The evaluator starts its Docker services.
-  Use Linux/WSL for this mode, including `--dry-run`. Native benchmark images target
-  Linux; follow each guide's hardware and Docker requirements.
-- **Existing HTTP services:** repeat `--benchmark-url NAME=URL` for every selected
-  benchmark. The evaluator connects to those services without installing a local
-  simulator. Actual execution still requires Linux/WSL. On native Windows,
-  activate with `.venv\Scripts\Activate.ps1` and use this mode only for `--dry-run`.
-
-The available tasks, seeds, profiles and physical action budgets come from the
-manifest or HTTP catalog. A catalog exposing a subset only evaluates that subset.
-For a full leaderboard protocol, prepare the corresponding full catalog and
-official profile according to its benchmark guide. This general API workflow
-does not by itself reproduce the published model or Harness scores.
-
-RoboCasa365 also requires its native assets and a separate **RLDX-1 execution
-service**. Its image can start that process automatically, or connect to an
-existing one. Your evaluated model API does not replace RLDX-1; see the
-[RoboCasa365 guide](../benchmarks/robocasa365/README.md).
-
-## 2. Start the model API
-
-Skip this step if your model service is already running. Otherwise, put your
-verified serving command in
-[`scripts/deploy/deploy_model.sh`](../scripts/deploy/deploy_model.sh), then start it:
+Fill [`scripts/deploy/deploy_model.sh`](../scripts/deploy/deploy_model.sh) with your
+verified serving command and start it in another terminal:
 
 ```bash
 bash scripts/deploy/deploy_model.sh
 ```
 
-This file is an explicit placeholder and exits with an error until you implement
-it. The repository does not assume your model weights, serving framework or GPU
-layout. See the [deployment notes](../scripts/deploy/README.md) for the interface
-your command needs to expose.
+This reserved file exits with an error until implemented. An already running API
+can be used directly. The model must support **images and tool calls** through an
+OpenAI-compatible API. Automatic presets use Chat Completions, with reasoning
+and provider-specific prompt-cache extensions disabled. Pass
+`--openai-format responses` if your server implements Responses.
 
-The model must support **image inputs and tool calling** through an
-OpenAI-compatible API. The generic preset uses Chat Completions; pass
-`--openai-format responses` for a service implementing the Responses API.
-Use the exact model ID advertised by your serving process.
-
-## 3. Configure the model and run
-
-Set the three connection values in your evaluation shell. Prefer the environment
-variable for the API key so it does not appear in command-line arguments:
+## One-command evaluation
 
 ```bash
 export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
 export OPENAI_API_KEY='YOUR_API_KEY'
 export MODEL_NAME='YOUR_SERVED_MODEL'
+
+python scripts/evaluation/evaluate_model.py --benchmark libero_pro
 ```
 
-For a service with authentication disabled, use a non-empty placeholder such as
-`OPENAI_API_KEY=EMPTY`. The API base URL is usually the serving root including
-`/v1`, not the `/chat/completions` endpoint. Confirm the path with your deployment.
+**`--benchmark` is required.** No benchmark runs implicitly. Repeat it to select
+several. `--base-url`, `--api-key`, and `--model-name` override these environment
+variables. Prefer the environment for credentials. For an unauthenticated API
+use `OPENAI_API_KEY=EMPTY`. Use the exact served model ID; the base URL normally
+includes `/v1`.
 
-| Address | Purpose | Example |
+| `--benchmark` | Automatic preparation and task coverage |
+| --- | --- |
+| `libero` | Downloads pinned assets; builds this checkout's service. One suite selected below. No released standard-LIBERO ICL package. |
+| `libero_pro` | Pulls a pinned environment and verifies embedded sealed ICL. `migration_subset`: 80 seed-0 cases, 40 packages. |
+| `libero_long_plus_plus` | Pulls a pinned environment and verifies embedded sealed ICL. `migration_subset`: 12 seed-0 cases/packages. |
+| `libero_ultra_long` | Pulls a pinned environment and verifies embedded sealed ICL. `migration_subset`: 9 seed-0 cases/packages. |
+| `robocasa365` | Builds this checkout's service from its pinned base, including kitchen assets and RLDX-1 weights; downloads pinned Target50 ICL. Default: 340 cells. |
+
+Enhanced LIBERO uses this checkout's [combined delivery](../benchmarks/libero_three_combined/README.md).
+Automatic setup overlays the current checkout's Benchmark service code on the
+pinned published native image, so it does not rely on that image's older entry layout.
+Its automatic catalogs expose **migration subsets, not the full official task
+sets**: the sealed context maps only cover those subsets. For another/full
+protocol, prepare its catalog and a compatible Agent preset using the benchmark
+guides, then use the existing-source mode below. Changing the model API alone
+does not reproduce published Harness scores.
+
+RoboCasa ICL uses **only the same task's source-seed-0 experience**. The release
+covers 43 of 50 tasks (305 of 340 evaluation cells). The seven tasks declared
+without memory run with empty ICL. Each case records `icl-evidence.json`; global
+and cross-task memory are not used. RLDX-1 is the native execution model, separate
+from the evaluated model API, and starts automatically inside the environment.
+
+The first run can download large images and build dependencies. Docker caches
+images; assets, ICL and generated presets live under `work/model_eval/`.
+`--work-dir /path/to/cache` changes this location. Reused assets/ICL are verified;
+modified or incomplete caches fail. Choose a new work directory or move the
+affected cache before retrying. LIBERO ICL is extracted from digest-pinned images
+and checked against `assets.lock.json`; RoboCasa uses a fixed Hugging Face commit
+and SHA-256 manifest. Enhanced LIBERO installs `tokenizers==0.22.2` into the active
+virtual environment when needed.
+
+Docker and GPU drivers are prerequisites. Image pulls use Docker credentials;
+the pinned RoboCasa base currently requires GHCR access. If Docker reports
+`denied`, log in with an account that can read the image. Hugging Face uses
+`HF_TOKEN` or your existing Hub login when needed. Model API keys are not download
+credentials. See [RoboCasa build details](../benchmarks/robocasa365/BUILD.md).
+
+## Select catalogs with environment variables
+
+These settings apply to automatically started Benchmark services:
+
+| Variable | Default | Allowed values |
 | --- | --- | --- |
-| `--base-url` / `OPENAI_BASE_URL` | The model being evaluated | `http://127.0.0.1:8000/v1` |
-| `--benchmark-url NAME=URL` | The simulator's Benchmark service | `robocasa365=http://127.0.0.1:18800` |
-
-First, check one LIBERO task from a prepared catalog:
+| `ROBORSI_LIBERO_SUITE` | `libero_spatial` | `libero_spatial`, `libero_object`, `libero_goal`, `libero_10`, `libero_90` |
+| `ROBORSI_ROBOCASA_CELLS` | `all` | `all` (340 cells), `seed1` (50 seed-1 cells) |
 
 ```bash
-python scripts/evaluation/evaluate_model.py \
-  --registry-root /absolute/path/to/registry \
-  --benchmark libero --task libero:0 --seed 0 --dry-run
+ROBORSI_LIBERO_SUITE=libero_90 python scripts/evaluation/evaluate_model.py --benchmark libero
+ROBORSI_ROBOCASA_CELLS=seed1 python scripts/evaluation/evaluate_model.py --benchmark robocasa365
 ```
 
-`--dry-run` validates and prints the evaluation plans without model requests,
-Docker startup or case results. HTTP mode still reads the remote catalog.
-It does not establish that the model supports the requested API, images or tools.
-Remove `--dry-run` to execute the single-task smoke check.
+They do not change external registries or already running services. There are no
+`--libero-suite` or `--robocasa-cells` CLI options.
 
-To run every catalog task and seed for all five benchmarks:
+## Preparation, dry run and smoke checks
+
+Download/build one benchmark's requirements without a model call or an episode;
+model connection settings are unnecessary:
 
 ```bash
-python scripts/evaluation/evaluate_model.py \
-  --registry-root /absolute/path/to/registry --run-id my-model-001
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --prepare-only
 ```
 
-To run just LIBERO-PRO, add `--benchmark libero_pro`. Repeat `--benchmark` to
-select several entries. Omit `--task` and `--seed` to use each catalog's defaults;
-LIBERO and RoboCasa365 can expose different seed ranges.
-
-For already running HTTP services, explicitly select the services you provide:
+With no external source, `--dry-run` only prints the preparation plan: no
+downloads, containers, catalog requests or model calls. It does not verify API support.
 
 ```bash
-python scripts/evaluation/evaluate_model.py \
-  --benchmark libero --benchmark robocasa365 \
-  --benchmark-url libero=http://127.0.0.1:18000 \
+python scripts/evaluation/evaluate_model.py --benchmark libero_pro --dry-run
+```
+
+Run a single task and seed exposed by its catalog:
+
+```bash
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
+  --task robocasa365:OpenDrawer --seed 1 --run-id smoke-001
+```
+
+Omit `--task` and `--seed` to run the selected catalog's tasks and seeds.
+Native Windows supports `--help` and automatic/HTTP `--dry-run` only;
+preparation and evaluation require Linux/WSL.
+
+## Existing environments and custom Agents
+
+Pass exactly one external source to skip automatic environment/ICL preparation:
+
+```bash
+python scripts/evaluation/evaluate_model.py --benchmark libero \
+  --registry-root /absolute/path/to/registry
+
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
   --benchmark-url robocasa365=http://127.0.0.1:18800
 ```
 
-The ports above are examples; use your actual published service addresses. For a
-single RoboCasa365 smoke check, select `--benchmark robocasa365` and add
-`--task robocasa365:OpenDrawer --seed 1` with its registry or HTTP address.
+For multiple HTTP benchmarks provide `--benchmark-url NAME=URL` for every selected
+name. These are **simulator service origins**, distinct from the model's
+`OPENAI_BASE_URL`. Registry mode starts its prepared services; HTTP mode connects
+to services you already manage. With either external source, `--dry-run` reads
+and validates catalogs/plans without episodes or model calls. Use
+`--benchmark-token-env ENV_NAME` for HTTP service authentication.
 
-In native Windows PowerShell, you can check an existing HTTP catalog as follows.
-Run the actual evaluation from Linux/WSL:
+`--agent-config NAME=PATH` overrides the automatic ICL preset. With an external
+source the default is `configs/agents/embodied/default.yaml` (no automatic ICL).
+Custom presets need their code, dependencies and context resources already
+available. Their format, context and budgets are retained unless explicitly
+overridden; the script always sets your model connection.
 
-```powershell
-$env:OPENAI_BASE_URL = 'http://127.0.0.1:8000/v1'
-$env:OPENAI_API_KEY = 'YOUR_API_KEY'
-$env:MODEL_NAME = 'YOUR_SERVED_MODEL'
-python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --benchmark-url robocasa365=http://127.0.0.1:18800 --task robocasa365:OpenDrawer --seed 1 --dry-run
-```
+See `python scripts/evaluation/evaluate_model.py --help` for all options.
+`--max-turns`, `--max-tokens`, and `--keep-turns` override Agent limits.
+Enhanced LIBERO retains its preset's context and large output budget; set limits
+compatible with your model. Generic LIBERO defaults to 100 turns, 2048 output
+tokens and eight retained turns. RoboCasa preserves its native planner budgets:
+1800 seconds for atomic tasks, 3600 for composite tasks. `--timeout-s` defaults
+to 1800 seconds per transport call. Whole-case `--case-timeout-s` defaults to
+43200 seconds for enhanced LIBERO and 4500 otherwise.
+Automatic/HTTP services require `--max-concurrent 1`.
 
-## Options
+## Results
 
-Run `python scripts/evaluation/evaluate_model.py --help` for the complete CLI.
-
-| Option | Default / behavior |
-| --- | --- |
-| `--base-url`, `--api-key`, `--model-name` | Override `OPENAI_BASE_URL`, `OPENAI_API_KEY`, `MODEL_NAME` respectively |
-| `--openai-format` | Generic preset: `chat`; also accepts `responses`; an explicit value overrides a custom preset |
-| `--registry-root` / `--benchmark-url NAME=URL` | Required choice of execution mode; mutually exclusive |
-| `--benchmark NAME` | Repeatable; defaults to all five supported integrations |
-| `--agent-config NAME=PATH` | Repeatable; use a specific Agent preset for a benchmark |
-| `--task NAME:ID`, `--seed N` | Repeatable filters; omitted values use the catalog |
-| `--benchmark-token-env ENV` | Environment variable holding authentication for an existing Benchmark service |
-| `--max-concurrent` | `1`; HTTP evaluation requires `1` |
-| `--max-turns`, `--max-tokens`, `--keep-turns` | Generic preset: `100`, `2048`, `8`; explicit values override custom preset settings |
-| `--timeout-s` | `1800` seconds per transport call |
-| `--case-timeout-s` | `43200` seconds for LIBERO-PRO / Long++ / Ultra-Long, `4500` for LIBERO / RoboCasa365; an explicit value overrides these defaults |
-| `--results-root` | `work/model_eval/results` under the repository |
-| `--run-id` | Automatically generated if omitted; use a fresh ID for each run |
-| `--dry-run` | Validate and print plans without executing cases |
-
-RoboCasa365 tasks are grouped automatically by their catalog's planner limit:
-**1800 seconds for atomic tasks, 3600 seconds for composite tasks**. Transport
-and complete-case timeouts are separate limits. The script preserves these
-native planner budgets when running both groups.
-
-## Use a benchmark-specific Agent preset
-
-For a benchmark-specific Harness, repeat `--agent-config NAME=PATH` with the
-appropriate preset. The script sets the model connection to your OpenAI-compatible
-service while retaining the preset's API format, context and budgets, unless you
-explicitly override the corresponding CLI options. RoboCasa365 planner budgets
-still follow its native catalog.
-
-The local `LIBERO` branch contains specialized presets and sealed ICL settings
-for PRO, Long++ and Ultra-Long; consult `docs/libero-three-benchmarks.md` in that
-branch alongside its current evaluation entry points. Those presets require a
-checkout or installed Agent environment
-containing their **complete runtime source, dependencies and context assets**.
-Pointing this checkout at an external YAML file alone does not install those
-modules. Follow that branch's setup and protocol before selecting its preset;
-the generic defaults here are not its sealed ICL reproduction configuration.
-
-## Inspect and score results
-
-For `--run-id my-model-001`, results are saved in separate run directories:
+Results default to `<work-dir>/results/`; `--results-root` changes this location.
+A run named `my-model-001` creates only selected non-empty groups, for example:
 
 ```text
 work/model_eval/results/
-  my-model-001-libero/
   my-model-001-libero_pro/
-  my-model-001-libero_long_plus_plus/
-  my-model-001-libero_ultra_long/
   my-model-001-robocasa365-atomic/
   my-model-001-robocasa365-composite/
 ```
 
-Only selected, non-empty groups are created. Each uses the normal `bench eval`
-layout, including `batch_plan.json` and per-case `result.json`, native score
-artifacts and traces. Query a specific group with:
-
-```bash
-bench status --results-root work/model_eval/results --run-id my-model-001-libero
-```
-
-Score RoboCasa365 by passing both existing group directories to its scorer:
-
-```bash
-python -m benchmarks.robocasa365.score \
-  work/model_eval/results/my-model-001-robocasa365-atomic \
-  work/model_eval/results/my-model-001-robocasa365-composite
-```
-
-The default scoring protocol expects **340 cells** and reports the mean of the
-50 per-task success rates. If you prepared and ran the seed-1 protocol, append
-`--cells seed1`; this still expects **all 50 seed-1 cells**. Missing or invalid
-cells count as failures, so a smoke check is not a full benchmark score. See
-[Evaluation](evaluation.md) for case status, traces and result comparison.
+Groups contain the normal batch plan, per-case results, native artifacts and
+traces. Use a fresh `--run-id` each time. Query a group with `bench status`.
+Score RoboCasa by passing both result directories to
+`python -m benchmarks.robocasa365.score`; append `--cells seed1` for a complete
+50-cell seed-1 run. A smoke check is not a full benchmark score. See
+[evaluation](evaluation.md) and [RoboCasa365](../benchmarks/robocasa365/README.md).

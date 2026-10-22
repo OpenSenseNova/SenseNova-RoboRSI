@@ -109,24 +109,25 @@ SenseNova-RoboRSI-27B-Preview 的部署方法见
 
 ### 一键评测已部署模型
 
-完成框架安装，并准备好 benchmark 镜像、资产和 registry 后，即可接入支持图像输入和
-工具调用的已有模型 API。请在 Linux/WSL 中执行评测命令：
+完成框架安装后，即可接入支持图像输入与工具调用的已部署模型 API。
+请在已启动 Docker 的 Linux/WSL 环境中选择要评测的 benchmark：
 
 ```bash
 export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
 export OPENAI_API_KEY='YOUR_API_KEY'
 export MODEL_NAME='YOUR_SERVED_MODEL'
-python scripts/evaluation/evaluate_model.py --registry-root /absolute/path/to/registry
+python scripts/evaluation/evaluate_model.py --benchmark libero_pro
 ```
 
-默认运行 **LIBERO、LIBERO-PRO、LIBERO-Long++、LIBERO-Ultra-Long 和 RoboCasa365**，
-任务与种子以已准备好的 catalog 为准。registry 需要包含这五项；添加
-`--benchmark libero` 或 `--benchmark robocasa365` 可只运行其中一项。脚本不负责安装
-模拟器或部署模型。如果需要先部署，请在预留的[模型部署入口](scripts/deploy/README.md)
-中填入已经验证的部署命令，启动 API 服务后再评测。
-[模型一键评测指南](docs/model-evaluation.zh-CN.md)提供 HTTP 服务接入、单任务检查、
-参数和结果查看方法。这是通用模型 API 接入流程；复现已发布成绩还需要对应的
-benchmark 与 Harness 配置。
+必须显式传入 `--benchmark`，可选 `libero`、`libero_pro`、`libero_long_plus_plus`、
+`libero_ultra_long`、`robocasa365`，需要多项时重复传入。脚本自动下载/构建对应环境，
+并准备可用的 ICL 包。增强 LIBERO 使用已发布的 `migration_subset` catalog。
+通过环境变量 `ROBORSI_LIBERO_SUITE`（默认 `libero_spatial`）和
+`ROBORSI_ROBOCASA_CELLS`（`all` / `seed1`）选择相应 catalog。
+`--prepare-only` 可只下载/构建，不执行评测。GPU/Docker 要求、镜像访问权限、任务范围、
+已有服务接入与结果查看见[模型一键评测指南](docs/model-evaluation.zh-CN.md)。
+需要先部署时，将已验证的命令填入预留的[模型部署入口](scripts/deploy/README.md)，
+启动 API 服务后再评测。
 
 ## BenchZoo
 

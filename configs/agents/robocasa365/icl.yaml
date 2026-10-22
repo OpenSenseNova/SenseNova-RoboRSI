@@ -1,0 +1,12 @@
+schema_version: 1
+extends: ../embodied/default.yaml
+factory: robots.robocasa.model_eval_agent:make_agent
+code:
+  - ../../../robots/robocasa/model_eval_agent.py
+agent:
+  action_timeout_s: 1800
+  reasoning_effort: none
+runtime:
+  llm:
+    openai_format: chat
+# Automatic setup supplies resources.icl_package as a verified local directory.

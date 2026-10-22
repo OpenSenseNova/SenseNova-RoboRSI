@@ -184,7 +184,12 @@ def test_dry_run_preflights_every_suite_from_any_directory_without_credentials(
             endpoint = stack.enter_context(
                 catalog_server(registry, benchmark, tmp_path)
             )
-            argv += ["--benchmark-url", f"{benchmark}={endpoint}"]
+            argv += [
+                "--benchmark",
+                benchmark,
+                "--benchmark-url",
+                f"{benchmark}={endpoint}",
+            ]
         completed = subprocess.run(
             [sys.executable, str(SCRIPT), *argv, "--dry-run"],
             cwd=tmp_path,
@@ -227,7 +232,11 @@ def test_execution_passes_secret_only_in_environment_and_respects_robocasa_budge
         return subprocess.CompletedProcess(command, 0, json.dumps(report) + "\n", "")
 
     monkeypatch.setattr(runner.subprocess, "run", execute)
-    assert runner.main([*arguments(registry, tmp_path), "--api-key", secret]) == 0
+    selected = [value for name in BENCHMARKS for value in ("--benchmark", name)]
+    assert (
+        runner.main([*arguments(registry, tmp_path), *selected, "--api-key", secret])
+        == 0
+    )
     assert len(calls) == 12
     assert all("--dry-run" in command for command, _ in calls[:6])
     assert all("--dry-run" not in command for command, _ in calls[6:])
@@ -315,7 +324,15 @@ def test_invalid_inputs_fail_before_launching_any_evaluation(
 
     monkeypatch.setattr(runner.subprocess, "run", unexpected)
     with pytest.raises(SystemExit) as exc:
-        runner.main([*arguments(registry, tmp_path), "--dry-run", *extra])
+        runner.main(
+            [
+                *arguments(registry, tmp_path),
+                "--benchmark",
+                "libero",
+                "--dry-run",
+                *extra,
+            ]
+        )
     assert exc.value.code == 2
 
 
@@ -432,7 +449,13 @@ def test_windows_rejects_unsupported_execution_before_loading_a_catalog(
         "build_commands",
         lambda args: pytest.fail("unsupported execution loaded a catalog"),
     )
-    argv = [*arguments(registry, tmp_path), "--api-key", "EMPTY"]
+    argv = [
+        *arguments(registry, tmp_path),
+        "--benchmark",
+        "libero",
+        "--api-key",
+        "EMPTY",
+    ]
     if dry_run:
         argv.append("--dry-run")
     with pytest.raises(SystemExit) as exc:
@@ -451,7 +474,16 @@ def test_catalog_rpc_errors_are_reported_without_a_traceback_or_credential(
 
     monkeypatch.setattr(runner, "build_commands", fail)
     with pytest.raises(SystemExit) as exc:
-        runner.main([*arguments(registry, tmp_path), "--api-key", secret, "--dry-run"])
+        runner.main(
+            [
+                *arguments(registry, tmp_path),
+                "--benchmark",
+                "libero",
+                "--api-key",
+                secret,
+                "--dry-run",
+            ]
+        )
     assert exc.value.code == 2
     output = capsys.readouterr().err
     assert "catalog unavailable" in output
@@ -484,3 +516,161 @@ def test_only_robocasa_scores_planner_timeout_as_a_valid_task_failure(
         )
         == expected
     )
+
+
+def test_automatic_preparation_is_default_and_download_only_needs_no_model(
+    runner, tmp_path
+):
+    _, args = runner.parse_args(
+        ["--benchmark", "libero_pro", "--prepare-only", "--work-dir", str(tmp_path)]
+    )
+    assert args.auto_prepare
+    assert args.benchmark == ["libero_pro"]
+    assert args.work_dir == tmp_path.resolve()
+    assert args.results_root == tmp_path.resolve() / "results"
+
+
+def test_automatic_dry_run_does_not_download_or_start_containers(
+    runner, tmp_path, monkeypatch, capsys
+):
+    calls = []
+
+    class Bootstrap:
+        @staticmethod
+        def preparation_plan(benchmarks, work_dir):
+            calls.append((benchmarks, work_dir))
+            return {"benchmarks": benchmarks, "download": "planned only"}
+
+        @staticmethod
+        def prepare_benchmarks(*args):
+            pytest.fail("dry-run downloaded assets")
+
+    monkeypatch.setattr(runner, "load_bootstrap", lambda: Bootstrap)
+    assert (
+        runner.main(
+            [
+                "--base-url",
+                "http://localhost:9/v1",
+                "--model-name",
+                "vision",
+                "--benchmark",
+                "robocasa365",
+                "--work-dir",
+                str(tmp_path),
+                "--dry-run",
+            ]
+        )
+        == 0
+    )
+    assert calls == [(["robocasa365"], tmp_path.resolve())]
+    assert "planned only" in capsys.readouterr().out
+
+
+def test_automatic_environment_is_used_and_cleaned_up(runner, tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    events = []
+    prepared = SimpleNamespace(
+        presets={"robocasa365": str(tmp_path / "icl.json")},
+        env={"EXAMPLE_ICL_ROOT": str(tmp_path / "icl")},
+        images={"robocasa365": "fixture-image"},
+    )
+
+    class Bootstrap:
+        @staticmethod
+        def prepare_benchmarks(benchmarks, work_dir):
+            events.append("prepare")
+            return prepared
+
+        @staticmethod
+        @contextmanager
+        def benchmark_services(setup, **kwargs):
+            assert setup is prepared
+            events.append("start")
+            try:
+                yield {"robocasa365": "http://localhost:18000"}
+            finally:
+                events.append("stop")
+
+    def evaluate(parser, args):
+        assert args.endpoints == {"robocasa365": "http://localhost:18000"}
+        assert args.presets == prepared.presets
+        assert args.prepared_env == prepared.env
+        events.append("evaluate")
+        return 1
+
+    monkeypatch.setattr(runner, "load_bootstrap", lambda: Bootstrap)
+    monkeypatch.setattr(runner, "run_evaluation", evaluate)
+    assert (
+        runner.main(
+            [
+                "--base-url",
+                "http://localhost:9/v1",
+                "--model-name",
+                "vision",
+                "--api-key",
+                "EMPTY",
+                "--benchmark",
+                "robocasa365",
+                "--work-dir",
+                str(tmp_path),
+            ]
+        )
+        == 1
+    )
+    assert events == ["prepare", "start", "evaluate", "stop"]
+
+
+def test_download_only_rejects_existing_external_services(runner):
+    with pytest.raises(SystemExit) as exc:
+        runner.parse_args(
+            [
+                "--prepare-only",
+                "--benchmark",
+                "libero",
+                "--benchmark-url",
+                "libero=http://localhost:9",
+            ]
+        )
+    assert exc.value.code == 2
+
+
+def test_benchmark_is_required_even_for_preparation(runner):
+    with pytest.raises(SystemExit) as exc:
+        runner.parse_args(["--prepare-only"])
+    assert exc.value.code == 2
+
+
+def test_automatic_catalog_options_use_environment(runner, monkeypatch):
+    monkeypatch.setenv("ROBORSI_LIBERO_SUITE", "libero_90")
+    monkeypatch.setenv("ROBORSI_ROBOCASA_CELLS", "seed1")
+    _, args = runner.parse_args(
+        ["--prepare-only", "--benchmark", "libero", "--benchmark", "robocasa365"]
+    )
+    assert args.libero_suite == "libero_90"
+    assert args.robocasa_cells == "seed1"
+
+
+@pytest.mark.parametrize(
+    "name,benchmark,value",
+    [
+        ("ROBORSI_LIBERO_SUITE", "libero", "not-a-suite"),
+        ("ROBORSI_ROBOCASA_CELLS", "robocasa365", "invalid"),
+    ],
+)
+def test_invalid_catalog_environment_is_rejected_before_downloading(
+    runner, monkeypatch, name, benchmark, value
+):
+    monkeypatch.setenv(name, value)
+    with pytest.raises(SystemExit) as exc:
+        runner.parse_args(["--prepare-only", "--benchmark", benchmark])
+    assert exc.value.code == 2
+
+
+@pytest.mark.parametrize(
+    "option,value", [("--libero-suite", "libero_90"), ("--robocasa-cells", "seed1")]
+)
+def test_catalog_options_are_not_part_of_cli(runner, option, value):
+    with pytest.raises(SystemExit) as exc:
+        runner.parse_args(["--prepare-only", "--benchmark", "libero", option, value])
+    assert exc.value.code == 2

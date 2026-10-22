@@ -12,8 +12,9 @@
 
 """Evaluate an already deployed vision/tool model with RoboRSI's existing runner.
 
-Use --dry-run to validate catalogs and Agent presets without starting an Agent
-or a Benchmark. HTTP catalogs must already be reachable, including in dry runs.
+With no benchmark source, download environments and ICL, then run managed Docker
+services. --prepare-only downloads and prepares without evaluation. --dry-run
+prints the automatic setup plan, or preflights an explicitly supplied catalog.
 """
 
 from __future__ import annotations
@@ -124,11 +125,23 @@ def parse_args(
         "--benchmark",
         action="append",
         choices=BENCHMARKS,
-        help="repeat to select suites; default: all five suites",
+        required=True,
+        help="benchmark to evaluate; repeat only when explicitly selecting several",
     )
-    source = parser.add_mutually_exclusive_group(required=True)
+    source = parser.add_mutually_exclusive_group()
     source.add_argument("--registry-root", type=Path)
     source.add_argument("--benchmark-url", action="append", metavar="NAME=URL")
+    parser.add_argument(
+        "--work-dir",
+        type=Path,
+        default=ROOT / "work/model_eval",
+        help="cache for images, assets, ICL and generated presets",
+    )
+    parser.add_argument(
+        "--prepare-only",
+        action="store_true",
+        help="download/build environments and ICL; no model or simulator calls",
+    )
     parser.add_argument(
         "--benchmark-token-env",
         help="environment variable containing the Benchmark token",
@@ -146,9 +159,7 @@ def parse_args(
         type=int,
         help="repeat to select seeds; default: each catalog's declared seeds",
     )
-    parser.add_argument(
-        "--results-root", type=Path, default=ROOT / "work/model_eval/results"
-    )
+    parser.add_argument("--results-root", type=Path)
     parser.add_argument(
         "--run-id",
         default=f"model-{datetime.now(timezone.utc):%Y%m%dT%H%M%SZ}-{uuid4().hex[:8]}",
@@ -172,18 +183,56 @@ def parse_args(
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args(argv)
     try:
-        if not args.base_url or not args.model_name or not args.model_name.strip():
+        args.auto_prepare = not (args.registry_root or args.benchmark_url)
+        if args.prepare_only and not args.auto_prepare:
+            raise ValueError(
+                "--prepare-only cannot be combined with an existing benchmark source"
+            )
+        if not args.prepare_only and (
+            not args.base_url or not args.model_name or not args.model_name.strip()
+        ):
             raise ValueError(
                 "set --base-url / OPENAI_BASE_URL and --model-name / MODEL_NAME"
             )
-        args.base_url = validate_url(args.base_url)
-        if not args.dry_run and (not args.api_key or not args.api_key.strip()):
+        if args.base_url:
+            args.base_url = validate_url(args.base_url)
+        if (
+            not args.dry_run
+            and not args.prepare_only
+            and (not args.api_key or not args.api_key.strip())
+        ):
             raise ValueError(
                 "set OPENAI_API_KEY or --api-key (use EMPTY for an unauthenticated model API)"
             )
-        args.benchmark = args.benchmark or list(BENCHMARKS)
         if len(args.benchmark) != len(set(args.benchmark)):
             raise ValueError("--benchmark values must be unique")
+        args.libero_suite = os.environ.get("ROBORSI_LIBERO_SUITE", "libero_spatial")
+        args.robocasa_cells = os.environ.get("ROBORSI_ROBOCASA_CELLS", "all")
+        if (
+            args.auto_prepare
+            and "libero" in args.benchmark
+            and args.libero_suite
+            not in {
+                "libero_spatial",
+                "libero_object",
+                "libero_goal",
+                "libero_10",
+                "libero_90",
+            }
+        ):
+            raise ValueError(
+                "ROBORSI_LIBERO_SUITE must name a supported standard LIBERO suite"
+            )
+        if (
+            args.auto_prepare
+            and "robocasa365" in args.benchmark
+            and args.robocasa_cells not in {"all", "seed1"}
+        ):
+            raise ValueError("ROBORSI_ROBOCASA_CELLS must be all or seed1")
+        if args.auto_prepare and args.max_concurrent != 1:
+            raise ValueError(
+                "automatic HTTP Benchmark services require --max-concurrent 1"
+            )
         if not re.fullmatch(r"[A-Za-z0-9_-]+", args.run_id):
             raise ValueError(
                 "--run-id must contain only letters, digits, underscores and hyphens"
@@ -226,12 +275,15 @@ def parse_args(
             ):
                 raise ValueError("--task must be a unique selected-benchmark:task_id")
             args.tasks[name].append(task)
-        args.results_root = args.results_root.expanduser().resolve()
+        args.work_dir = args.work_dir.expanduser().resolve()
+        args.results_root = (
+            (args.results_root or args.work_dir / "results").expanduser().resolve()
+        )
         if args.registry_root:
             args.registry_root = args.registry_root.expanduser().resolve()
-        if IS_WINDOWS and not (args.dry_run and args.endpoints):
+        if IS_WINDOWS and not (args.dry_run and (args.endpoints or args.auto_prepare)):
             raise ValueError(
-                "evaluation requires Linux/WSL; native Windows supports --help and HTTP --dry-run only"
+                "preparation and evaluation require Linux/WSL; native Windows supports --help and automatic/HTTP --dry-run only"
             )
     except ValueError as exc:
         parser.error(str(exc))
@@ -344,8 +396,64 @@ def build_commands(args: argparse.Namespace) -> list[list[str]]:
     return commands
 
 
+def load_bootstrap():
+    """Import setup lazily so ordinary help and prepared services stay lightweight."""
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    from scripts.evaluation import bootstrap
+
+    return bootstrap
+
+
 def main(argv: list[str] | None = None) -> int:
     parser, args = parse_args(argv)
+    if not args.auto_prepare:
+        return run_evaluation(parser, args)
+    bootstrap = load_bootstrap()
+    if args.dry_run:
+        print(
+            json.dumps(
+                bootstrap.preparation_plan(args.benchmark, args.work_dir), indent=2
+            )
+        )
+        return 0
+    try:
+        prepared = bootstrap.prepare_benchmarks(args.benchmark, args.work_dir)
+        if args.prepare_only:
+            print(
+                json.dumps(
+                    {
+                        "work_dir": str(args.work_dir),
+                        "images": prepared.images,
+                        "agent_presets": prepared.presets,
+                    },
+                    indent=2,
+                )
+            )
+            return 0
+        # Explicit user presets take precedence over automatically prepared ICL.
+        args.presets = {**prepared.presets, **args.presets}
+        args.prepared_env = prepared.env
+        with bootstrap.benchmark_services(
+            prepared,
+            libero_suite=args.libero_suite,
+            robocasa_cells=args.robocasa_cells,
+        ) as endpoints:
+            args.endpoints = endpoints
+            args.benchmark_url = [f"{name}={url}" for name, url in endpoints.items()]
+            return run_evaluation(parser, args)
+    except (ValueError, RuntimeError, OSError, subprocess.CalledProcessError) as exc:
+        parser.error(str(exc))
+    except KeyboardInterrupt:
+        print(
+            "Interrupted; managed Benchmark services have been stopped.",
+            file=sys.stderr,
+        )
+        return 130
+
+
+def run_evaluation(parser: argparse.ArgumentParser, args: argparse.Namespace) -> int:
+    """Preflight and execute already available catalogs and selected Agent presets."""
     if str(ROOT) not in sys.path:
         sys.path.insert(0, str(ROOT))
     from roborsi.utils.rpc import RpcError
@@ -371,6 +479,7 @@ def main(argv: list[str] | None = None) -> int:
     except (ValueError, OSError, KeyError, RpcError) as exc:
         parser.error(redact(str(exc)))
     environment = os.environ.copy()
+    environment.update(getattr(args, "prepared_env", {}))
     environment["PYTHONUTF8"] = "1"
     if args.api_key:
         environment["OPENAI_API_KEY"] = args.api_key

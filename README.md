@@ -120,27 +120,27 @@ To deploy SenseNova-RoboRSI-27B-Preview, follow the
 
 ### Evaluate a deployed model with one command
 
-After installing the framework and preparing the benchmark images, assets and
-registry, connect an existing model API that supports images and tool calling.
-Run the evaluation commands in Linux/WSL:
+After installing the framework, connect a deployed model API that supports images
+and tool calling. In Linux/WSL with Docker ready, select a benchmark:
 
 ```bash
 export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
 export OPENAI_API_KEY='YOUR_API_KEY'
 export MODEL_NAME='YOUR_SERVED_MODEL'
-python scripts/evaluation/evaluate_model.py --registry-root /absolute/path/to/registry
+python scripts/evaluation/evaluate_model.py --benchmark libero_pro
 ```
 
-By default, this runs **LIBERO, LIBERO-PRO, LIBERO-Long++, LIBERO-Ultra-Long and
-RoboCasa365** using the tasks and seeds exposed by their prepared catalogs. The
-registry must contain all five integrations; add `--benchmark libero` or
-`--benchmark robocasa365` to run only one. The script does not install simulators
-or deploy a model. If you need to deploy first, fill in the reserved
-[model deployment entry point](scripts/deploy/README.md) with your verified
-serving command, then start the API service. See the
-[model evaluation guide](docs/model-evaluation.md) for HTTP services, single-task
-checks, options and results. This is a general model API workflow; reproducing
-published scores also requires the corresponding benchmark and Harness settings.
+`--benchmark` is required: choose `libero`, `libero_pro`, `libero_long_plus_plus`,
+`libero_ultra_long` or `robocasa365`; repeat it to select several. The script
+downloads/builds the selected environment and prepares available ICL automatically.
+Enhanced LIBERO uses the released `migration_subset` catalogs. Set
+`ROBORSI_LIBERO_SUITE` (default `libero_spatial`) or `ROBORSI_ROBOCASA_CELLS`
+(`all` / `seed1`) in the environment to select those catalogs.
+Use `--prepare-only` to download/build without evaluation. GPU/Docker requirements,
+image access, task coverage, existing services and results are explained in the
+[model evaluation guide](docs/model-evaluation.md). To deploy first, fill in the
+reserved [model deployment entry point](scripts/deploy/README.md), then start the
+API service before evaluation.
 
 ## BenchZoo
 
