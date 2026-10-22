@@ -125,5 +125,5 @@ Follow the existing [LIBERO-Pro](../benchmarks/libero_pro/README.md) and
 [RoboCasa365](../benchmarks/robocasa365/README.md) evaluation guides to connect
 your model to RoboRSI Harness and run evaluations.
 
-We are developing one-command reproduction scripts to simplify evaluation with
-custom models and will release them soon.
+One-command reproduction scripts for evaluating custom models are under
+development and will be available soon.
