@@ -1,0 +1,11 @@
+# Shared model connection for evaluate_model.py. CLI > named environment > YAML.
+# Fill base_url/model_name here, or set OPENAI_BASE_URL and MODEL_NAME.
+schema_version: 1
+provider: openai
+base_url: null
+model_name: null
+base_url_env: OPENAI_BASE_URL
+model_name_env: MODEL_NAME
+api_key_env: OPENAI_API_KEY
+# null preserves the Agent format; automatic presets default to Chat Completions.
+openai_format: null

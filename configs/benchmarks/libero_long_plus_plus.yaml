@@ -1,0 +1,29 @@
+schema_version: 1
+benchmark: libero_long_plus_plus
+model: ../models/default.yaml
+agent: ../agents/libero/long_plus_plus.yaml
+case_timeout_s: 43200
+agent_overrides:
+  agent:
+    reasoning_effort: none
+  runtime:
+    llm:
+      openai_format: chat
+      prompt_cache_mode: null
+      prompt_cache_key: null
+      prompt_cache_static_prefix: false
+    context:
+      cache_initial_task: false
+      cache_initial_context: false
+      cache_latest_tool_feedback: false
+environment:
+  kind: libero_three
+  gpus: all
+  image: ghcr.io/opensensenova/sensenova-roborsi-libero-long-plus-plus@sha256:814139261e914b114cb89a359c6a39d4f409a556f79928e986b6ade3dfe7dc7a
+  native_bundle: libero_lilo
+  catalog:
+    profile: migration_subset
+  icl:
+    group: longpp
+    root_env: ROBORSI_LIBERO_LONGPP_ICL_ROOT
+    asset_lock: ../../benchmarks/libero_three_combined/assets.lock.json

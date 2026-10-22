@@ -125,6 +125,10 @@ python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
 `libero_ultra_long`、`robocasa365`，需要多项时重复传入。脚本自动下载/构建对应环境，
 并准备可用的 ICL 包。增强 LIBERO 使用已发布的 `migration_subset` catalog。
 
+配置统一放在 [`configs/`](configs/README.md)：每个 `configs/benchmarks/<name>.yaml`
+选择环境、模型和 Agent。共享模型连接修改 [`configs/models/default.yaml`](configs/models/default.yaml)，
+Agent 策略修改 `configs/agents/` 中的预设。上面的环境变量仍会覆盖模型 YAML，密钥保留在环境变量中。
+
 单任务检查通过后，去掉任务和种子过滤，运行 RoboCasa 全部 340 个 cell：
 
 ```bash
@@ -139,7 +143,8 @@ ROBORSI_LIBERO_SUITE=libero_90 python scripts/evaluation/evaluate_model.py --ben
 ROBORSI_ROBOCASA_CELLS=seed1 python scripts/evaluation/evaluate_model.py --benchmark robocasa365
 ```
 
-`ROBORSI_LIBERO_SUITE` 默认 `libero_spatial`，`ROBORSI_ROBOCASA_CELLS` 默认 `all`。
+默认 catalog 在 benchmark YAML 中配置：LIBERO 为 `libero_spatial`，RoboCasa 为 `all`；
+`ROBORSI_LIBERO_SUITE`、`ROBORSI_ROBOCASA_CELLS` 可覆盖这些默认值。
 结果保存在 `work/model_eval/results/`，每次运行请使用新的 `--run-id`。
 只下载/构建环境与 ICL、不执行评测：
 

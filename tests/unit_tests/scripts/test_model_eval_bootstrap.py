@@ -18,6 +18,12 @@ from pathlib import Path
 import pytest
 
 from scripts.evaluation import bootstrap
+from scripts.evaluation.configuration import load_benchmark
+
+IMAGES = {
+    name: load_benchmark(name).environment["image"]
+    for name in ("libero_pro", "libero_long_plus_plus", "libero_ultra_long")
+}
 
 
 def test_plan_is_side_effect_free_and_identifies_downloads(tmp_path, monkeypatch):
@@ -33,7 +39,9 @@ def test_plan_is_side_effect_free_and_identifies_downloads(tmp_path, monkeypatch
     assert plan["benchmarks"] == ["libero", "libero_pro", "robocasa365"]
     assert "@sha256:" in plan["images"]["libero_pro"]
     assert plan["icl"]["libero_pro"] == "embedded sealed packages (migration_subset)"
-    assert bootstrap.ROBOCASA_REVISION in json.dumps(plan)
+    assert load_benchmark("robocasa365").environment["icl"]["revision"] in json.dumps(
+        plan
+    )
 
 
 def test_docker_unavailable_prevents_downloads(tmp_path, monkeypatch):
@@ -60,15 +68,15 @@ def test_preparation_uses_icl_preset_and_environment(tmp_path, monkeypatch):
     )
     monkeypatch.setattr(bootstrap, "_ensure_image", lambda image: image)
     monkeypatch.setattr(
-        bootstrap, "_build_three_image", lambda name, work_dir, image: image
+        bootstrap, "_build_three_image", lambda name, work_dir, image, *args: image
     )
-    monkeypatch.setattr(bootstrap, "_ensure_tokenizer", lambda: None)
+    monkeypatch.setattr(bootstrap, "_ensure_tokenizer", lambda *args: None)
     monkeypatch.setattr(bootstrap, "_prepare_three_assets", lambda *_args: assets)
     prepared = bootstrap.prepare_benchmarks(["libero_pro"], tmp_path / "work")
     assert prepared.env["ROBORSI_LIBERO_PRO_ICL_ROOT"] == str(assets / "pro/packages")
-    assert prepared.images["libero_pro"] == bootstrap.IMAGES["libero_pro"]
+    assert prepared.images["libero_pro"] == IMAGES["libero_pro"]
     preset = json.loads(Path(prepared.presets["libero_pro"]).read_text())
-    assert preset["extends"].endswith("robots/libero/agents/three_benchmark/pro.yaml")
+    assert preset["extends"].endswith("configs/agents/libero/pro.yaml")
     assert preset["runtime"]["context"]["tokenizer_file"] == str(
         assets / "tokenizer.json"
     )
@@ -94,7 +102,7 @@ def test_cached_standard_assets_are_verified_without_downloading(tmp_path, monke
             {
                 "name": "libero",
                 "kind": "directory",
-                "version": bootstrap.LIBERO_ASSET_REVISION,
+                "version": load_benchmark("libero").environment["assets"]["revision"],
                 "path": "snapshots/data",
                 "sha256": directory_sha256(snapshot),
             }
@@ -118,10 +126,10 @@ def test_cached_icl_is_verified_instead_of_trusted(tmp_path, monkeypatch):
     monkeypatch.setattr(
         bootstrap,
         "_verify_three_assets",
-        lambda path: (_ for _ in ()).throw(ValueError("changed ICL")),
+        lambda path, *args: (_ for _ in ()).throw(ValueError("changed ICL")),
     )
     with pytest.raises(ValueError, match="changed ICL"):
-        bootstrap._prepare_three_assets(tmp_path, bootstrap.IMAGES["libero_pro"])
+        bootstrap._prepare_three_assets(tmp_path, IMAGES["libero_pro"])
 
 
 def test_service_overrides_combined_entrypoint_and_cleans_up_on_error(
@@ -141,7 +149,7 @@ def test_service_overrides_combined_entrypoint_and_cleans_up_on_error(
         work_dir=tmp_path,
         presets={},
         env={},
-        images={"libero_pro": bootstrap.IMAGES["libero_pro"]},
+        images={"libero_pro": IMAGES["libero_pro"]},
     )
     with pytest.raises(RuntimeError, match="evaluation failed"):
         with bootstrap.benchmark_services(prepared) as urls:
@@ -181,7 +189,7 @@ def test_partial_service_start_failure_removes_all_owned_containers(
         work_dir=tmp_path,
         presets={},
         env={},
-        images={name: bootstrap.IMAGES[name] for name in names},
+        images={name: IMAGES[name] for name in names},
     )
     with pytest.raises(subprocess.CalledProcessError):
         with bootstrap.benchmark_services(prepared):
@@ -209,11 +217,19 @@ def test_robocasa_preparation_binds_downloaded_package_to_real_factory(
 
     monkeypatch.setattr(bootstrap, "download_snapshot", download)
     prepared = bootstrap.prepare_benchmarks(["robocasa365"], tmp_path / "work")
-    assert calls[0]["revision"] == bootstrap.ROBOCASA_REVISION
-    assert calls[0]["manifest_sha256"] == bootstrap.ROBOCASA_MANIFEST
+    assert (
+        calls[0]["revision"]
+        == load_benchmark("robocasa365").environment["icl"]["revision"]
+    )
+    assert (
+        calls[0]["manifest_sha256"]
+        == load_benchmark("robocasa365").environment["icl"]["manifest_sha256"]
+    )
     config = AgentConfig.from_file(prepared.presets["robocasa365"])
     assert config.factory == "robots.robocasa.model_eval_agent:make_agent"
     assert config.resources == {"icl_package": package.resolve()}
+    assert config.parameters["icl_manifest_sha256"] == calls[0]["manifest_sha256"]
+    assert config.parameters["icl_revision"] == calls[0]["revision"]
 
 
 def test_service_catalog_settings_come_from_arguments(tmp_path, monkeypatch):
@@ -259,7 +275,7 @@ def test_enhanced_image_overlays_current_service_on_pinned_native_stack(
         assert command[:2] == ["docker", "build"]
         context = Path(command[-1])
         dockerfile = (context / "Dockerfile").read_text()
-        assert dockerfile.startswith(f"FROM {bootstrap.IMAGES['libero_pro']}\n")
+        assert dockerfile.startswith(f"FROM {IMAGES['libero_pro']}\n")
         assert "verify_benchmark_runtime" in dockerfile
         assert "ENTRYPOINT []" in dockerfile
         source = "robots/libero/three_benchmark_serve.py"
@@ -272,8 +288,71 @@ def test_enhanced_image_overlays_current_service_on_pinned_native_stack(
         builds.append(command)
 
     monkeypatch.setattr(bootstrap, "_run", run)
-    image = bootstrap._build_three_image(
-        "libero_pro", tmp_path, bootstrap.IMAGES["libero_pro"]
-    )
+    image = bootstrap._build_three_image("libero_pro", tmp_path, IMAGES["libero_pro"])
     assert image.startswith("roborsi-onecmd-libero_pro:")
     assert len(builds) == 1
+
+
+def test_build_arguments_from_yaml_are_used_and_invalidate_image_cache(
+    tmp_path, monkeypatch
+):
+    from dataclasses import replace
+
+    original = load_benchmark("libero")
+    builds = []
+    monkeypatch.setattr(
+        bootstrap.subprocess,
+        "run",
+        lambda command, **kwargs: subprocess.CompletedProcess(command, 1),
+    )
+    monkeypatch.setattr(
+        bootstrap, "_run", lambda command, **kwargs: builds.append(command)
+    )
+    first = bootstrap._build_image("libero", tmp_path, original)
+    changed = replace(
+        original,
+        environment={
+            **original.environment,
+            "build_args": {
+                "LIBERO_RUNTIME_IMAGE": "example/runtime@sha256:" + "a" * 64
+            },
+        },
+    )
+    second = bootstrap._build_image("libero", tmp_path, changed)
+    assert first != second
+    assert "--build-arg" in builds[0]
+    assert (
+        "LIBERO_RUNTIME_IMAGE="
+        + original.environment["build_args"]["LIBERO_RUNTIME_IMAGE"]
+        in builds[0]
+    )
+    assert "LIBERO_RUNTIME_IMAGE=example/runtime@sha256:" + "a" * 64 in builds[1]
+
+
+def test_benchmark_agent_overrides_are_composed_with_local_bindings(
+    tmp_path, monkeypatch
+):
+    from dataclasses import replace
+
+    from roborsi.agents.config import AgentConfig
+
+    original = load_benchmark("libero_pro")
+    overrides = json.loads(json.dumps(original.agent_overrides))
+    overrides["agent"].update(reasoning_effort="high", max_tokens=4096)
+    config = replace(original, agent_overrides=overrides)
+    monkeypatch.setattr(bootstrap, "load_benchmark", lambda name: config)
+    monkeypatch.setattr(bootstrap, "_run", lambda *args, **kwargs: None)
+    monkeypatch.setattr(bootstrap, "_ensure_image", lambda image: image)
+    monkeypatch.setattr(bootstrap, "_ensure_tokenizer", lambda *args: None)
+    monkeypatch.setattr(bootstrap, "_build_three_image", lambda *args: "fixture")
+    assets = tmp_path / "assets"
+    assets.mkdir()
+    (assets / "tokenizer.json").write_text("{}")
+    monkeypatch.setattr(bootstrap, "_prepare_three_assets", lambda *args: assets)
+    prepared = bootstrap.prepare_benchmarks(["libero_pro"], tmp_path / "work")
+    preset = AgentConfig.from_file(prepared.presets["libero_pro"])
+    assert preset.document["agent"]["reasoning_effort"] == "high"
+    assert preset.document["agent"]["max_tokens"] == 4096
+    assert preset.document["runtime"]["context"]["tokenizer_file"] == str(
+        assets / "tokenizer.json"
+    )

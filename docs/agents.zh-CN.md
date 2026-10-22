@@ -1,5 +1,10 @@
 # Agent 配置
 
+一键评测通过 [`configs/`](../configs/README.md) 统一选择环境、模型和 Agent。
+LIBERO 专用 YAML 与 context map 位于 `configs/agents/libero/`，RoboCasa ICL 预设为
+`configs/agents/robocasa365/icl.yaml`。执行前会组合模型 YAML 和 benchmark 的
+`agent_overrides`。下方介绍的直接 `bench eval` 配置方式继续可用。
+
 [English](agents.md) · [全部指南](README.md)
 
 Agent 接收任务、当前观测和动作 schema，并返回动作。Benchmark 负责环境推进、

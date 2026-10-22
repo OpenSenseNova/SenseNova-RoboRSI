@@ -674,3 +674,78 @@ def test_catalog_options_are_not_part_of_cli(runner, option, value):
     with pytest.raises(SystemExit) as exc:
         runner.parse_args(["--prepare-only", "--benchmark", "libero", option, value])
     assert exc.value.code == 2
+
+
+def test_distinct_model_yaml_profiles_use_their_own_connection_and_key(
+    runner, registry, tmp_path, monkeypatch, capsys
+):
+    import yaml
+
+    from scripts.evaluation import configuration
+
+    root = tmp_path / "config"
+    (root / "benchmarks").mkdir(parents=True)
+    (root / "models").mkdir()
+    names = ("libero", "libero_pro")
+    for index, name in enumerate(names):
+        original = configuration.load_benchmark(name)
+        document = yaml.safe_load(original.path.read_text())
+        document["agent"] = str(original.agent)
+        document["model"] = f"../models/{name}.yaml"
+        if name == "libero_pro":
+            document["environment"]["icl"]["asset_lock"] = str(
+                original.environment["icl"]["asset_lock"]
+            )
+        (root / f"benchmarks/{name}.yaml").write_text(yaml.safe_dump(document))
+        (root / f"models/{name}.yaml").write_text(
+            yaml.safe_dump(
+                {
+                    "schema_version": 1,
+                    "provider": "openai",
+                    "base_url": f"http://model-{index}.example/v1",
+                    "model_name": f"model-{index}",
+                    "base_url_env": f"PROFILE_URL_{index}",
+                    "model_name_env": f"PROFILE_NAME_{index}",
+                    "api_key_env": f"PROFILE_KEY_{index}",
+                    "openai_format": "chat",
+                }
+            )
+        )
+        monkeypatch.setenv(f"PROFILE_KEY_{index}", f"private-key-{index}")
+        monkeypatch.delenv(f"PROFILE_URL_{index}", raising=False)
+        monkeypatch.delenv(f"PROFILE_NAME_{index}", raising=False)
+    monkeypatch.setattr(configuration, "CONFIG_ROOT", root)
+    calls = []
+
+    def execute(command, **kwargs):
+        name = command[command.index("--benchmark") + 1]
+        index = names.index(name)
+        assert f'runtime.llm.base_url="http://model-{index}.example/v1"' in command
+        assert f'runtime.llm.model="model-{index}"' in command
+        assert kwargs["env"]["OPENAI_API_KEY"] == f"private-key-{index}"
+        assert f"private-key-{1 - index}" not in kwargs["env"].values()
+        calls.append(command)
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            json.dumps(evaluation_report(registry, name, "success")),
+            "private-key-0 private-key-1",
+        )
+
+    monkeypatch.setattr(runner.subprocess, "run", execute)
+    assert (
+        runner.main(
+            [
+                "--registry-root",
+                str(registry),
+                "--benchmark",
+                "libero",
+                "--benchmark",
+                "libero_pro",
+            ]
+        )
+        == 0
+    )
+    assert len(calls) == 4
+    output = capsys.readouterr()
+    assert "private-key" not in output.out + output.err

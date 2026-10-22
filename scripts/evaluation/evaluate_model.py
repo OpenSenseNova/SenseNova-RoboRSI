@@ -27,6 +27,7 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
+from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -109,17 +110,20 @@ def parse_args(
     argv: list[str] | None,
 ) -> tuple[argparse.ArgumentParser, argparse.Namespace]:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--base-url", default=os.environ.get("OPENAI_BASE_URL"))
+    parser.add_argument(
+        "--base-url", help="override model YAML and its named environment variable"
+    )
     parser.add_argument(
         "--api-key",
-        default=os.environ.get("OPENAI_API_KEY"),
         help="prefer OPENAI_API_KEY in the environment; use EMPTY for unauthenticated APIs",
     )
-    parser.add_argument("--model-name", default=os.environ.get("MODEL_NAME"))
+    parser.add_argument(
+        "--model-name", help="override model YAML and its named environment variable"
+    )
     parser.add_argument(
         "--openai-format",
         choices=("chat", "responses"),
-        help="default: chat for the generic preset; preserve custom presets",
+        help="override model YAML / Agent API format",
     )
     parser.add_argument(
         "--benchmark",
@@ -183,52 +187,61 @@ def parse_args(
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args(argv)
     try:
+        configuration = load_configuration()
+        args.configurations = {
+            name: configuration.load_benchmark(name) for name in args.benchmark
+        }
+        args.models = {}
+        for name, config in args.configurations.items():
+            model = configuration.resolve_model(
+                config.model,
+                base_url=args.base_url,
+                model_name=args.model_name,
+                api_key=args.api_key,
+                openai_format=args.openai_format,
+            )
+            if model.base_url:
+                model = replace(model, base_url=validate_url(model.base_url))
+            if not args.prepare_only and (
+                not model.base_url
+                or not model.model_name
+                or not model.model_name.strip()
+            ):
+                raise ValueError(
+                    "set model YAML, --base-url / OPENAI_BASE_URL and --model-name / MODEL_NAME"
+                )
+            if (
+                not args.dry_run
+                and not args.prepare_only
+                and (not model.api_key or not model.api_key.strip())
+            ):
+                raise ValueError(
+                    "set the model profile's api_key_env or --api-key (use EMPTY for an unauthenticated model API)"
+                )
+            args.models[name] = model
+        first_model = args.models[args.benchmark[0]]
+        args.base_url, args.model_name, args.api_key = (
+            first_model.base_url,
+            first_model.model_name,
+            first_model.api_key,
+        )
         args.auto_prepare = not (args.registry_root or args.benchmark_url)
         if args.prepare_only and not args.auto_prepare:
             raise ValueError(
                 "--prepare-only cannot be combined with an existing benchmark source"
             )
-        if not args.prepare_only and (
-            not args.base_url or not args.model_name or not args.model_name.strip()
-        ):
-            raise ValueError(
-                "set --base-url / OPENAI_BASE_URL and --model-name / MODEL_NAME"
-            )
-        if args.base_url:
-            args.base_url = validate_url(args.base_url)
-        if (
-            not args.dry_run
-            and not args.prepare_only
-            and (not args.api_key or not args.api_key.strip())
-        ):
-            raise ValueError(
-                "set OPENAI_API_KEY or --api-key (use EMPTY for an unauthenticated model API)"
-            )
         if len(args.benchmark) != len(set(args.benchmark)):
             raise ValueError("--benchmark values must be unique")
-        args.libero_suite = os.environ.get("ROBORSI_LIBERO_SUITE", "libero_spatial")
-        args.robocasa_cells = os.environ.get("ROBORSI_ROBOCASA_CELLS", "all")
-        if (
-            args.auto_prepare
-            and "libero" in args.benchmark
-            and args.libero_suite
-            not in {
-                "libero_spatial",
-                "libero_object",
-                "libero_goal",
-                "libero_10",
-                "libero_90",
-            }
-        ):
-            raise ValueError(
-                "ROBORSI_LIBERO_SUITE must name a supported standard LIBERO suite"
-            )
-        if (
-            args.auto_prepare
-            and "robocasa365" in args.benchmark
-            and args.robocasa_cells not in {"all", "seed1"}
-        ):
-            raise ValueError("ROBORSI_ROBOCASA_CELLS must be all or seed1")
+        args.libero_suite = (
+            configuration.catalog_setting(args.configurations["libero"], "suite")
+            if args.auto_prepare and "libero" in args.benchmark
+            else None
+        )
+        args.robocasa_cells = (
+            configuration.catalog_setting(args.configurations["robocasa365"], "cells")
+            if args.auto_prepare and "robocasa365" in args.benchmark
+            else None
+        )
         if args.auto_prepare and args.max_concurrent != 1:
             raise ValueError(
                 "automatic HTTP Benchmark services require --max-concurrent 1"
@@ -285,7 +298,7 @@ def parse_args(
             raise ValueError(
                 "preparation and evaluation require Linux/WSL; native Windows supports --help and automatic/HTTP --dry-run only"
             )
-    except ValueError as exc:
+    except (ValueError, OSError) as exc:
         parser.error(str(exc))
     return parser, args
 
@@ -340,13 +353,14 @@ def build_commands(args: argparse.Namespace) -> list[list[str]]:
     commands = []
     for (benchmark, suffix, budget), tasks in groups.items():
         custom = benchmark in args.presets
+        model = args.models[benchmark]
         overrides = {
             "runtime.llm.provider": "openai",
-            "runtime.llm.base_url": args.base_url,
-            "runtime.llm.model": args.model_name,
+            "runtime.llm.base_url": model.base_url,
+            "runtime.llm.model": model.model_name,
         }
         for key, explicit, default in (
-            ("runtime.llm.openai_format", args.openai_format, "chat"),
+            ("runtime.llm.openai_format", model.openai_format, "chat"),
             ("agent.max_turns", args.max_turns, 100),
             ("agent.max_tokens", args.max_tokens, 2048),
             ("runtime.context.keep_turns", args.keep_turns, 8),
@@ -357,8 +371,8 @@ def build_commands(args: argparse.Namespace) -> list[list[str]]:
             overrides["agent.reasoning_effort"] = "none"
         if budget is not None:
             overrides["agent.planner_timeout_s"] = budget
-        case_timeout = args.case_timeout_s or (
-            43200 if benchmark in LONG_BENCHMARKS else 4500
+        case_timeout = (
+            args.case_timeout_s or args.configurations[benchmark].case_timeout_s
         )
         command = [
             sys.executable,
@@ -394,6 +408,15 @@ def build_commands(args: argparse.Namespace) -> list[list[str]]:
             command += ["--seed", str(seed)]
         commands.append(command)
     return commands
+
+
+def load_configuration():
+    """Load the YAML resolver when evaluating, keeping --help lightweight."""
+    if str(ROOT) not in sys.path:
+        sys.path.insert(0, str(ROOT))
+    from scripts.evaluation import configuration
+
+    return configuration
 
 
 def load_bootstrap():
@@ -461,7 +484,7 @@ def run_evaluation(parser: argparse.ArgumentParser, args: argparse.Namespace) ->
     secrets = [
         value
         for value in (
-            args.api_key,
+            *(model.api_key for model in args.models.values()),
             os.environ.get(args.benchmark_token_env)
             if args.benchmark_token_env
             else None,
@@ -479,11 +502,18 @@ def run_evaluation(parser: argparse.ArgumentParser, args: argparse.Namespace) ->
     except (ValueError, OSError, KeyError, RpcError) as exc:
         parser.error(redact(str(exc)))
     environment = os.environ.copy()
+    for variable in {
+        "OPENAI_API_KEY",
+        *(model.api_key_env for model in args.models.values()),
+    }:
+        environment.pop(variable, None)
     environment.update(getattr(args, "prepared_env", {}))
     environment["PYTHONUTF8"] = "1"
-    if args.api_key:
-        environment["OPENAI_API_KEY"] = args.api_key
-    print(redact(f"Model: {args.model_name} | API: {args.base_url}"), flush=True)
+    for name, model in args.models.items():
+        print(
+            redact(f"Model ({name}): {model.model_name} | API: {model.base_url}"),
+            flush=True,
+        )
     for command in commands:
         run_id = command[command.index("--run-id") + 1]
         print(redact(f"Results: {args.results_root / run_id}"), flush=True)
@@ -496,10 +526,16 @@ def run_evaluation(parser: argparse.ArgumentParser, args: argparse.Namespace) ->
             run_id = command[command.index("--run-id") + 1]
             print(f"{'Preflight' if dry_run else 'Evaluate'}: {run_id}", flush=True)
             try:
+                model = args.models[command[command.index("--benchmark") + 1]]
+                child_environment = environment.copy()
+                if model.api_key:
+                    child_environment["OPENAI_API_KEY"] = model.api_key
+                else:
+                    child_environment.pop("OPENAI_API_KEY", None)
                 completed = subprocess.run(
                     command + (["--dry-run"] if dry_run else []),
                     cwd=ROOT,
-                    env=environment,
+                    env=child_environment,
                     text=True,
                     encoding="utf-8",
                     errors="replace",

@@ -105,10 +105,10 @@ Agent 可提交 7-DoF Panda `OSC_POSE` 动作，或已声明的反馈 primitive�
 
 ## Agent 预设与输入
 
-| `robots/libero/agents/three_benchmark/` 下的预设 | 安装后的 bundle | ICL package 数 |
+| `configs/agents/libero/` 下的预设 | 安装后的 bundle | ICL package 数 |
 | --- | --- | ---: |
-| `long_plus_plus_v13.yaml` | `bundle:libero_long_plus_plus_v13` | 12 |
-| `ultra_long_v13.yaml` | `bundle:libero_ultra_long_v13` | 9 |
+| `long_plus_plus.yaml` | `bundle:libero_long_plus_plus_v13` | 12 |
+| `ultra_long.yaml` | `bundle:libero_ultra_long_v13` | 9 |
 | `pro.yaml` | `bundle:libero_pro` | 40，供 80 个 case 共用 |
 
 `base.yaml` 和 `v13.yaml` 提供公共设置。三个叶子预设均使用 max reasoning 和精确
@@ -122,7 +122,7 @@ PRO 允许 100 个模型轮次、5,000 秒 planner 预算，关闭模型重试�
 时，tokenizer 路径必须指向镜像内已验证的文件。
 
 [资产锁](assets.lock.json)标识 61 个 sealed ICL package
-与 tokenizer；[context map](../../robots/libero/agents/three_benchmark/context_maps/)将任务映射到
+与 tokenizer；[context map](../../configs/agents/libero/context_maps/)将任务映射到
 package。`prepare_agent_assets.py` 在复制前验证完整清单与哈希；构建 Agent 镜像时，
 `verify_agent_image.py` 再对安装后的 bundle 执行相同检查。
 [重建步骤](#使用公开输入重建-agent)从公开 GHCR 镜像取得这些输入。
@@ -165,21 +165,21 @@ python benchmarks/libero_three_combined/prepare_agent_assets.py \
 
 ```bash
 python -m roborsi.agents.package \
-  --config robots/libero/agents/three_benchmark/long_plus_plus_v13.yaml \
+  --config configs/agents/libero/long_plus_plus.yaml \
   --name libero_long_plus_plus_v13 \
   --set 'runtime.llm.model="gpt-6-astra"' \
   --set 'runtime.context.tokenizer_file="/opt/roborsi-agent-assets/tokenizer.json"' \
   --set 'runtime.context.tokenizer_sha256="0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3"' \
   --output "$LIBERO_BUILD_ROOT/bundle-longpp"
 python -m roborsi.agents.package \
-  --config robots/libero/agents/three_benchmark/ultra_long_v13.yaml \
+  --config configs/agents/libero/ultra_long.yaml \
   --name libero_ultra_long_v13 \
   --set 'runtime.llm.model="gpt-6-astra"' \
   --set 'runtime.context.tokenizer_file="/opt/roborsi-agent-assets/tokenizer.json"' \
   --set 'runtime.context.tokenizer_sha256="0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3"' \
   --output "$LIBERO_BUILD_ROOT/bundle-ultra"
 python -m roborsi.agents.package \
-  --config robots/libero/agents/three_benchmark/pro.yaml --name libero_pro \
+  --config configs/agents/libero/pro.yaml --name libero_pro \
   --set 'runtime.llm.model="gpt-6-astra"' \
   --set 'runtime.context.tokenizer_file="/opt/roborsi-agent-assets/tokenizer.json"' \
   --set 'runtime.context.tokenizer_sha256="0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3"' \

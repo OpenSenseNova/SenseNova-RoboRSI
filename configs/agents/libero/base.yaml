@@ -1,9 +1,9 @@
 # Shared model, factory and trace settings for the three frozen LIBERO policies.
 schema_version: 1
-source_root: ../../../..
+source_root: ../../..
 factory: robots.libero.three_benchmark_agent:make_three_benchmark_agent
 code:
-  - ../../three_benchmark_agent.py
+  - ../../../robots/libero/three_benchmark_agent.py
 agent:
   max_turns: 10000
   max_tokens: 128000

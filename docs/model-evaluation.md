@@ -43,6 +43,48 @@ OpenAI-compatible API. Automatic presets use Chat Completions, with reasoning
 and provider-specific prompt-cache extensions disabled. Pass
 `--openai-format responses` if your server implements Responses.
 
+## Configure environments, models and Agents
+
+The entry point automatically reads `configs/benchmarks/<benchmark>.yaml`.
+That file selects the environment and references a model profile and Agent
+preset; no extra configuration argument is required. See
+[configuration layout](../configs/README.md).
+
+```yaml
+# configs/benchmarks/libero_pro.yaml (selection excerpt)
+schema_version: 1
+benchmark: libero_pro
+model: ../models/default.yaml
+agent: ../agents/libero/pro.yaml
+# environment and agent_overrides are defined in this same file
+```
+
+Configure the shared model in [`configs/models/default.yaml`](../configs/models/default.yaml):
+
+```yaml
+schema_version: 1
+provider: openai
+base_url: http://127.0.0.1:8000/v1
+model_name: YOUR_SERVED_MODEL
+api_key_env: OPENAI_API_KEY
+openai_format: chat
+```
+
+Model values use **CLI > the profile's named environment variables > YAML**.
+The shipped profile leaves the address/name empty for environment configuration.
+`openai_format: null` preserves the Agent format. Separate benchmark YAML files
+can reference different model profiles; each evaluation child receives its own
+resolved key as `OPENAI_API_KEY`. No key is written to generated presets.
+
+Environment images, build arguments, resource download pins and catalog defaults
+are in the benchmark YAML. Agent policies are under `configs/agents/`, including
+the migrated `libero/{base,v13,pro,long_plus_plus,ultra_long}.yaml` and context maps.
+Benchmark `agent_overrides` applies the existing one-command API compatibility
+settings over those presets. Local ICL/tokenizer paths are then written to
+`<work-dir>/presets/<benchmark>.json`; edit source YAML rather than generated files.
+CLI Agent options take precedence. `configs/evaluations/embodied.yaml` remains
+the existing Agent comparison matrix.
+
 ## One-command evaluation
 
 ```bash
@@ -99,7 +141,8 @@ credentials. See [RoboCasa build details](../benchmarks/robocasa365/BUILD.md).
 
 ## Select catalogs with environment variables
 
-These settings apply to automatically started Benchmark services:
+These variables override `environment.catalog` in the benchmark YAML and apply
+to automatically started Benchmark services:
 
 | Variable | Default | Allowed values |
 | --- | --- | --- |

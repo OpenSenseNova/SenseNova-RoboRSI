@@ -105,6 +105,7 @@ def load_task_context(
     task: Task,
     *,
     checksums_sha256: str = CHECKSUMS_SHA256,
+    package_revision: str = PACKAGE_REVISION,
 ) -> tuple[tuple[str, ...], dict]:
     """Verify a release and return only this cell's own source-seed-0 memory."""
     split = task.native.get("split")
@@ -125,7 +126,7 @@ def load_task_context(
         "case_key": key,
         "source_seed": 0,
         "checksums_sha256": checksums_sha256,
-        "package_revision": PACKAGE_REVISION,
+        "package_revision": package_revision,
     }
     if task.task_id in NO_MEMORY:
         if task.task_id in index["packages"] or key in index["case_map"]:
@@ -181,17 +182,22 @@ class RoboCasaMemoryAgent:
         package: Path,
         *,
         checksums_sha256=CHECKSUMS_SHA256,
+        package_revision=PACKAGE_REVISION,
     ):
         self.delegate = delegate
         self.case_dir, self.package = Path(case_dir), Path(package)
         self.checksums_sha256 = checksums_sha256
+        self.package_revision = package_revision
         self._started = False
 
     def reset(self, task: Task) -> None:
         if self._started:
             raise ValueError("RoboCasa ICL Agent owns one evaluation case")
         context, evidence = load_task_context(
-            self.package, task, checksums_sha256=self.checksums_sha256
+            self.package,
+            task,
+            checksums_sha256=self.checksums_sha256,
+            package_revision=self.package_revision,
         )
         self.case_dir.mkdir(parents=True, exist_ok=True)
         write_json_atomic(self.case_dir / "icl-evidence.json", evidence)
@@ -216,6 +222,22 @@ def make_agent(case_dir: Path, *, config) -> RoboCasaMemoryAgent:
     """Create the task-scoped ICL Agent from an automatically prepared preset."""
     if set(config.resources) != {"icl_package"}:
         raise ValueError("RoboCasa ICL Agent requires resources.icl_package")
+    parameters = config.parameters
+    if set(parameters) - {"icl_manifest_sha256", "icl_revision"}:
+        raise ValueError("Unknown RoboCasa ICL Agent parameter")
+    checksum = parameters.get("icl_manifest_sha256", CHECKSUMS_SHA256)
+    revision = parameters.get("icl_revision", PACKAGE_REVISION)
+    if (
+        not isinstance(checksum, str)
+        or not re.fullmatch(r"[0-9a-f]{64}", checksum)
+        or not isinstance(revision, str)
+        or not re.fullmatch(r"[0-9a-f]{40}", revision)
+    ):
+        raise ValueError("RoboCasa ICL requires a pinned manifest SHA256 and revision")
     return RoboCasaMemoryAgent(
-        config.embodied_agent(case_dir), case_dir, config.resources["icl_package"]
+        config.embodied_agent(case_dir),
+        case_dir,
+        config.resources["icl_package"],
+        checksums_sha256=checksum,
+        package_revision=revision,
     )

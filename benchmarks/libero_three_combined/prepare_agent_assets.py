@@ -39,11 +39,7 @@ def _verify_packages(
     name: str, root: Path, lock: dict, *, repository: Path
 ) -> dict[str, int | str]:
     benchmark, case_count, package_count = _SPECS[name]
-    mapping = (
-        repository
-        / "robots/libero/agents/three_benchmark/context_maps"
-        / f"{benchmark}.json"
-    )
+    mapping = repository / "configs/agents/libero/context_maps" / f"{benchmark}.json"
     loaded = load_package_map(mapping, root)
     unique = {package.root for package in loaded.values()}
     if len(loaded) != case_count or len(unique) != package_count:
@@ -64,7 +60,12 @@ def _verify_packages(
 
 
 def prepare(
-    roots: dict[str, Path], tokenizer: Path, destination: Path, *, repository: Path
+    roots: dict[str, Path],
+    tokenizer: Path,
+    destination: Path,
+    *,
+    repository: Path,
+    asset_lock: Path | None = None,
 ) -> Path:
     """Copy only fully verified Agent inputs into one fresh Docker input tree."""
     if set(roots) != set(_SPECS):
@@ -72,9 +73,10 @@ def prepare(
     repository = repository.resolve()
     destination = destination.resolve()
     lock = json.loads(
-        (repository / "benchmarks/libero_three_combined/assets.lock.json").read_text(
-            encoding="utf-8"
-        )
+        (
+            asset_lock
+            or repository / "benchmarks/libero_three_combined/assets.lock.json"
+        ).read_text(encoding="utf-8")
     )
     verified = {
         name: _verify_packages(name, root.resolve(), lock, repository=repository)

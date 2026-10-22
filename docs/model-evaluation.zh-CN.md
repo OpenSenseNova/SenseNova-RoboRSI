@@ -40,6 +40,44 @@ bash scripts/deploy/deploy_model.sh
 关闭推理参数与供应商专有的 prompt-cache 扩展；支持 Responses 的服务可传
 `--openai-format responses`。
 
+## 统一配置环境、模型和 Agent
+
+入口自动读取 `configs/benchmarks/<benchmark>.yaml`，从中选择环境并引用模型与 Agent
+预设，无需额外配置参数。目录说明见 [`configs/README.md`](../configs/README.md)。
+
+```yaml
+# configs/benchmarks/libero_pro.yaml（引用部分节选）
+schema_version: 1
+benchmark: libero_pro
+model: ../models/default.yaml
+agent: ../agents/libero/pro.yaml
+# 同一文件内还定义 environment 和 agent_overrides
+```
+
+共享模型连接在 [`configs/models/default.yaml`](../configs/models/default.yaml) 配置：
+
+```yaml
+schema_version: 1
+provider: openai
+base_url: http://127.0.0.1:8000/v1
+model_name: YOUR_SERVED_MODEL
+api_key_env: OPENAI_API_KEY
+openai_format: chat
+```
+
+模型配置优先级为 **命令行 > 模型配置指定的环境变量 > YAML**。仓库默认文件的地址、
+名称留空，方便继续使用环境变量；`openai_format: null` 保留 Agent 格式。
+不同 benchmark 可以引用不同模型配置，评测子进程分别接收各自的密钥，统一映射为
+`OPENAI_API_KEY`，不会把密钥写入生成配置。
+
+镜像、构建参数、资源下载版本和 catalog 默认值放在 benchmark YAML。
+Agent 策略统一放在 `configs/agents/`，LIBERO 预设迁至
+`libero/{base,v13,pro,long_plus_plus,ultra_long}.yaml`，context map 也放在该目录。
+benchmark 的 `agent_overrides` 显式覆盖一键模式所需的 API 兼容设置，再自动绑定本地
+ICL/tokenizer 路径，生成 `<work-dir>/presets/<benchmark>.json`。
+请修改源 YAML，生成文件会被重新写入；命令行 Agent 参数优先。
+`configs/evaluations/embodied.yaml` 继续用于已有的多 Agent 对比。
+
 ## 一键评测
 
 ```bash
@@ -87,7 +125,7 @@ Hugging Face 需要鉴权时使用 `HF_TOKEN` 或已有 Hub 登录状态，不�
 
 ## 用环境变量选择 catalog
 
-以下配置只用于本脚本自动启动的 Benchmark 服务：
+以下环境变量覆盖 benchmark YAML 的 `environment.catalog`，只作用于本脚本自动启动的 Benchmark 服务：
 
 | 环境变量 | 默认值 | 可选值 |
 | --- | --- | --- |

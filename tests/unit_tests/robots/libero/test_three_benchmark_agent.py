@@ -31,8 +31,8 @@ def test_optional_tool_flags_are_explicit(monkeypatch):
 @pytest.mark.parametrize(
     ("name", "context_environment", "tool_enabled"),
     [
-        ("long_plus_plus_v13.yaml", "ROBORSI_LIBERO_LONGPP_ICL_ROOT", False),
-        ("ultra_long_v13.yaml", "ROBORSI_LIBERO_ULTRA_ICL_ROOT", False),
+        ("long_plus_plus.yaml", "ROBORSI_LIBERO_LONGPP_ICL_ROOT", False),
+        ("ultra_long.yaml", "ROBORSI_LIBERO_ULTRA_ICL_ROOT", False),
         ("pro.yaml", "ROBORSI_LIBERO_PRO_ICL_ROOT", False),
     ],
 )
@@ -40,9 +40,7 @@ def test_delivery_presets_compose_from_canonical_agent_directory(
     name, context_environment, tool_enabled
 ):
     repository = Path(__file__).resolve().parents[4]
-    config = AgentConfig.from_file(
-        repository / "robots/libero/agents/three_benchmark" / name
-    )
+    config = AgentConfig.from_file(repository / "configs/agents/libero" / name)
 
     assert config.factory.endswith(":make_three_benchmark_agent")
     assert config.parameters["context_root_env"] == context_environment
@@ -58,9 +56,7 @@ def test_delivery_presets_compose_from_canonical_agent_directory(
 
 def test_pro_reproduces_the_full_run_policy_limits() -> None:
     repository = Path(__file__).resolve().parents[4]
-    config = AgentConfig.from_file(
-        repository / "robots/libero/agents/three_benchmark/pro.yaml"
-    )
+    config = AgentConfig.from_file(repository / "configs/agents/libero/pro.yaml")
 
     assert config.document["agent"]["max_turns"] == 100
     assert config.document["agent"]["planner_timeout_s"] == 5000

@@ -138,6 +138,12 @@ python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
 downloads/builds the selected environment and prepares available ICL automatically.
 Enhanced LIBERO uses the released `migration_subset` catalogs.
 
+Configuration is centralized under [`configs/`](configs/README.md): each
+`configs/benchmarks/<name>.yaml` selects its environment, model and Agent.
+Edit [`configs/models/default.yaml`](configs/models/default.yaml) for the shared
+model connection, and `configs/agents/` for Agent policies. The environment
+variables above still override the model YAML; API keys stay in the environment.
+
 After the smoke check, run all 340 RoboCasa cells without task/seed filters:
 
 ```bash
@@ -153,8 +159,9 @@ ROBORSI_LIBERO_SUITE=libero_90 python scripts/evaluation/evaluate_model.py --ben
 ROBORSI_ROBOCASA_CELLS=seed1 python scripts/evaluation/evaluate_model.py --benchmark robocasa365
 ```
 
-`ROBORSI_LIBERO_SUITE` defaults to `libero_spatial`; `ROBORSI_ROBOCASA_CELLS`
-defaults to `all`. Results are saved under `work/model_eval/results/`; use a new
+Catalog defaults are configured in the benchmark YAML: `libero_spatial` for
+`ROBORSI_LIBERO_SUITE`, `all` for `ROBORSI_ROBOCASA_CELLS`. Environment variables
+override these defaults. Results are saved under `work/model_eval/results/`; use a new
 `--run-id` for each run. To download/build without evaluation:
 
 ```bash

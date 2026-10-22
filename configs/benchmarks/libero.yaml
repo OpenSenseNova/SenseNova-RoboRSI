@@ -1,0 +1,20 @@
+schema_version: 1
+benchmark: libero
+model: ../models/default.yaml
+agent: ../agents/embodied/default.yaml
+agent_overrides:
+  agent:
+    reasoning_effort: none
+  runtime:
+    llm:
+      openai_format: chat
+environment:
+  kind: libero
+  gpus: 0
+  build_args:
+    LIBERO_RUNTIME_IMAGE: python:3.11-slim-bookworm@sha256:a36c24f9cbdf4fd0f52d67f0823eeac19c2028c637cecc392d97f980d4fec56b
+  catalog:
+    suite: libero_spatial
+  assets:
+    repo_id: RLinf/LIBERO-assets
+    revision: 3ba78404b48e8c70fa4ac9782d5aac8e5b46d55f

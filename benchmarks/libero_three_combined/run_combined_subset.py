@@ -53,11 +53,7 @@ def _object(path: Path) -> dict[str, Any]:
 
 
 def _tasks(repository: Path, benchmark: str) -> tuple[str, ...]:
-    path = (
-        repository
-        / "robots/libero/agents/three_benchmark/context_maps"
-        / f"{benchmark}.json"
-    )
+    path = repository / "configs/agents/libero/context_maps" / f"{benchmark}.json"
     document = json.loads(path.read_text(encoding="utf-8"))
     packages = document.get("packages") if isinstance(document, dict) else None
     if (
@@ -161,9 +157,7 @@ def _conditions(
         ),
         "subset_runner_sha256": _file_sha256(Path(__file__).resolve()),
         "context_map_sha256": _file_sha256(
-            repository
-            / "robots/libero/agents/three_benchmark/context_maps"
-            / f"{benchmark}.json"
+            repository / "configs/agents/libero/context_maps" / f"{benchmark}.json"
         ),
         "profile": "migration_subset",
         "plus9_on_failure": False,

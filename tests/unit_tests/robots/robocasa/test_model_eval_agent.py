@@ -234,3 +234,24 @@ def test_reset_injects_context_and_records_evidence_before_agent_start(
     )
     agent.reset(selected)
     assert agent.delegate.evaluation_initial_context[0] == "Existing user context"
+
+
+def test_factory_uses_the_configured_icl_pin_and_records_its_revision(tmp_path, loader):
+    from types import SimpleNamespace
+
+    package = tmp_path / "package"
+    digest = release(package)
+    delegate = SimpleNamespace(evaluation_initial_context=(), reset=lambda task: None)
+    config = SimpleNamespace(
+        resources={"icl_package": package},
+        parameters={"icl_manifest_sha256": digest, "icl_revision": "a" * 40},
+        embodied_agent=lambda case_dir: delegate,
+    )
+    agent = loader.make_agent(tmp_path / "case", config=config)
+    agent.reset(task())
+    evidence = json.loads((tmp_path / "case/icl-evidence.json").read_text())
+    assert evidence["checksums_sha256"] == digest
+    assert evidence["package_revision"] == "a" * 40
+    assert "Only the drawer demonstration" in "\n".join(
+        delegate.evaluation_initial_context
+    )

@@ -13,10 +13,12 @@
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import importlib.metadata
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -25,38 +27,18 @@ import time
 import urllib.error
 import urllib.request
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from uuid import uuid4
 
+from scripts.evaluation.configuration import (
+    BenchmarkConfig,
+    catalog_setting,
+    load_benchmark,
+)
 from scripts.evaluation.downloads import download_snapshot
 
 ROOT = Path(__file__).resolve().parents[2]
-LIBERO_ASSET_REVISION = "3ba78404b48e8c70fa4ac9782d5aac8e5b46d55f"
-ROBOCASA_REVISION = "e977b5ad667b4ce753ee947cbb0b95d4fc0fe98c"
-ROBOCASA_MANIFEST = "88dfecd78fada13a6fc7aa2b13d1a7c61cb005451b72d53c0d3f25cc2f6a90bf"
-_LONG_IMAGE_DIGEST = "814139261e914b114cb89a359c6a39d4f409a556f79928e986b6ade3dfe7dc7a"
-IMAGES = {
-    "libero_pro": "ghcr.io/opensensenova/sensenova-roborsi-libero-pro@sha256:"
-    "a83417f1459a4c555c457caa82ef00a5de50191e3d8deb943894fa9285cff172",
-    "libero_long_plus_plus": "ghcr.io/opensensenova/sensenova-roborsi-libero-long-plus-plus@sha256:"
-    + _LONG_IMAGE_DIGEST,
-    "libero_ultra_long": "ghcr.io/opensensenova/sensenova-roborsi-libero-ultra-long@sha256:"
-    + _LONG_IMAGE_DIGEST,
-}
-_THREE = {
-    "libero_pro": ("pro.yaml", "pro", "ROBORSI_LIBERO_PRO_ICL_ROOT"),
-    "libero_long_plus_plus": (
-        "long_plus_plus_v13.yaml",
-        "longpp",
-        "ROBORSI_LIBERO_LONGPP_ICL_ROOT",
-    ),
-    "libero_ultra_long": (
-        "ultra_long_v13.yaml",
-        "ultra",
-        "ROBORSI_LIBERO_ULTRA_ICL_ROOT",
-    ),
-}
 
 
 @dataclass
@@ -67,6 +49,7 @@ class Prepared:
     env: dict[str, str]
     images: dict[str, str]
     standard_asset: Path | None = None
+    configurations: dict[str, BenchmarkConfig] = field(default_factory=dict)
 
 
 def _run(command: list[str], **kwargs) -> subprocess.CompletedProcess:
@@ -75,32 +58,42 @@ def _run(command: list[str], **kwargs) -> subprocess.CompletedProcess:
 
 
 def preparation_plan(benchmarks, work_dir: Path) -> dict:
-    """Describe selected downloads without touching Docker, disk or the network."""
+    """Read configured downloads without creating files or contacting services."""
+    configs = {name: load_benchmark(name) for name in benchmarks}
     return {
         "benchmarks": list(benchmarks),
         "work_dir": str(work_dir),
         "service_source": "current checkout; enhanced LIBERO overlays its service on the pinned native image",
         "images": {
-            name: IMAGES.get(
-                name, f"build benchmarks/{name}/Dockerfile from this checkout"
+            name: config.environment.get(
+                "image", f"build benchmarks/{name}/Dockerfile from this checkout"
             )
-            for name in benchmarks
+            for name, config in configs.items()
         },
         "icl": {
             name: (
                 "embedded sealed packages (migration_subset)"
-                if name in _THREE
-                else f"sensenova/SenseNova-RoboRSI-Packages@{ROBOCASA_REVISION}/robocasa365/v1.0.0"
+                if config.environment["kind"] == "libero_three"
+                else "{repo_id}@{revision}/{prefix}".format(**config.environment["icl"])
                 if name == "robocasa365"
                 else "no released standard-LIBERO ICL package"
             )
-            for name in benchmarks
+            for name, config in configs.items()
+        },
+        "configurations": {
+            name: {
+                "benchmark": str(c.path),
+                "model": str(c.model),
+                "agent": str(c.agent),
+            }
+            for name, c in configs.items()
         },
         "catalog_environment": {
-            "ROBORSI_LIBERO_SUITE": os.environ.get(
-                "ROBORSI_LIBERO_SUITE", "libero_spatial"
-            ),
-            "ROBORSI_ROBOCASA_CELLS": os.environ.get("ROBORSI_ROBOCASA_CELLS", "all"),
+            name: {
+                key: catalog_setting(config, key)
+                for key in config.environment["catalog"]
+            }
+            for name, config in configs.items()
         },
     }
 
@@ -115,9 +108,13 @@ def _ensure_image(image: str) -> str:
     return image
 
 
-def _build_image(benchmark: str, work_dir: Path) -> str:
+def _build_image(
+    benchmark: str, work_dir: Path, config: BenchmarkConfig | None = None
+) -> str:
     from benchmarks.package import prepare_context
 
+    config = config or load_benchmark(benchmark)
+    build_args = config.environment.get("build_args", {})
     with tempfile.TemporaryDirectory(
         prefix=f"build-{benchmark}-", dir=work_dir
     ) as temporary:
@@ -125,7 +122,12 @@ def _build_image(benchmark: str, work_dir: Path) -> str:
             benchmark, Path(temporary) / "context", source_root=ROOT
         )
         digest = json.loads((context / "build.json").read_text())["context_sha256"]
-        image = f"roborsi-onecmd-{benchmark}:{digest[:24]}"
+        identity = hashlib.sha256(
+            json.dumps(
+                {"source": digest, "build_args": build_args}, sort_keys=True
+            ).encode()
+        ).hexdigest()
+        image = f"roborsi-onecmd-{benchmark}:{identity[:24]}"
         inspected = subprocess.run(
             ["docker", "image", "inspect", image], capture_output=True, text=True
         )
@@ -139,27 +141,47 @@ def _build_image(benchmark: str, work_dir: Path) -> str:
                     "linux/amd64",
                     "-t",
                     image,
+                    *[
+                        part
+                        for key, value in sorted(build_args.items())
+                        for part in ("--build-arg", f"{key}={value}")
+                    ],
                     str(context),
                 ]
             )
         return image
 
 
-def _ensure_tokenizer() -> None:
+def _ensure_tokenizer(agent: Path) -> None:
+    from roborsi.agents.config import AgentConfig
+
+    dependencies = AgentConfig.from_file(agent).document.get("dependencies", [])
+    pins = [
+        value
+        for value in dependencies
+        if re.fullmatch(r"tokenizers==[0-9]+(?:\.[0-9]+)+", value)
+    ]
+    if len(pins) != 1:
+        raise ValueError(
+            "Sealed LIBERO Agent must declare one pinned tokenizers dependency"
+        )
+    package = pins[0]
     try:
         installed = importlib.metadata.version("tokenizers")
     except importlib.metadata.PackageNotFoundError:
         installed = None
-    if installed == "0.22.2":
+    if installed == package.split("==", 1)[1]:
         return
     if sys.prefix == sys.base_prefix:
         raise RuntimeError(
-            "Activate a Python virtual environment for automatic tokenizers==0.22.2 installation"
+            f"Activate a Python virtual environment for automatic {package} installation"
         )
-    _run([sys.executable, "-m", "pip", "install", "tokenizers==0.22.2"])
+    _run([sys.executable, "-m", "pip", "install", package])
 
 
-def _build_three_image(benchmark: str, work_dir: Path, base: str) -> str:
+def _build_three_image(
+    benchmark: str, work_dir: Path, base: str, config: BenchmarkConfig | None = None
+) -> str:
     """Keep the published native stack but serve this checkout's protocol code."""
     from roborsi.benchmarks.registry import directory_sha256
     from roborsi.benchmarks.runtime_source import (
@@ -167,7 +189,7 @@ def _build_three_image(benchmark: str, work_dir: Path, base: str) -> str:
         benchmark_source_files,
     )
 
-    native = "libero_pro" if benchmark == "libero_pro" else "libero_lilo"
+    native = (config or load_benchmark(benchmark)).environment["native_bundle"]
     before = benchmark_source_digest(ROOT, native)
     with tempfile.TemporaryDirectory(
         prefix="build-libero-service-", dir=work_dir
@@ -211,11 +233,13 @@ def _build_three_image(benchmark: str, work_dir: Path, base: str) -> str:
         return image
 
 
-def _verify_three_assets(root: Path) -> None:
+def _verify_three_assets(root: Path, config: BenchmarkConfig | None = None) -> None:
     from benchmarks.libero_three_combined.prepare_agent_assets import _verify_packages
 
     lock = json.loads(
-        (ROOT / "benchmarks/libero_three_combined/assets.lock.json").read_text()
+        (config or load_benchmark("libero_pro"))
+        .environment["icl"]["asset_lock"]
+        .read_text()
     )
     for group in ("longpp", "ultra", "pro"):
         _verify_packages(group, root / group / "packages", lock, repository=ROOT)
@@ -229,12 +253,14 @@ def _verify_three_assets(root: Path) -> None:
         raise ValueError("ICL context tokenizer checksum mismatch")
 
 
-def _prepare_three_assets(work_dir: Path, image: str) -> Path:
+def _prepare_three_assets(
+    work_dir: Path, image: str, config: BenchmarkConfig | None = None
+) -> Path:
     from benchmarks.libero_three_combined.prepare_agent_assets import prepare
 
     destination = work_dir / "assets/libero-three"
     if destination.exists():
-        _verify_three_assets(destination)
+        _verify_three_assets(destination, config)
         return destination
     destination.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(
@@ -265,17 +291,23 @@ def _prepare_three_assets(work_dir: Path, image: str) -> Path:
             extracted / "tokenizer.json",
             Path(temporary) / "verified",
             repository=ROOT,
+            asset_lock=(config or load_benchmark("libero_pro")).environment["icl"][
+                "asset_lock"
+            ],
         )
         if destination.exists():
-            _verify_three_assets(destination)
+            _verify_three_assets(destination, config)
         else:
             staged.rename(destination)
     return destination
 
 
-def _prepare_standard_assets(work_dir: Path) -> Path:
+def _prepare_standard_assets(
+    work_dir: Path, config: BenchmarkConfig | None = None
+) -> Path:
     from roborsi.benchmarks.registry import directory_sha256
 
+    source = (config or load_benchmark("libero")).environment["assets"]
     root = work_dir / "assets/libero"
     if not (root / "asset.json").is_file():
         _run(
@@ -285,13 +317,17 @@ def _prepare_standard_assets(work_dir: Path) -> Path:
                 "benchmarks.libero.download_assets",
                 "--output-dir",
                 str(root),
+                "--repo-id",
+                source["repo_id"],
+                "--revision",
+                source["revision"],
             ],
             cwd=ROOT,
         )
     asset = json.loads((root / "asset.json").read_text())
     snapshot = root / asset["path"]
     if (
-        asset.get("version") != LIBERO_ASSET_REVISION
+        asset.get("version") != source["revision"]
         or not snapshot.resolve().is_relative_to(root.resolve())
         or snapshot.is_symlink()
         or directory_sha256(snapshot) != asset.get("sha256")
@@ -302,10 +338,31 @@ def _prepare_standard_assets(work_dir: Path) -> Path:
     return snapshot
 
 
-def _write_preset(work_dir: Path, benchmark: str, document: dict) -> str:
+def _write_preset(
+    work_dir: Path,
+    benchmark: str,
+    document: dict,
+    config: BenchmarkConfig | None = None,
+) -> str:
+    def merge(base, patch):
+        result = copy.deepcopy(base)
+        for key, value in patch.items():
+            result[key] = (
+                merge(result[key], value)
+                if isinstance(result.get(key), dict) and isinstance(value, dict)
+                else copy.deepcopy(value)
+            )
+        return result
+
+    config = config or load_benchmark(benchmark)
+    document = merge(config.agent_overrides, document)
     # AgentConfig requires code, inherited presets and resources inside source_root.
     document["schema_version"] = 1
-    document["source_root"] = os.path.commonpath([str(ROOT), str(work_dir)])
+    from roborsi.agents.config import AgentConfig
+
+    document["source_root"] = os.path.commonpath(
+        [str(ROOT), str(work_dir), str(AgentConfig.from_file(config.agent).source_root)]
+    )
     destination = work_dir / "presets" / f"{benchmark}.json"
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
@@ -314,6 +371,11 @@ def _write_preset(work_dir: Path, benchmark: str, document: dict) -> str:
 
 def prepare_benchmarks(benchmarks, work_dir: Path) -> Prepared:
     """Download selected assets and ICL, and prepare images without episodes."""
+    configs = {name: load_benchmark(name) for name in benchmarks}
+    from roborsi.agents.config import AgentConfig
+
+    for config in configs.values():
+        AgentConfig.from_file(config.agent)
     try:
         _run(["docker", "info"], capture_output=True)
     except (OSError, subprocess.CalledProcessError):
@@ -322,69 +384,64 @@ def prepare_benchmarks(benchmarks, work_dir: Path) -> Prepared:
         ) from None
     work_dir = work_dir.resolve()
     work_dir.mkdir(parents=True, exist_ok=True)
-    prepared = Prepared(tuple(benchmarks), work_dir, {}, {}, {})
+    prepared = Prepared(tuple(benchmarks), work_dir, {}, {}, {}, configurations=configs)
     three_assets = None
     for name in benchmarks:
-        if name in _THREE:
-            base_image = _ensure_image(IMAGES[name])
-            _ensure_tokenizer()
+        config = configs[name]
+        environment = config.environment
+        if environment["kind"] == "libero_three":
+            base_image = _ensure_image(environment["image"])
+            _ensure_tokenizer(config.agent)
             if three_assets is None:
-                three_assets = _prepare_three_assets(work_dir, base_image)
-            image = _build_three_image(name, work_dir, base_image)
-            preset, group, variable = _THREE[name]
-            lock = json.loads(
-                (ROOT / "benchmarks/libero_three_combined/assets.lock.json").read_text()
+                three_assets = _prepare_three_assets(work_dir, base_image, config)
+            image = _build_three_image(name, work_dir, base_image, config)
+            group, variable = (
+                environment["icl"]["group"],
+                environment["icl"]["root_env"],
             )
+            lock = json.loads(environment["icl"]["asset_lock"].read_text())
             prepared.env[variable] = str(three_assets / group / "packages")
             prepared.presets[name] = _write_preset(
                 work_dir,
                 name,
                 {
-                    "extends": (
-                        ROOT / "robots/libero/agents/three_benchmark" / preset
-                    ).as_posix(),
-                    "agent": {"reasoning_effort": "none"},
+                    "extends": config.agent.as_posix(),
                     "runtime": {
-                        "llm": {
-                            "openai_format": "chat",
-                            "prompt_cache_mode": None,
-                            "prompt_cache_key": None,
-                            "prompt_cache_static_prefix": False,
-                        },
                         "context": {
                             "tokenizer_file": str(three_assets / "tokenizer.json"),
                             "tokenizer_sha256": lock["assets"]["context_tokenizer"][
                                 "sha256"
                             ],
-                            "cache_initial_task": False,
-                            "cache_initial_context": False,
-                            "cache_latest_tool_feedback": False,
                         },
                     },
                 },
+                config,
             )
         elif name == "libero":
-            prepared.standard_asset = _prepare_standard_assets(work_dir)
-            image = _build_image(name, work_dir)
+            prepared.standard_asset = _prepare_standard_assets(work_dir, config)
+            prepared.presets[name] = _write_preset(
+                work_dir, name, {"extends": config.agent.as_posix()}, config
+            )
+            image = _build_image(name, work_dir, config)
         elif name == "robocasa365":
             package = download_snapshot(
-                repo_id="sensenova/SenseNova-RoboRSI-Packages",
-                revision=ROBOCASA_REVISION,
-                prefix="robocasa365/v1.0.0",
+                **environment["icl"],
                 destination=work_dir / "assets/robocasa365-icl",
-                manifest_sha256=ROBOCASA_MANIFEST,
             )
             prepared.presets[name] = _write_preset(
                 work_dir,
                 name,
                 {
-                    "extends": (
-                        ROOT / "configs/agents/robocasa365/icl.yaml"
-                    ).as_posix(),
+                    "extends": config.agent.as_posix(),
                     "resources": {"icl_package": str(package)},
+                    "parameters": {
+                        "icl_manifest_sha256": environment["icl"]["manifest_sha256"],
+                        "icl_revision": environment["icl"]["revision"],
+                    },
                 },
+                config,
             )
-            image = _build_image(name, work_dir)
+            image = _build_image(name, work_dir, config)
         else:
             raise ValueError(f"Unsupported automatic benchmark: {name}")
         prepared.images[name] = image
@@ -418,14 +475,15 @@ def _wait_service(url: str, container: str, timeout_s: float = 900) -> None:
 
 
 @contextmanager
-def benchmark_services(
-    prepared: Prepared, *, libero_suite="libero_spatial", robocasa_cells="all"
-):
+def benchmark_services(prepared: Prepared, *, libero_suite=None, robocasa_cells=None):
     """Own and stop only the containers created for this invocation."""
     owned = []
     endpoints = {}
     try:
         for name in prepared.benchmarks:
+            config = prepared.configurations.get(name) or load_benchmark(name)
+            environment = config.environment
+            kind = environment["kind"]
             container = f"roborsi-eval-{name.replace('_', '-')}-{uuid4().hex[:12]}"
             owned.append(container)
             command = [
@@ -439,9 +497,9 @@ def benchmark_services(
                 "-p",
                 "127.0.0.1::8000",
             ]
-            if name != "libero":
-                command += ["--gpus", "all"]
-            if name in _THREE:
+            if environment["gpus"]:
+                command += ["--gpus", str(environment["gpus"])]
+            if kind == "libero_three":
                 command += [
                     "--entrypoint",
                     "python",
@@ -453,14 +511,17 @@ def benchmark_services(
             elif name == "libero":
                 command += [
                     "-e",
-                    f"ROBORSI_LIBERO_SUITE={libero_suite}",
+                    f"ROBORSI_LIBERO_SUITE={libero_suite or catalog_setting(config, 'suite')}",
                     "--mount",
                     f"type=bind,src={prepared.standard_asset},dst=/roborsi/assets/libero,readonly",
                 ]
             else:
-                command += ["-e", f"ROBORSI_ROBOCASA_CELLS={robocasa_cells}"]
+                command += [
+                    "-e",
+                    f"ROBORSI_ROBOCASA_CELLS={robocasa_cells or catalog_setting(config, 'cells')}",
+                ]
             command.append(prepared.images[name])
-            if name in _THREE:
+            if kind == "libero_three":
                 command += [
                     "-B",
                     "-m",
@@ -468,7 +529,7 @@ def benchmark_services(
                     "--benchmark",
                     name,
                     "--profile",
-                    "migration_subset",
+                    catalog_setting(config, "profile"),
                     "--host",
                     "0.0.0.0",
                     "--port",
@@ -480,7 +541,7 @@ def benchmark_services(
                 ["docker", "port", container, "8000/tcp"], capture_output=True
             ).stdout.strip()
             url = f"http://{port}"
-            _wait_service(url, container)
+            _wait_service(url, container, environment.get("startup_timeout_s", 900))
             endpoints[name] = url
         yield endpoints
     finally:

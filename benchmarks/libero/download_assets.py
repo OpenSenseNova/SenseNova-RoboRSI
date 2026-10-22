@@ -32,15 +32,17 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--repo-id", default=ASSETS_REPO)
+    parser.add_argument("--revision", default=ASSETS_REVISION)
     args = parser.parse_args()
     root = args.output_dir.resolve()
     root.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="download-", dir=root) as temporary:
         source = Path(temporary)
         snapshot_download(
-            ASSETS_REPO,
+            args.repo_id,
             repo_type="dataset",
-            revision=ASSETS_REVISION,
+            revision=args.revision,
             local_dir=source,
             token=False,
         )
@@ -50,7 +52,7 @@ def main() -> None:
     asset = {
         "name": "libero",
         "kind": "directory",
-        "version": ASSETS_REVISION,
+        "version": args.revision,
         "path": snapshot.relative_to(root).as_posix(),
         "sha256": snapshot.name,
     }

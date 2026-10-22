@@ -1,5 +1,12 @@
 # Agents
 
+For one-command evaluation, environments, models and Agents are selected through
+[`configs/`](../configs/README.md). Specialized LIBERO YAML and context maps live
+under `configs/agents/libero/`; RoboCasa's ICL preset is
+`configs/agents/robocasa365/icl.yaml`. Model YAML and benchmark `agent_overrides`
+are composed over the selected Agent before evaluation. The direct `bench eval`
+configuration described below remains available.
+
 [简体中文](agents.zh-CN.md) · [All guides](README.md)
 
 An Agent receives the task, current observation and action schema. It returns

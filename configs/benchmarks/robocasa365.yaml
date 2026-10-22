@@ -1,0 +1,16 @@
+schema_version: 1
+benchmark: robocasa365
+model: ../models/default.yaml
+agent: ../agents/robocasa365/icl.yaml
+environment:
+  kind: robocasa365
+  gpus: all
+  build_args:
+    ROBOCASA365_BASE_IMAGE: ghcr.io/opensensenova/sensenova-roborsi-robocasa365@sha256:8494fef17ee5979a072967632a2cb6ca885a165e87b01fb88d40c9f88b5b82e1
+  catalog:
+    cells: all
+  icl:
+    repo_id: sensenova/SenseNova-RoboRSI-Packages
+    revision: e977b5ad667b4ce753ee947cbb0b95d4fc0fe98c
+    prefix: robocasa365/v1.0.0
+    manifest_sha256: 88dfecd78fada13a6fc7aa2b13d1a7c61cb005451b72d53c0d3f25cc2f6a90bf

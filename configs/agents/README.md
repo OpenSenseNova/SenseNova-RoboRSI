@@ -1,8 +1,14 @@
 # Agent presets
 
-`embodied/` contains general Agent configurations for all supported LIBERO
-benchmarks. Choose the model, prompt, context and budgets in a preset; choose
-benchmark tasks and seeds through `bench eval`.
+`embodied/` contains generic Agent configurations; `libero/` holds the specialized
+LIBERO presets and context maps, and `robocasa365/icl.yaml` selects the same-task
+ICL factory. Choose prompts, context and budgets here.
+
+For `evaluate_model.py --benchmark NAME`, select the environment and Agent in
+`../benchmarks/NAME.yaml` and the shared model in `../models/default.yaml`.
+Model connection overrides and benchmark `agent_overrides` are composed over the
+Agent YAML. See the [configuration layout](../README.md). Direct `bench eval`
+and installed bundles continue to use the selected Agent's own model settings.
 
 | Preset | Purpose |
 | --- | --- |
@@ -12,7 +18,8 @@ benchmark tasks and seeds through `bench eval`.
 | `embodied/codex_cli.yaml` | Separately installed, pinned Codex CLI |
 | `embodied/claude_code.yaml` | Claude SDK |
 
-All model names are placeholders. Credentials come from the Agent environment;
+Generic model names are placeholders; specialized presets retain their published
+model policy for direct reproduction. Credentials come from the Agent environment;
 do not put them in YAML. `source_root` is relative to the preset file.
 [`../evaluations/embodied.yaml`](../evaluations/embodied.yaml) compares the two
 API context choices through `--agent-matrix`.

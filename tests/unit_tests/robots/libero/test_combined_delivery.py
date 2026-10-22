@@ -39,8 +39,8 @@ from roborsi.evaluation.store import ResultStore
 @pytest.mark.parametrize(
     ("preset", "benchmark", "case_count"),
     [
-        ("long_plus_plus_v13", "libero_long_plus_plus", 12),
-        ("ultra_long_v13", "libero_ultra_long", 9),
+        ("long_plus_plus", "libero_long_plus_plus", 12),
+        ("ultra_long", "libero_ultra_long", 9),
         ("pro", "libero_pro", 80),
     ],
 )
@@ -48,7 +48,7 @@ def test_combined_agent_bundles_load_their_exported_inputs(
     preset, benchmark, case_count, monkeypatch, tmp_path: Path
 ) -> None:
     repository = Path(__file__).resolve().parents[4]
-    path = repository / "robots/libero/agents/three_benchmark" / f"{preset}.yaml"
+    path = repository / "configs/agents/libero" / f"{preset}.yaml"
     original = AgentConfig.from_file(path)
     name = f"delivery_test_{benchmark}"
     project = export_agent(path, tmp_path / "export", name=name)
