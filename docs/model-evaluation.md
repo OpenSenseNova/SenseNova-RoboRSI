@@ -157,7 +157,7 @@ uses the Target50 harness prompt with up to 100 turns, 32768 output tokens and t
 two most recent image groups in context. When the time limit or the turn budget
 runs out, the Agent ends the episode and the scene at that moment is scored. An
 action that does not match the action schema is returned to the model with the
-reason, up to three times per step.
+reason, up to ten times per step.
 
 The first run can download large images and build dependencies. Docker caches
 images; assets, ICL and generated presets live under `work/model_eval/`.

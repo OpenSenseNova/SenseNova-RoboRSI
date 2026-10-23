@@ -12,7 +12,7 @@ agent:
   reasoning_effort: xhigh
   # A malformed action is returned to the model with the reason instead of
   # ending the case.
-  invalid_action_retries: 3
+  invalid_action_retries: 10
 runtime:
   llm:
     openai_format: chat

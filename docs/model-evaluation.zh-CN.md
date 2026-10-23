@@ -144,7 +144,7 @@ RLDX-1 是原生动作执行模型，与被评测模型 API 独立，由环境�
 RoboCasa Agent 见 [`configs/agents/robocasa365/icl.yaml`](../configs/agents/robocasa365/icl.yaml)，
 使用 Target50 harness 提示词，最多 100 轮、单次输出 32768 token，上下文中保留最近两组图像。
 时间或轮数用完时由 Agent 结束 episode，按当时的场景评分。不符合动作 schema 的动作会把原因
-返回给模型重新提交，每步最多 3 次。
+返回给模型重新提交，每步最多 10 次。
 
 首次运行会下载较大的镜像并安装构建依赖。Docker 缓存镜像；资产、ICL 和生成的预设默认放在
 `work/model_eval/`，可用 `--work-dir /path/to/cache` 修改。复用缓存时会校验，

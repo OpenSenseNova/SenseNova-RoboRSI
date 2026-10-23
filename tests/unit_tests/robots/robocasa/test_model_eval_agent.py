@@ -349,5 +349,5 @@ def test_agent_preset_uses_the_target50_prompt(tmp_path):
     agent = config.embodied_agent(tmp_path)
     assert "RoboCasa365" in agent.system_prompt
     assert "roborsi_action" in agent.system_prompt
-    assert agent.invalid_action_retries == 3
+    assert agent.invalid_action_retries == 10
     assert agent.max_tokens == 32768
