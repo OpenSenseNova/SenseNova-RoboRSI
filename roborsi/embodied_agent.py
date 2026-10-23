@@ -633,6 +633,7 @@ class EmbodiedAgent:
         "The Benchmark determines when the episode ends and whether it succeeds."
     )
     action_timeout_s: float | None = 120.0
+    invalid_action_retries: int = 0
     evaluation_skills: Sequence[str | Path] = ()
     evaluation_skill_paths: Sequence[str | Path] = ()
     evaluation_memory: Sequence[TextDocument] = ()
@@ -671,6 +672,7 @@ class EmbodiedAgent:
             system_prompt=self.system_prompt,
             output_dir=self.output_dir,
             action_timeout_s=self.action_timeout_s,
+            invalid_action_retries=self.invalid_action_retries,
             cleanup_timeout_s=30.0 if self.planner == "codex_cli" else None,
             skills=self.evaluation_skills,
             skill_paths=self.evaluation_skill_paths,

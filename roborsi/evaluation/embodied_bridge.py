@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from jsonschema import Draft202012Validator
+from jsonschema.exceptions import best_match
 
 from roborsi.evaluation.media import CaseMediaChannel
 from roborsi.evaluation.messages import Action, Observation, StepResult, Task
@@ -52,6 +53,37 @@ def roborsi_action_tool(
     )
 
 
+def _decode_json_strings(arguments: dict[str, Any]) -> dict[str, Any]:
+    """Decode top-level values that hold JSON numbers, arrays, objects or booleans."""
+    decoded = {}
+    for key, value in arguments.items():
+        if isinstance(value, str):
+            try:
+                parsed = json.loads(value)
+            except ValueError:
+                parsed = value
+            value = value if isinstance(parsed, str) else parsed
+        decoded[key] = value
+    return decoded
+
+
+def _reason(errors: list[Any]) -> str:
+    """Name the failing field, skipping oneOf branches for other primitives."""
+    candidates = []
+    for error in errors:
+        if error.validator != "oneOf":
+            candidates.append(error)
+            continue
+        candidates.extend(
+            e
+            for e in error.context
+            if not (e.validator == "const" and len(e.relative_path) == 1)
+        )
+    best = best_match(candidates) or best_match(errors)
+    where = "/".join(str(part) for part in best.absolute_path)
+    return f"{where}: {best.message}" if where else best.message
+
+
 class _EmbodiedToolConnector:
     """Connect a persistent EmbodiedAgent dialogue to the evaluation protocol.
 
@@ -73,9 +105,12 @@ class _EmbodiedToolConnector:
         initial_context: Sequence[Any] = (),
         action_timeout_s: float | None = 120.0,
         cleanup_timeout_s: float | None = None,
+        invalid_action_retries: int = 0,
     ) -> None:
         if not system_prompt.strip():
             raise ValueError("system_prompt must be non-empty")
+        if type(invalid_action_retries) is not int or invalid_action_retries < 0:
+            raise ValueError("invalid_action_retries must be a non-negative integer")
         if action_timeout_s is not None and (
             not math.isfinite(action_timeout_s) or action_timeout_s <= 0
         ):
@@ -96,6 +131,7 @@ class _EmbodiedToolConnector:
         self._initial_context = tuple(initial_context)
         self._action_timeout_s = action_timeout_s
         self._close_timeout_s = cleanup_timeout_s
+        self._invalid_action_retries = invalid_action_retries
         self._cleanup_timeout_s = (
             cleanup_timeout_s
             if cleanup_timeout_s is not None
@@ -213,6 +249,49 @@ class _EmbodiedToolConnector:
                 raise RuntimeError("Embodied RoboRSI Agent has no pending action")
             self._episode.complete(self._pending, self._feedback(observation))
             self._pending = None
+        validator = Draft202012Validator(self._task.capabilities["action_schema"])
+        call = self._next_action_call()
+        arguments = call.arguments
+        retries = self._invalid_action_retries
+        while errors := list(validator.iter_errors(arguments)):
+            error = best_match(errors)
+            if retries == 0:
+                raise error
+            # Tool-call parsers can pass nested values as JSON text when the
+            # schema is a oneOf; accept them once decoded, as typed tools did.
+            decoded = _decode_json_strings(arguments)
+            if decoded != arguments and validator.is_valid(decoded):
+                arguments = decoded
+                break
+            # The scene has not changed: return the reason and ask again.
+            self._episode.complete(
+                call,
+                ToolResult(
+                    call.name,
+                    {
+                        "step_index": observation.step_index,
+                        "error": "invalid_action",
+                        "message": "This action was not executed: "
+                        f"{_reason(errors)}. Fix the arguments and submit "
+                        f"{self._action_tool_name} again.",
+                    },
+                ),
+            )
+            retries -= 1
+            call = self._next_action_call()
+            arguments = call.arguments
+        action = Action(
+            benchmark=observation.benchmark,
+            episode_id=observation.episode_id,
+            step_index=observation.step_index,
+            data=arguments,
+        )
+        self._pending = call
+        self._last_step = observation.step_index
+        return action
+
+    def _next_action_call(self) -> PendingToolCall:
+        assert self._episode is not None
         call = self._episode.next_call(timeout=self._action_timeout_s)
         if call is None:
             result = self._episode.wait(timeout=self._action_timeout_s)
@@ -221,17 +300,7 @@ class _EmbodiedToolConnector:
             raise RuntimeError("Embodied Agent ended before the Benchmark episode")
         if call.name != self._action_tool_name:
             raise ValueError("Embodied Agent submitted an unexpected tool call")
-        schema = self._task.capabilities["action_schema"]
-        Draft202012Validator(schema).validate(call.arguments)
-        action = Action(
-            benchmark=observation.benchmark,
-            episode_id=observation.episode_id,
-            step_index=observation.step_index,
-            data=call.arguments,
-        )
-        self._pending = call
-        self._last_step = observation.step_index
-        return action
+        return call
 
     def observe_end(self, step: StepResult) -> None:
         """Complete the final action with native feedback without another action."""

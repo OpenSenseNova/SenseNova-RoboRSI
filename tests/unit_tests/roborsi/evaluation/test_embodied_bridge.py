@@ -208,6 +208,118 @@ def test_bridge_returns_feedback_before_requesting_next_action(tmp_path: Path) -
     assert episode.closed
 
 
+def _scripted_connector(tmp_path: Path, arguments, **options):
+    class Episode:
+        def __init__(self) -> None:
+            self.calls = iter(
+                SimpleNamespace(name="roborsi_action", arguments=a) for a in arguments
+            )
+            self.replies = []
+
+        def next_call(self, *, timeout: float):
+            return next(self.calls)
+
+        def complete(self, call, reply) -> None:
+            self.replies.append(reply)
+
+        def close(self) -> None:
+            pass
+
+    episode = Episode()
+
+    class Planner:
+        local_tools = [
+            SimpleNamespace(name="roborsi_action", input_schema=_SCHEMA, handler=None)
+        ]
+
+        def start_episode(self, *args, **kwargs):
+            return episode
+
+    agent = _EmbodiedToolConnector(
+        Planner(),
+        media_dir=tmp_path / "media",
+        system_prompt="Use roborsi_action.",
+        output_dir=tmp_path / "agent",
+        **options,
+    )
+    agent.reset(_task())
+    return agent, episode
+
+
+def test_invalid_action_is_returned_to_the_model_when_enabled(tmp_path: Path) -> None:
+    bad, good = {"vector": ["0"] * 7}, {"vector": [0.0] * 7}
+    agent, episode = _scripted_connector(
+        tmp_path, [bad, good], invalid_action_retries=2
+    )
+    first = Observation(benchmark="libero", episode_id="episode-42", step_index=0)
+    action = agent.act(first)
+    assert action.data == good and action.step_index == 0
+    (reply,) = episode.replies
+    assert reply.result["error"] == "invalid_action"
+    assert reply.result["step_index"] == 0
+    assert "not executed" in reply.result["message"]
+
+
+def test_json_text_values_are_decoded_when_retries_are_enabled(tmp_path: Path) -> None:
+    agent, episode = _scripted_connector(
+        tmp_path, [{"vector": "[0, 0, 0, 0, 0, 0, 0]"}], invalid_action_retries=1
+    )
+    first = Observation(benchmark="libero", episode_id="episode-42", step_index=0)
+    assert agent.act(first).data == {"vector": [0] * 7}
+    assert episode.replies == []
+
+
+def test_invalid_action_reason_names_the_field_of_the_chosen_primitive(
+    tmp_path: Path,
+) -> None:
+    schema = {
+        "oneOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "primitive": {"const": "move"},
+                    "xy": {"type": "array", "items": {"type": "number"}},
+                },
+                "required": ["primitive", "xy"],
+            },
+            {
+                "type": "object",
+                "properties": {"primitive": {"const": "look"}},
+                "required": ["primitive"],
+            },
+        ]
+    }
+    from jsonschema import Draft202012Validator
+
+    from roborsi.evaluation.embodied_bridge import _reason
+
+    errors = list(
+        Draft202012Validator(schema).iter_errors({"primitive": "move", "xy": "left"})
+    )
+    assert _reason(errors).startswith("xy: 'left' is not of type 'array'")
+
+
+def test_invalid_action_ends_the_case_by_default_or_after_retries(
+    tmp_path: Path,
+) -> None:
+    from jsonschema import ValidationError
+
+    bad = {"vector": ["0"] * 7}
+    first = Observation(benchmark="libero", episode_id="episode-42", step_index=0)
+    agent, episode = _scripted_connector(tmp_path / "default", [bad])
+    with pytest.raises(ValidationError):
+        agent.act(first)
+    assert episode.replies == []
+    agent, episode = _scripted_connector(
+        tmp_path / "retries", [bad, bad, bad], invalid_action_retries=2
+    )
+    with pytest.raises(ValidationError):
+        agent.act(first)
+    assert len(episode.replies) == 2
+    with pytest.raises(ValueError, match="invalid_action_retries"):
+        _scripted_connector(tmp_path / "x", [], invalid_action_retries=-1)
+
+
 @pytest.mark.parametrize("truncated", [False, True])
 def test_embodied_agent_runs_local_tools_and_receives_terminal_images(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, truncated: bool

@@ -126,6 +126,7 @@ class AgentConfig:
             "max_tokens",
             "planner_timeout_s",
             "action_timeout_s",
+            "invalid_action_retries",
             "reasoning_effort",
             "system_prompt",
             "codex_cli",
@@ -227,6 +228,9 @@ class AgentConfig:
                 or value <= 0
             ):
                 raise ValueError(f"{name} must be positive")
+        retries = options.get("invalid_action_retries", 0)
+        if type(retries) is not int or retries < 0:
+            raise ValueError("invalid_action_retries must be a non-negative integer")
         for name in ("reasoning_effort", "system_prompt"):
             if name in options and (
                 not isinstance(options[name], str) or not options[name].strip()
