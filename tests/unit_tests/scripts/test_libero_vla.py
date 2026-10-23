@@ -30,7 +30,7 @@ def preset(tmp_path, *, enabled=True, **parameters):
         json.dumps(
             {
                 "schema_version": 1,
-                "source_root": str(ROOT),
+                "source_root": os.path.commonpath([str(ROOT), str(tmp_path)]),
                 "extends": str(ROOT / "configs/agents/libero/standard.yaml"),
                 "parameters": {"enable_vla": enabled, **parameters},
             }
