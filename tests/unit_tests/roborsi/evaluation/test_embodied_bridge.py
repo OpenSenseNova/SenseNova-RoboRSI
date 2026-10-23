@@ -208,7 +208,7 @@ def test_bridge_returns_feedback_before_requesting_next_action(tmp_path: Path) -
     assert episode.closed
 
 
-def _scripted_connector(tmp_path: Path, arguments, **options):
+def _scripted_connector(tmp_path: Path, arguments, *, schema=None, **options):
     class Episode:
         def __init__(self) -> None:
             self.calls = iter(
@@ -229,7 +229,9 @@ def _scripted_connector(tmp_path: Path, arguments, **options):
 
     class Planner:
         local_tools = [
-            SimpleNamespace(name="roborsi_action", input_schema=_SCHEMA, handler=None)
+            SimpleNamespace(
+                name="roborsi_action", input_schema=schema or _SCHEMA, handler=None
+            )
         ]
 
         def start_episode(self, *args, **kwargs):
@@ -242,7 +244,10 @@ def _scripted_connector(tmp_path: Path, arguments, **options):
         output_dir=tmp_path / "agent",
         **options,
     )
-    agent.reset(_task())
+    task = _task()
+    if schema is not None:
+        task = task.model_copy(update={"capabilities": {"action_schema": schema}})
+    agent.reset(task)
     return agent, episode
 
 
@@ -297,6 +302,27 @@ def test_invalid_action_reason_names_the_field_of_the_chosen_primitive(
         Draft202012Validator(schema).iter_errors({"primitive": "move", "xy": "left"})
     )
     assert _reason(errors).startswith("xy: 'left' is not of type 'array'")
+
+
+def test_reply_names_only_fields_that_decoding_cannot_fix(tmp_path: Path) -> None:
+    schema = {
+        "type": "object",
+        "properties": {
+            "pitch": {"type": "number"},
+            "gripper": {"enum": [-1, 0, 1]},
+        },
+        "required": ["pitch", "gripper"],
+    }
+    bad = {"pitch": "0.5", "gripper": "hold"}
+    good = {"pitch": "0.5", "gripper": "0"}
+    agent, episode = _scripted_connector(
+        tmp_path, [bad, good], invalid_action_retries=1, schema=schema
+    )
+    first = Observation(benchmark="libero", episode_id="episode-42", step_index=0)
+    assert agent.act(first).data == {"pitch": 0.5, "gripper": 0}
+    (reply,) = episode.replies
+    assert "gripper" in reply.result["message"]
+    assert "pitch" not in reply.result["message"]
 
 
 def test_invalid_action_ends_the_case_by_default_or_after_retries(

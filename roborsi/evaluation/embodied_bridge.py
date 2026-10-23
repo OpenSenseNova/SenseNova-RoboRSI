@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from jsonschema import Draft202012Validator
-from jsonschema.exceptions import best_match
+from jsonschema.exceptions import best_match, relevance
 
 from roborsi.evaluation.media import CaseMediaChannel
 from roborsi.evaluation.messages import Action, Observation, StepResult, Task
@@ -67,8 +67,8 @@ def _decode_json_strings(arguments: dict[str, Any]) -> dict[str, Any]:
     return decoded
 
 
-def _reason(errors: list[Any]) -> str:
-    """Name the failing field, skipping oneOf branches for other primitives."""
+def _reason(errors: list[Any], limit: int = 3) -> str:
+    """Name the failing fields, skipping oneOf branches for other primitives."""
     candidates = []
     for error in errors:
         if error.validator != "oneOf":
@@ -79,9 +79,15 @@ def _reason(errors: list[Any]) -> str:
             for e in error.context
             if not (e.validator == "const" and len(e.relative_path) == 1)
         )
-    best = best_match(candidates) or best_match(errors)
-    where = "/".join(str(part) for part in best.absolute_path)
-    return f"{where}: {best.message}" if where else best.message
+    if not candidates:
+        candidates = [best_match(errors)]
+    reasons = []
+    for error in sorted(candidates, key=relevance):
+        where = "/".join(str(part) for part in error.absolute_path)
+        reason = f"{where}: {error.message}" if where else error.message
+        if reason not in reasons:
+            reasons.append(reason)
+    return "; ".join(reasons[:limit])
 
 
 class _EmbodiedToolConnector:
@@ -254,15 +260,19 @@ class _EmbodiedToolConnector:
         arguments = call.arguments
         retries = self._invalid_action_retries
         while errors := list(validator.iter_errors(arguments)):
-            error = best_match(errors)
+            if self._invalid_action_retries:
+                # Tool-call parsers can pass nested values as JSON text when the
+                # schema is a oneOf; accept them once decoded, as typed tools did.
+                decoded = _decode_json_strings(arguments)
+                if decoded != arguments:
+                    remaining = list(validator.iter_errors(decoded))
+                    if not remaining:
+                        arguments = decoded
+                        break
+                    # Report only what decoding cannot fix.
+                    errors = remaining
             if retries == 0:
-                raise error
-            # Tool-call parsers can pass nested values as JSON text when the
-            # schema is a oneOf; accept them once decoded, as typed tools did.
-            decoded = _decode_json_strings(arguments)
-            if decoded != arguments and validator.is_valid(decoded):
-                arguments = decoded
-                break
+                raise best_match(errors)
             # The scene has not changed: return the reason and ask again.
             self._episode.complete(
                 call,
