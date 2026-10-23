@@ -23,6 +23,46 @@ live task language, public state and camera views. `finish` and an explicit
 episode stop score the current native state. Invalid tool arguments return tool
 feedback; the action must still select a supported primitive.
 
+## One-command evaluation
+
+From the repository root, set the model API and run:
+
+```bash
+export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
+export OPENAI_API_KEY='YOUR_API_KEY'   # EMPTY if the server needs no key
+export MODEL_NAME='YOUR_SERVED_MODEL'
+
+# One cell, to check the setup
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
+  --task robocasa365:OpenDrawer --seed 1 --run-id robocasa-smoke
+
+# The 50 seed-1 cells
+ROBORSI_ROBOCASA_CELLS=seed1 python scripts/evaluation/evaluate_model.py \
+  --benchmark robocasa365 --run-id robocasa-seed1
+
+# All 340 cells
+ROBORSI_ROBOCASA_CELLS=all python scripts/evaluation/evaluate_model.py \
+  --benchmark robocasa365 --run-id robocasa-full
+```
+
+The script builds the service image from this checkout, downloads the Target50
+ICL package and runs the Target50 Agent
+([`configs/agents/robocasa365/icl.yaml`](../../configs/agents/robocasa365/icl.yaml)).
+Add `--openai-format responses` for a Responses API model. To use a Benchmark
+service that is already running, add
+`--benchmark-url robocasa365=http://127.0.0.1:18800`.
+
+Results are written to `work/model_eval/results/`, one directory per split
+group. Score a seed-1 run with:
+
+```bash
+python -m benchmarks.robocasa365.score \
+  work/model_eval/results/robocasa-seed1-robocasa365-* --cells seed1
+```
+
+Omit `--cells seed1` when scoring all 340 cells. See the
+[model evaluation guide](../../docs/model-evaluation.md) for all options.
+
 ## Build and run
 
 Follow [BUILD.md](BUILD.md) to export a context and build your image. The original

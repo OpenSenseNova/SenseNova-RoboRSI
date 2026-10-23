@@ -21,6 +21,43 @@
 任务语言、公开状态和相机图像。`finish` 和显式 episode stop 对当前原生状态评分。
 工具参数错误会返回工具反馈；动作仍须选择受支持的 primitive。
 
+## 一键评测
+
+在仓库根目录设置模型 API 后运行：
+
+```bash
+export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
+export OPENAI_API_KEY='YOUR_API_KEY'   # 服务不需要密钥时填 EMPTY
+export MODEL_NAME='YOUR_SERVED_MODEL'
+
+# 先跑一个 cell 检查环境
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
+  --task robocasa365:OpenDrawer --seed 1 --run-id robocasa-smoke
+
+# seed 1 的 50 个 cell
+ROBORSI_ROBOCASA_CELLS=seed1 python scripts/evaluation/evaluate_model.py \
+  --benchmark robocasa365 --run-id robocasa-seed1
+
+# 全部 340 个 cell
+ROBORSI_ROBOCASA_CELLS=all python scripts/evaluation/evaluate_model.py \
+  --benchmark robocasa365 --run-id robocasa-full
+```
+
+脚本会按当前 checkout 构建服务镜像，下载 Target50 ICL 包，并使用 Target50 Agent
+（[`configs/agents/robocasa365/icl.yaml`](../../configs/agents/robocasa365/icl.yaml)）。
+Responses API 模型加 `--openai-format responses`。使用已经启动的 Benchmark 服务时，加
+`--benchmark-url robocasa365=http://127.0.0.1:18800`。
+
+结果写入 `work/model_eval/results/`，每个 split 组一个目录。seed 1 的评分命令：
+
+```bash
+python -m benchmarks.robocasa365.score \
+  work/model_eval/results/robocasa-seed1-robocasa365-* --cells seed1
+```
+
+评全部 340 个 cell 时去掉 `--cells seed1`。完整参数见
+[模型一键评测指南](../../docs/model-evaluation.zh-CN.md)。
+
 ## 构建与启动
 
 按 [BUILD.zh-CN.md](BUILD.zh-CN.md) 导出上下文并构建镜像。原始固定 digest 的 GHCR
