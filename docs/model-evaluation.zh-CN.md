@@ -104,6 +104,9 @@ LIBERO Agent 设置 `parameters.enable_vla: true` 后，还会自动构建独立
 环境、下载 π0.5 权重、启动并预热服务；`--prepare-only` 只准备资源。
 配置、GPU 选择与已有服务接法见 [LIBERO VLA 指南](libero-vla.zh-CN.md)。
 
+SenseNova-RoboRSI-27B 的 80 case 配置、VLA/SAM3 环境准备与部署、两种模式的评测命令，
+见 [27B 模型评测说明](sensenova-roborsi-27b-preview.zh-CN.md)。
+
 ## 一键评测
 
 ```bash

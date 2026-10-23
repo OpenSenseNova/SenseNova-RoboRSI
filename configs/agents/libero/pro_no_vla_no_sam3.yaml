@@ -1,0 +1,7 @@
+schema_version: 1
+extends: roborsi_27b_base.yaml
+parameters:
+  enable_observation_tools: true
+  tool_transport: openpi_sam3
+  enable_vla: false
+  enable_sam3: false

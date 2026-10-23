@@ -1,0 +1,13 @@
+schema_version: 1
+extends: roborsi_27b_base.yaml
+agent:
+  system_prompt: >-
+    Complete the robot task using the sealed persistent-memory ICL context for
+    the PRO condition. Use the robot action schema for direct-control primitives,
+    VLA execution, and SAM3 segmentation of the current camera image.
+    The Benchmark owns stopping and score.
+parameters:
+  enable_observation_tools: true
+  tool_transport: openpi_sam3
+  enable_vla: true
+  enable_sam3: true

@@ -47,6 +47,7 @@ class BenchmarkConfig:
     evaluation: dict = field(default_factory=dict)
     endpoint: str | None = None
     token_env: str | None = None
+    protocol: Path | None = None
 
 
 @dataclass(frozen=True)
@@ -58,6 +59,7 @@ class ModelConfig:
     api_key_env: str = "OPENAI_API_KEY"
     vla: OpenPiProfile | None = None
     sources: dict = field(default_factory=dict)
+    tools: dict = field(default_factory=dict)
 
 
 def _read(path: Path, allowed: set[str], required: set[str]) -> dict:
@@ -156,7 +158,10 @@ def _environment(path: Path, name: str, value) -> dict:
     if kind == "libero_three":
         _pin(env.get("image"), r"[^\s]+@sha256:[0-9a-f]{64}", "environment.image")
         bundle = "libero_pro" if name == "libero_pro" else "libero_lilo"
-        if env.get("native_bundle") != bundle:
+        allowed_bundles = {bundle}
+        if name == "libero_pro":
+            allowed_bundles.add("libero_pro_image_tools")
+        if env.get("native_bundle") not in allowed_bundles:
             raise ValueError("environment.native_bundle does not match benchmark")
         icl = dict(
             _fields(
@@ -225,6 +230,8 @@ def _model_document(path: Path) -> dict:
             "api_key_env",
             "openai_format",
             "vla",
+            "sam3",
+            "tool_runtime",
         },
         {"schema_version", "provider"},
     )
@@ -274,6 +281,7 @@ def load_benchmark(
             "evaluation",
             "endpoint",
             "token_env",
+            "protocol",
         },
         {"schema_version", "benchmark"}
         if custom
@@ -304,6 +312,17 @@ def load_benchmark(
         not isinstance(token_env, str) or not re.fullmatch(r"[A-Za-z_]\w*", token_env)
     ):
         raise ValueError("Benchmark token_env must name an environment variable")
+    protocol = base.protocol if base else None
+    if "protocol" in document:
+        if name != "libero_pro":
+            raise ValueError("protocol is supported only for libero_pro")
+        from robots.libero.pro_protocol import (
+            load_pro_config,
+            validate_pro_80_config,
+        )
+
+        protocol = _reference(path, document["protocol"])
+        validate_pro_80_config(load_pro_config(protocol))
     return BenchmarkConfig(
         path,
         name,
@@ -317,6 +336,7 @@ def load_benchmark(
         _evaluation(path, document.get("evaluation", base.evaluation if base else {})),
         endpoint,
         token_env,
+        protocol,
     )
 
 
@@ -394,6 +414,16 @@ def resolve_model(
         sources[field_name] = f"env:{variable}" if variable in os.environ else str(path)
         return os.environ.get(variable, document.get(field_name))
 
+    tools = {}
+    if (
+        isinstance(document.get("vla"), dict)
+        and document["vla"].get("backend") == "rlinf"
+    ):
+        from scripts.deploy.libero_tools import model_settings
+
+        tools = model_settings(document)
+    elif "sam3" in document or "tool_runtime" in document:
+        raise ValueError("SAM3/tool_runtime requires the RLinf VLA profile")
     return ModelConfig(
         choose(base_url, "base_url", "OPENAI_BASE_URL"),
         choose(model_name, "model_name", "MODEL_NAME"),
@@ -401,7 +431,32 @@ def resolve_model(
         openai_format if openai_format is not None else document.get("openai_format"),
         document.get("api_key_env", "OPENAI_API_KEY"),
         parse_profile(document["vla"], base_dir=Path(path).parent)
-        if document.get("vla") is not None
+        if document.get("vla") is not None and not tools
         else None,
         sources,
+        tools,
     )
+
+
+def pro_tool_mode(path: Path) -> str:
+    """Validate the selected PRO Agent and return its tool mode."""
+    from roborsi.agents.config import AgentConfig
+
+    config = AgentConfig.from_file(path)
+    document = config.document
+    reject_secrets(document)
+    llm = document.get("runtime", {}).get("llm", {})
+    if llm.get("provider") != "openai":
+        raise ValueError("--agent-config must declare an OpenAI-compatible model")
+    # Validate only fields supported by the original runtime; do not silently
+    # accept settings that require the removed shared-runtime patches.
+    config.runtime()
+    if config.factory != "robots.libero.roborsi_27b_agent:make_agent":
+        raise ValueError("explicit PRO tool profiles require the 27B Agent config")
+    parameters = config.parameters
+    flags = [parameters.get(name) for name in ("enable_vla", "enable_sam3")]
+    if any(type(flag) is not bool for flag in flags) or flags[0] != flags[1]:
+        raise ValueError("--agent-config must enable or disable VLA/SAM3 together")
+    if parameters.get("tool_transport") != "openpi_sam3":
+        raise ValueError("--agent-config requires tool_transport: openpi_sam3")
+    return "vla_sam3" if flags[0] else "no_vla_no_sam3"

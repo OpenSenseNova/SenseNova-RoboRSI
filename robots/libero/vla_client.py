@@ -127,6 +127,11 @@ def openpi_enabled(config) -> bool:
     enabled = config.parameters.get("enable_vla", False)
     if type(enabled) is not bool:
         raise ValueError("parameters.enable_vla must be a boolean")
+    if (
+        getattr(config, "factory", None) == "robots.libero.roborsi_27b_agent:make_agent"
+        and config.parameters.get("tool_transport") == "openpi_sam3"
+    ):
+        return False
     if not enabled:
         return False
     variable = config.parameters.get("vla_url_env", "ROBORSI_VLA_MCP_URL")

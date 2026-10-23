@@ -221,8 +221,23 @@ def _build_three_image(
             or benchmark_source_digest(ROOT, native) != before
         ):
             raise ValueError("Benchmark source changed while preparing the image")
+        preserve_image_tools = False
+        if config and native == "libero_pro_image_tools":
+            from robots.libero.image_tools import configured
+
+            preserve_image_tools = configured(config.agent)
+        preserve = (
+            "RUN cp -a /opt/roborsi /opt/roborsi-image-tools\n"
+            if preserve_image_tools
+            else ""
+        )
+        source_env = (
+            "ENV ROBORSI_LIBERO_SOURCE_BUNDLE=libero_pro_image_tools\n"
+            if native == "libero_pro_image_tools"
+            else ""
+        )
         (context / "Dockerfile").write_text(
-            f"FROM {base}\nCOPY benchmark-runtime/ /opt/roborsi/\n"
+            f"FROM {base}\n{preserve}COPY benchmark-runtime/ /opt/roborsi/\n{source_env}"
             'RUN python -B -c "from pathlib import Path; '
             "from roborsi.benchmarks.runtime_source import verify_benchmark_runtime; "
             f"verify_benchmark_runtime(Path('/opt/roborsi'), '{native}')\"\n"
@@ -412,10 +427,10 @@ def prepare_agents(benchmarks, work_dir: Path, *, configurations=None) -> Prepar
         config = configs[name]
         environment = config.environment
         agent = AgentConfig.from_file(config.agent)
-        if (
-            agent.factory
-            == "robots.libero.three_benchmark_agent:make_three_benchmark_agent"
-        ):
+        if agent.factory in {
+            "robots.libero.three_benchmark_agent:make_three_benchmark_agent",
+            "robots.libero.roborsi_27b_agent:make_agent",
+        }:
             _ensure_tokenizer(config.agent)
             if three_assets is None:
                 base_image = environment["image"]
@@ -533,10 +548,30 @@ def _wait_service(url: str, container: str, timeout_s: float = 900) -> None:
 
 
 @contextmanager
-def benchmark_services(prepared: Prepared, *, libero_suite=None, robocasa_cells=None):
+def benchmark_services(
+    prepared: Prepared,
+    *,
+    libero_suite=None,
+    robocasa_cells=None,
+    pro_eval_config=None,
+    framework=None,
+    service_tool_urls=None,
+    image_observation_tools=False,
+):
     """Own and stop only the containers created for this invocation."""
     owned = []
     endpoints = {}
+    tool_urls = {}
+    if framework == "vla_sam3":
+        from robots.libero.image_tools import validate_tool_urls
+
+        tool_urls = validate_tool_urls(
+            service_tool_urls
+            or {
+                name: os.environ.get(f"ROBORSI_{name.upper()}_URL", "")
+                for name in ("vla", "sam3")
+            }
+        )
     try:
         for name in prepared.benchmarks:
             config = prepared.configurations.get(name) or load_benchmark(name)
@@ -578,6 +613,16 @@ def benchmark_services(prepared: Prepared, *, libero_suite=None, robocasa_cells=
                     "-e",
                     f"ROBORSI_ROBOCASA_CELLS={robocasa_cells or catalog_setting(config, 'cells')}",
                 ]
+            if name == "libero_pro" and pro_eval_config is not None:
+                command += [
+                    "--mount",
+                    f"type=bind,src={Path(pro_eval_config).resolve()},dst=/roborsi/pro-eval.yaml,readonly",
+                ]
+            if name == "libero_pro" and framework:
+                if any("host.docker.internal" in url for url in tool_urls.values()):
+                    command += ["--add-host", "host.docker.internal:host-gateway"]
+                for tool, url in tool_urls.items():
+                    command += ["-e", f"ROBORSI_{tool.upper()}_URL={url}"]
             command.append(prepared.images[name])
             if kind == "libero_three":
                 command += [
@@ -593,6 +638,21 @@ def benchmark_services(prepared: Prepared, *, libero_suite=None, robocasa_cells=
                     "--port",
                     "8000",
                 ]
+            if (
+                name == "libero_pro"
+                and config.environment.get("native_bundle") == "libero_pro_image_tools"
+            ):
+                command += ["--source-bundle", "libero_pro_image_tools"]
+            if name == "libero_pro" and pro_eval_config is not None:
+                command += [
+                    "--eval-config",
+                    "/roborsi/pro-eval.yaml",
+                    "--legacy-image-env",
+                ]
+            if name == "libero_pro" and framework:
+                command += ["--framework", framework]
+            if name == "libero_pro" and image_observation_tools:
+                command += ["--image-observation-tools"]
             print(f"Starting Benchmark service: {name}", file=sys.stderr)
             _run(command, capture_output=True)
             port = _run(

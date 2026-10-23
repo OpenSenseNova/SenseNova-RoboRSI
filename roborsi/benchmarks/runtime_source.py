@@ -171,6 +171,19 @@ _BENCHMARK = {
 }
 
 
+# Optional PRO service bundle, explicitly selected by environment.native_bundle.
+# Keep the default PRO file list identical to the released catalog.
+_BENCHMARK["libero_pro_image_tools"] = (
+    *_BENCHMARK["libero_pro"],
+    "robots/libero/pro_protocol.py",
+    "robots/libero/image_tools.py",
+    "robots/libero/image_tools.lock.json",
+    "robots/libero/image_tool_records.py",
+    "robots/libero/image_tool_adapter.py",
+    "robots/libero/image_vla_bridge.py",
+)
+
+
 def benchmark_source_files(benchmark: str) -> tuple[str, ...]:
     """List only protocol, HTTP, artifact and selected native wrapper sources."""
     if benchmark not in _BENCHMARK:

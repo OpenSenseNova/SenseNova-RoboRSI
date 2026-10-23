@@ -1,0 +1,17 @@
+# Service environment only; do not install into the simulator/Agent environment.
+# Versions and source commits recovered from the original skill environment.
+torch==2.7.1
+torchvision==0.22.1
+rpent-rlinf==0.3.0
+rpent-openpi @ git+https://github.com/RLinf/openpi.git@a560f4dd8205b8423ecd4c8a0fabb5f54140b8a0
+openpi-client @ git+https://github.com/RLinf/openpi.git@a560f4dd8205b8423ecd4c8a0fabb5f54140b8a0#subdirectory=packages/openpi-client
+sam3 @ git+https://github.com/RLinf/sam3.git@c1f6b1e83967c912f675d8975d437ccdc41e17d8
+huggingface_hub>=0.34,<1
+numpy<2
+omegaconf>=2.3,<3
+einops>=0.8
+pycocotools
+pillow>=10
+uvicorn>=0.27
+httpx>=0.27
+PyYAML>=6

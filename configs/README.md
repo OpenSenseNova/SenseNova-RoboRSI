@@ -123,3 +123,16 @@ remains a separate step in [`scripts/deploy/`](../scripts/deploy/README.md).
 
 See [model evaluation](../docs/model-evaluation.md) /
 [模型一键评测](../docs/model-evaluation.zh-CN.md) for commands and task coverage.
+
+## SenseNova-RoboRSI-27B
+
+| Configuration / 配置 | File / 文件 |
+| --- | --- |
+| 80 tasks, seed 0, init 0, 2,000 physical steps / 评测协议 | [benchmarks/libero_pro_80.yaml](benchmarks/libero_pro_80.yaml) |
+| Main model and RLinf/SAM3 deployment / 主模型与工具部署 | [models/roborsi_27b.yaml](models/roborsi_27b.yaml) |
+| Direct VLM control / 无 VLA、SAM3 | [agents/libero/sensenova_roborsi_27b_no_tools.yaml](agents/libero/sensenova_roborsi_27b_no_tools.yaml) |
+| VLM + VLA/SAM3 / 带 VLA、SAM3 | [agents/libero/sensenova_roborsi_27b_vla_sam3.yaml](agents/libero/sensenova_roborsi_27b_vla_sam3.yaml) |
+
+Deployment and evaluation commands / 部署与评测命令：
+[English](../docs/sensenova-roborsi-27b-preview.md) ·
+[中文](../docs/sensenova-roborsi-27b-preview.zh-CN.md)。

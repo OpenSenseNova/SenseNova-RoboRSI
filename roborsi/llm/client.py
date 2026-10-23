@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import json
 import threading
 from collections.abc import Callable, Mapping
 from dataclasses import asdict, dataclass, field
@@ -81,10 +82,20 @@ class LLMConfig:
     image_history_groups: int | None = None
     preserve_initial_image_count: int = 0
     parallel_tool_calls: bool | None = None
+    extra_body: dict[str, Any] | None = field(default=None, kw_only=True)
     retry: RetryPolicy = field(default_factory=RetryPolicy)
     model_factory: Callable[[], Model] | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
+        if self.extra_body is not None:
+            if self.provider != "openai" or self.openai_format != "chat":
+                raise ValueError("extra_body requires OpenAI Chat Completions")
+            if not isinstance(self.extra_body, dict):
+                raise ValueError("extra_body must be a JSON object")
+            try:
+                json.dumps(self.extra_body, allow_nan=False)
+            except (TypeError, ValueError) as exc:
+                raise ValueError("extra_body must contain finite JSON values") from exc
         if self.model_factory is not None and not callable(self.model_factory):
             raise ValueError("model_factory must be callable")
         if self.provider not in {"openai", "anthropic"}:
@@ -144,15 +155,16 @@ class LLMConfig:
 
         provider = OpenAIProvider(api_key=self.api_key, base_url=self.base_url)
         if self.openai_format == "chat":
-            if self.parallel_tool_calls is None:
+            if self.parallel_tool_calls is None and self.extra_body is None:
                 return OpenAIChatModel(self.model, provider=provider)
-            return OpenAIChatModel(
-                self.model,
-                provider=provider,
-                settings=OpenAIChatModelSettings(
-                    parallel_tool_calls=self.parallel_tool_calls
-                ),
-            )
+            settings = OpenAIChatModelSettings()
+            if self.parallel_tool_calls is not None:
+                settings["parallel_tool_calls"] = self.parallel_tool_calls
+            if self.extra_body is not None:
+                import copy
+
+                settings["extra_body"] = copy.deepcopy(self.extra_body)
+            return OpenAIChatModel(self.model, provider=provider, settings=settings)
 
         static_prefix = self.prompt_cache_static_prefix
 

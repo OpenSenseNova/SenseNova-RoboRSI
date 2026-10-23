@@ -204,6 +204,11 @@ def parse_args(
     )
     args = parser.parse_args(argv)
     try:
+        args.framework = None
+        args.image_observation_tools = False
+        args.eval_config = None
+        args.pro_protocol = None
+        args.tool_urls = {}
         configuration = load_configuration()
         benchmark_paths = configuration_paths(
             args.benchmark_config, args.benchmark, "--benchmark-config"
@@ -228,6 +233,32 @@ def parse_args(
                 agent=agent_paths.get(name, config.agent),
                 agent_overrides={} if name in agent_paths else config.agent_overrides,
             )
+        pro = args.configurations.get("libero_pro")
+        if pro is not None and pro.protocol is not None:
+            if pro.environment.get("native_bundle") != "libero_pro_image_tools":
+                raise ValueError(
+                    "explicit PRO protocol requires environment.native_bundle: libero_pro_image_tools"
+                )
+            if args.benchmark != ["libero_pro"]:
+                raise ValueError(
+                    "an explicit PRO protocol must be evaluated separately"
+                )
+            from robots.libero.pro_protocol import load_pro_config
+
+            config = args.configurations["libero_pro"]
+            args.eval_config = config.protocol
+            args.pro_protocol = load_pro_config(args.eval_config)
+            if args.seed is not None and args.seed != [args.pro_protocol["seed"]]:
+                raise ValueError("--seed conflicts with the selected PRO protocol")
+            if config.evaluation.get("seeds", [0]) != [0]:
+                raise ValueError(
+                    "evaluation.seeds conflicts with the selected PRO protocol"
+                )
+            args.seed = [args.pro_protocol["seed"]]
+            args.framework = configuration.pro_tool_mode(config.agent)
+            from robots.libero.image_tools import configured
+
+            args.image_observation_tools = configured(config.agent)
         args.models = {}
         for name, config in args.configurations.items():
             model = configuration.resolve_model(
@@ -260,6 +291,10 @@ def parse_args(
                     "set the model profile's api_key_env or --api-key (use EMPTY for an unauthenticated model API)"
                 )
             args.models[name] = model
+        if args.framework == "vla_sam3":
+            if not args.models["libero_pro"].tools:
+                raise ValueError("VLA/SAM3 requires an RLinf/SAM3 --model-config")
+            args.tool_urls = args.models["libero_pro"].tools["urls"]
         first_model = args.models[args.benchmark[0]]
         args.base_url, args.model_name, args.api_key = (
             first_model.base_url,
@@ -355,6 +390,8 @@ def parse_args(
                 if config.endpoint is not None and not args.registry_root
             }
         }
+        if args.pro_protocol:
+            args.presets["libero_pro"] = str(args.configurations["libero_pro"].agent)
         args.tasks = defaultdict(list)
         for value in args.task or ():
             name, separator, task = value.partition(":")
@@ -440,6 +477,8 @@ def build_commands(args: argparse.Namespace) -> list[list[str]]:
     budgets = {}
     for benchmark in args.benchmark:
         lock = registry.lock(benchmark)
+        if args.pro_protocol:
+            validate_pro_catalog(args, lock)
         for cell in (cell for cell in cells if cell.benchmark == benchmark):
             budget = None if benchmark in args.presets else 3600
             suffix = benchmark
@@ -533,6 +572,52 @@ def build_commands(args: argparse.Namespace) -> list[list[str]]:
     return commands
 
 
+def validate_pro_catalog(args, lock):
+    """Reject an existing service with a different initial state, budget or tools."""
+    from robots.libero.image_tools import tool_action_schema
+    from robots.libero.pro_protocol import PRO_SUITES, pro_cases
+
+    expected = {
+        c.task_id: c
+        for c in pro_cases(
+            {name: [""] * 10 for name in PRO_SUITES}, config=args.pro_protocol
+        )
+    }
+    selected = lock.list_tasks()
+    if {(c.task_id, c.seed) for c in selected} != {(name, 0) for name in expected}:
+        raise ValueError(
+            "Benchmark catalog does not match the selected 80-case PRO protocol"
+        )
+    for cell in selected:
+        task = lock.task(cell.task_id, cell.seed)
+        if task.native != expected[cell.task_id].native or task.max_steps != 2000:
+            raise ValueError(
+                "Benchmark task/budget mismatch; restart with the selected PRO protocol"
+            )
+        expected_schema = tool_action_schema(args.framework == "vla_sam3")
+        if getattr(args, "image_observation_tools", False):
+            from robots.libero.image_tools import (
+                PROFILE,
+                action_schema,
+                locked_manifest,
+            )
+
+            expected_schema = action_schema(args.framework == "vla_sam3")
+            if task.capabilities.get("image_observation_tools") != PROFILE:
+                raise ValueError("Benchmark image observation tools are not enabled")
+            if (
+                task.capabilities.get("image_tool_source", {}).get("sha256")
+                != locked_manifest()["sha256"]
+            ):
+                raise ValueError(
+                    "Benchmark image tools differ from the pinned implementation"
+                )
+        if task.capabilities.get("action_schema") != expected_schema:
+            raise ValueError(
+                "Benchmark tool mode differs from the selected Agent config"
+            )
+
+
 def load_configuration():
     """Load the YAML resolver when evaluating, keeping --help lightweight."""
     if str(ROOT) not in sys.path:
@@ -585,6 +670,18 @@ def main(argv: list[str] | None = None) -> int:
                 redact,
             )
         bootstrap = load_bootstrap()
+        tools_deployment = None
+        tools_work = args.work_dir / "libero_tools"
+        if args.framework == "vla_sam3" and not args.tool_urls:
+            from scripts.deploy import libero_tools
+
+            tools_deployment = args.models["libero_pro"].tools["deployment"]
+            host = tools_deployment["advertise_host"]
+            if not host or any(c in host for c in "<>/:"):
+                raise ValueError(
+                    "set model tool_runtime.advertise_host before deployment"
+                )
+            libero_tools.prepare(tools_deployment, tools_work)
         prepared = (
             bootstrap.prepare_benchmarks
             if args.auto_prepare
@@ -611,10 +708,23 @@ def main(argv: list[str] | None = None) -> int:
 
         with (
             (
+                libero_tools.services(
+                    tools_deployment,
+                    tools_work,
+                    log_dir=prepared.log_dir / "libero_tools",
+                )
+                if tools_deployment
+                else nullcontext(args.tool_urls)
+            ) as tool_urls,
+            (
                 bootstrap.benchmark_services(
                     prepared,
                     libero_suite=args.libero_suite,
                     robocasa_cells=args.robocasa_cells,
+                    pro_eval_config=args.eval_config,
+                    framework=args.framework,
+                    image_observation_tools=args.image_observation_tools,
+                    service_tool_urls=tool_urls,
                 )
                 if args.auto_prepare
                 else nullcontext(args.endpoints)
@@ -627,6 +737,7 @@ def main(argv: list[str] | None = None) -> int:
             ) as bound,
         ):
             args.presets = {**args.presets, **bound}
+            args.tool_urls = tool_urls
             args.endpoints = endpoints
             args.benchmark_url = [f"{name}={url}" for name, url in endpoints.items()]
             return run_evaluation(parser, args)

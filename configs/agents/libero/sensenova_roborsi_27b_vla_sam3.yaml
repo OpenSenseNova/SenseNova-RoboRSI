@@ -1,0 +1,37 @@
+# Explicit SenseNova-RoboRSI-27B serving compatibility.
+schema_version: 1
+extends: pro_vla_sam3.yaml
+agent:
+  system_prompt: 'Complete the robot task using the sealed persistent-memory ICL context
+    for the PRO condition. Use the robot action schema for direct-control primitives, VLA
+    execution, and SAM3 segmentation of the current camera image. The Benchmark owns stopping
+    and score. Submit robot actions through the tool named exactly roborsi_action. Use
+    only tool names present in the supplied tool definitions, and follow their JSON schemas.
+    Select the oneOf branch matching the primitive and include only parameters declared
+    in that branch. Root-level properties provide type hints, not permission to mix parameters
+    from different primitives. For move_pose, orientation increments are yaw_step and pitch_step;
+    yaw_step_clip is only supported by move_to. Action parameter reference (use only the
+    fields for the selected primitive): raw vector: vector. raw vectors: vectors. move_to:
+    primitive, xyz, max_steps, gripper, step_clip, tol, action_scale, target_yaw, yaw_step_clip.
+    move_pose: primitive, xyz, target_pitch, target_yaw, gripper, step_clip, pitch_step,
+    yaw_step, tol, ori_tol, action_scale, max_steps. rotate_wrist/rotate_pitch: primitive,
+    target, delta, gripper, max_steps, tol, step_clip. release: primitive, max_steps. set_gripper:
+    primitive, gripper, steps. vla: primitive, instruction, max_steps. segment: primitive,
+    camera, prompt, point, min_score. pi0_pick: primitive, prompt, max_chunks. pi0_doubled:
+    primitive, prompt, max_chunks. For segment, provide exactly one of prompt (text) OR
+    point ([row, col]); never include both, and omit the unused field entirely. For rotate_wrist/rotate_pitch,
+    provide exactly one of target OR delta, never both. set_gripper uses steps, whereas
+    release uses max_steps. Numerical arguments must be JSON numbers and vector/xyz/point
+    arguments must be JSON arrays. A raw vector has 7 numbers; xyz has 3 numbers; point
+    has 2 integers. Observation states is an 8-element vector with zero-based slices
+    states[0:3] for end-effector world position xyz in meters, states[3:6] for orientation
+    as a rotation vector (axis-angle in radians), and states[6:8] for the two gripper
+    joint positions in meters. The rotation vector direction is the rotation axis and
+    its norm is the rotation angle; it is neither Euler angles nor a quaternion. Do not
+    interpret states[3:7] as quaternion xyzw; states[6] is a gripper joint position. Use
+    the current images together with these states to assess action outcomes.'
+parameters:
+  # Return invalid actions to the model for at most three corrections.
+  action_validation_max_retries: 3
+  expose_action_parameter_types: true
+  explain_image_rotation_conventions: true

@@ -745,3 +745,138 @@ def test_distinct_model_yaml_profiles_use_their_own_connection_and_key(
     assert len(calls) == 4
     output = capsys.readouterr()
     assert "private-key" not in output.out + output.err
+
+
+@pytest.mark.parametrize("tools", [False, True])
+def test_pro_80_is_selected_by_benchmark_config(runner, tools):
+    agent = (
+        ROOT
+        / "configs/agents/libero"
+        / (
+            "sensenova_roborsi_27b_vla_sam3.yaml"
+            if tools
+            else "sensenova_roborsi_27b_no_tools.yaml"
+        )
+    )
+    _, args = runner.parse_args(
+        [
+            "--benchmark",
+            "libero_pro",
+            "--dry-run",
+            "--benchmark-config",
+            str(ROOT / "configs/benchmarks/libero_pro_80.yaml"),
+            "--model-config",
+            str(ROOT / "configs/models/roborsi_27b.yaml"),
+            "--agent-config",
+            str(agent),
+            "--task",
+            "libero_pro:libero_spatial_task-t00-i00",
+        ]
+    )
+    assert args.benchmark == ["libero_pro"]
+    assert args.configurations["libero_pro"].agent == agent
+    assert args.pro_protocol["max_env_steps"] == 2000
+    assert args.pro_protocol["init_state_ids"] == [0]
+    assert args.seed == [0]
+    assert args.framework == ("vla_sam3" if tools else "no_vla_no_sam3")
+    assert args.configurations["libero_pro"].agent_overrides == {}
+    assert args.tasks["libero_pro"] == ["libero_spatial_task-t00-i00"]
+
+
+def test_original_pro_entry_has_no_custom_protocol_or_tools(runner):
+    _, args = runner.parse_args(["--benchmark", "libero_pro", "--dry-run"])
+    assert args.pro_protocol is None and args.framework is None
+    assert args.eval_config is None and args.tool_urls == {}
+    assert args.configurations["libero_pro"].agent.name == "pro.yaml"
+
+
+def test_removed_pro_alias_and_conflicting_seed_are_rejected(runner):
+    with pytest.raises(SystemExit):
+        runner.parse_args(["--benchmark", "libero_pro_80", "--dry-run"])
+    with pytest.raises(SystemExit):
+        runner.parse_args(
+            [
+                "--benchmark",
+                "libero_pro",
+                "--dry-run",
+                "--seed",
+                "1",
+                "--benchmark-config",
+                str(ROOT / "configs/benchmarks/libero_pro_80.yaml"),
+            ]
+        )
+
+
+@pytest.mark.parametrize(
+    "mismatch", [None, "initial_state", "budget", "tools", "missing_task"]
+)
+def test_custom_pro_protocol_checks_full_catalog_before_filtering(runner, mismatch):
+    from types import SimpleNamespace
+
+    from roborsi.evaluation.messages import Task
+    from robots.libero.image_tools import tool_action_schema
+    from robots.libero.pro_protocol import PRO_SUITES, pro_cases
+
+    _, args = runner.parse_args(
+        [
+            "--benchmark",
+            "libero_pro",
+            "--dry-run",
+            "--benchmark-config",
+            str(ROOT / "configs/benchmarks/libero_pro_80.yaml"),
+            "--task",
+            "libero_pro:libero_spatial_task-t00-i00",
+        ]
+    )
+    cases = pro_cases(
+        {suite: ["task"] * 10 for suite in PRO_SUITES}, config=args.pro_protocol
+    )
+    tasks = {
+        c.task_id: Task(
+            benchmark="libero_pro",
+            task_id=c.task_id,
+            seed=0,
+            instruction=c.instruction,
+            native=c.native,
+            max_steps=c.max_env_steps,
+            capabilities={"action_schema": tool_action_schema(False)},
+        )
+        for c in cases
+    }
+    if args.image_observation_tools:
+        from robots.libero.image_tools import PROFILE, action_schema, locked_manifest
+
+        tasks = {
+            key: task.model_copy(
+                update={
+                    "capabilities": {
+                        "action_schema": action_schema(False),
+                        "image_observation_tools": PROFILE,
+                        "image_tool_source": {"sha256": locked_manifest()["sha256"]},
+                    }
+                }
+            )
+            for key, task in tasks.items()
+        }
+    last = cases[-1].task_id  # Must validate even a task outside the smoke filter.
+    if mismatch == "initial_state":
+        tasks[last] = tasks[last].model_copy(
+            update={"native": {**tasks[last].native, "init_state_id": 3}}
+        )
+    elif mismatch == "budget":
+        tasks[last] = tasks[last].model_copy(update={"max_steps": 10000})
+    elif mismatch == "tools":
+        tasks[last] = tasks[last].model_copy(
+            update={"capabilities": {"action_schema": tool_action_schema(True)}}
+        )
+    elif mismatch == "missing_task":
+        tasks.pop(last)
+    lock = SimpleNamespace(
+        list_tasks=lambda: list(tasks.values()),
+        task=lambda task_id, seed: tasks[task_id],
+    )
+    if mismatch:
+        with pytest.raises(ValueError):
+            runner.validate_pro_catalog(args, lock)
+    else:
+        runner.validate_pro_catalog(args, lock)

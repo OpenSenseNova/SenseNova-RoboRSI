@@ -160,6 +160,7 @@ def test_service_overrides_combined_entrypoint_and_cleans_up_on_error(
     assert "robots.libero.three_benchmark_serve" in start
     assert start[start.index("--profile") + 1] == "migration_subset"
     assert "127.0.0.1::8000" in start
+    assert "--legacy-image-env" not in start
     own_name = start[start.index("--name") + 1]
     assert calls[-1] == ["docker", "rm", "--force", own_name]
     assert calls[-2] == ["docker", "logs", "--timestamps", own_name]
@@ -360,3 +361,115 @@ def test_benchmark_agent_overrides_are_composed_with_local_bindings(
     assert preset.document["runtime"]["context"]["tokenizer_file"] == str(
         assets / "tokenizer.json"
     )
+
+
+def test_pro_services_forward_protocol_and_tool_endpoints(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    protocol = tmp_path / "protocol.yaml"
+    protocol.write_text("benchmark: libero_pro")
+    calls = []
+    monkeypatch.setenv("ROBORSI_VLA_URL", "http://vla.example:8000")
+    monkeypatch.setenv("ROBORSI_SAM3_URL", "http://sam.example:8000")
+
+    def run(command, **kwargs):
+        calls.append(command)
+        return SimpleNamespace(stdout="127.0.0.1:12345")
+
+    monkeypatch.setattr(bootstrap, "_run", run)
+    monkeypatch.setattr(bootstrap, "_wait_service", lambda *_: None)
+    prepared = SimpleNamespace(
+        benchmarks=["libero_pro"],
+        images={"libero_pro": "fixture"},
+        configurations={},
+        log_dir=None,
+        work_dir=tmp_path,
+    )
+    with bootstrap.benchmark_services(
+        prepared, pro_eval_config=protocol, framework="vla_sam3"
+    ):
+        pass
+    command = next(c for c in calls if c[:2] == ["docker", "run"])
+    assert "ROBORSI_VLA_URL=http://vla.example:8000" in command
+    assert command[command.index("--framework") + 1] == "vla_sam3"
+    assert command[command.index("--eval-config") + 1] == "/roborsi/pro-eval.yaml"
+    assert "--legacy-image-env" in command
+    assert any("readonly" in v and str(protocol) in v for v in command)
+    assert calls[-1][:3] == ["docker", "rm", "--force"]
+
+
+def test_tool_urls_from_config_reach_owned_benchmark_container(tmp_path, monkeypatch):
+    calls = []
+
+    def run(command, **kwargs):
+        calls.append(command)
+        output = "127.0.0.1:12345\n" if command[1] == "port" else "container\n"
+        return subprocess.CompletedProcess(command, 0, stdout=output, stderr="")
+
+    monkeypatch.setattr(bootstrap, "_run", run)
+    monkeypatch.setattr(bootstrap, "_wait_service", lambda *args: None)
+    for name in ("ROBORSI_VLA_URL", "ROBORSI_SAM3_URL"):
+        monkeypatch.delenv(name, raising=False)
+    prepared = bootstrap.Prepared(
+        benchmarks=("libero_pro",),
+        work_dir=tmp_path,
+        presets={},
+        env={},
+        images={"libero_pro": "fixture"},
+    )
+    urls = {"vla": "http://vla.example:8000", "sam3": "http://sam.example:8001"}
+    with bootstrap.benchmark_services(
+        prepared, framework="vla_sam3", service_tool_urls=urls
+    ):
+        pass
+    assert "ROBORSI_VLA_URL=http://vla.example:8000" in calls[0]
+    assert "ROBORSI_SAM3_URL=http://sam.example:8001" in calls[0]
+
+
+@pytest.mark.parametrize("extended", [False, True])
+def test_source_bundle_selection_controls_build_files(tmp_path, monkeypatch, extended):
+    config = load_benchmark(
+        "libero_pro",
+        **(
+            {"path": bootstrap.ROOT / "configs/benchmarks/libero_pro_80.yaml"}
+            if extended
+            else {}
+        ),
+    )
+    bundle = config.environment["native_bundle"]
+    calls = []
+    monkeypatch.setattr(
+        bootstrap.subprocess,
+        "run",
+        lambda command, **kwargs: subprocess.CompletedProcess(command, 1),
+    )
+
+    def run(command, **kwargs):
+        context = Path(command[-1])
+        dockerfile = (context / "Dockerfile").read_text()
+        for name in (
+            "pro_protocol.py",
+            "image_tools.py",
+            "image_tool_adapter.py",
+            "image_vla_bridge.py",
+        ):
+            assert (
+                context / "benchmark-runtime/robots/libero" / name
+            ).exists() is extended
+        assert (
+            "ENV ROBORSI_LIBERO_SOURCE_BUNDLE=libero_pro_image_tools" in dockerfile
+        ) is extended
+        assert (
+            "RUN cp -a /opt/roborsi /opt/roborsi-image-tools" in dockerfile
+        ) is extended
+        assert (
+            f"verify_benchmark_runtime(Path('/opt/roborsi'), '{bundle}')" in dockerfile
+        )
+        calls.append(command)
+
+    monkeypatch.setattr(bootstrap, "_run", run)
+    image = bootstrap._build_three_image(
+        "libero_pro", tmp_path, IMAGES["libero_pro"], config
+    )
+    assert image.startswith(f"roborsi-onecmd-{bundle}:")
+    assert len(calls) == 1

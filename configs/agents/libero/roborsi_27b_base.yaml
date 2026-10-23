@@ -1,0 +1,56 @@
+# Shared 27B model, context and retry settings for both tool conditions.
+schema_version: 1
+extends: pro.yaml
+factory: robots.libero.roborsi_27b_agent:make_agent
+code:
+  - ../../../robots/libero/roborsi_27b_agent.py
+  - ../../../robots/libero/three_benchmark_agent.py
+  - ../../../robots/libero/vla_agent.py
+  - ../../../robots/libero/vla_client.py
+  - ../../../robots/libero/image_tools.py
+  - ../../../robots/libero/image_tools.lock.json
+agent:
+  # Outer action wait must allow the complete API retry sequence and tools.
+  # Requests, active planning, and the whole case retain their own deadlines.
+  action_timeout_s: 43200
+  # Original PRO turn limit; preserve the upstream planner semantics.
+  max_turns: 100
+  max_tokens: 128000
+  planner_timeout_s: 5000
+  reasoning_effort: medium
+runtime:
+  llm:
+    provider: openai
+    openai_format: chat
+    # Explicit historical service settings; custom model names are not inferred
+    # as reasoning-capable by the SDK's generic OpenAI profile.
+    extra_body:
+      reasoning_effort: medium
+      chat_template_kwargs:
+        enable_thinking: true
+        reasoning_effort: medium
+    prompt_cache_mode: null
+    prompt_cache_key: null
+    prompt_cache_static_prefix: false
+    retry:
+      max_retries: 6
+      initial_delay_s: 10
+      max_delay_s: 60
+  context:
+    strategy: summary
+    # Automatic preparation replaces this with the extracted image asset path.
+    tokenizer_file: /opt/roborsi-agent-assets/tokenizer.json
+    tokenizer_sha256: 0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3
+    keep_turns: 8
+    context_window: 262144
+    output_reserve: 128000
+    overhead_reserve: 32768
+    summary_max_tokens: 128000
+    summary_trigger_ratio: 0.75
+    image_history_groups: 2
+    adaptive_retention: true
+    cache_initial_task: false
+    cache_initial_context: false
+    cache_latest_tool_feedback: false
+resources:
+  context_map: context_maps/libero_pro_init0.json

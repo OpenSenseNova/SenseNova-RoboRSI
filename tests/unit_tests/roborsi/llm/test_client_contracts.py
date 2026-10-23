@@ -83,6 +83,37 @@ def test_model_factory_constructs_a_fresh_model_and_can_omit_token_limit():
     assert build_model_settings(first, 8192)["max_tokens"] == 8192
 
 
+@pytest.mark.parametrize("extra", [None, {"reasoning_effort": "medium"}])
+def test_llm_config_preserves_legacy_positional_retry_and_factory(extra):
+    retry = RetryPolicy(max_retries=1)
+    model = FunctionModel(lambda *_: ModelResponse(parts=[TextPart("ok")]))
+
+    def factory():
+        return model
+
+    # Preserve all positional fields supported before extra_body was added.
+    config = LLMConfig(
+        "openai",
+        "custom",
+        "test",
+        "http://test.invalid/v1",
+        "chat",
+        None,
+        None,
+        False,
+        None,
+        0,
+        None,
+        retry,
+        factory,
+        extra_body=extra,
+    )
+    assert config.retry is retry
+    assert config.model_factory is factory
+    assert config.extra_body == extra
+    assert config.build_model() is model
+
+
 def test_model_factory_rejects_invalid_constructor_and_result():
     with pytest.raises(ValueError, match="model_factory must be callable"):
         LLMConfig("openai", "custom", model_factory="not callable")
@@ -725,3 +756,83 @@ def test_api_planner_preserves_reported_reasoning_and_cost() -> None:
     usage = LLMUsage.from_planner_stats(stats)
     assert usage.reasoning_output_tokens == 2
     assert usage.cost_usd == 0.01
+
+
+@pytest.mark.parametrize(
+    "extra",
+    [
+        None,
+        {
+            "reasoning_effort": "medium",
+            "chat_template_kwargs": {
+                "enable_thinking": True,
+                "reasoning_effort": "medium",
+            },
+        },
+    ],
+)
+def test_chat_extra_body_reaches_wire_without_changing_default(monkeypatch, extra):
+    import importlib
+
+    from pydantic_ai import Agent
+    from pydantic_ai.capabilities import Thinking
+
+    captured = []
+    for module_name in ("httpx", "httpx2"):
+        try:
+            transport = importlib.import_module(module_name)
+        except ImportError:
+            continue
+
+        def make_capture(http):
+            async def capture(self, request, *args, **kwargs):
+                payload = json.loads(request.content)
+                captured.append(payload)
+                return http.Response(
+                    200,
+                    request=request,
+                    json={
+                        "id": "test",
+                        "object": "chat.completion",
+                        "created": 1,
+                        "model": payload["model"],
+                        "choices": [
+                            {
+                                "index": 0,
+                                "message": {"role": "assistant", "content": "ok"},
+                                "finish_reason": "stop",
+                            }
+                        ],
+                        "usage": {
+                            "prompt_tokens": 1,
+                            "completion_tokens": 1,
+                            "total_tokens": 2,
+                        },
+                    },
+                )
+
+            return capture
+
+        monkeypatch.setattr(transport.AsyncClient, "send", make_capture(transport))
+    model = LLMConfig(
+        "openai",
+        "custom-27b",
+        api_key="test",
+        base_url="http://test.invalid/v1",
+        openai_format="chat",
+        extra_body=extra,
+    ).build_model()
+    agent = Agent(model, capabilities=[Thinking(effort="medium")])
+    asyncio.run(agent.run("test"))
+    assert len(captured) == 1
+    if extra is None:
+        assert "chat_template_kwargs" not in captured[0]
+    else:
+        assert captured[0]["chat_template_kwargs"] == extra["chat_template_kwargs"]
+        assert captured[0]["reasoning_effort"] == "medium"
+
+
+@pytest.mark.parametrize("extra", [[], {"value": float("nan")}, {"value": object()}])
+def test_chat_extra_body_rejects_non_json(extra):
+    with pytest.raises(ValueError, match="extra_body"):
+        LLMConfig("openai", "custom", openai_format="chat", extra_body=extra)

@@ -55,3 +55,12 @@ separate dependencies. Their addresses are not the model `base_url`.
 
 Continue with [model evaluation](../../docs/model-evaluation.md) /
 [模型一键评测](../../docs/model-evaluation.zh-CN.md).
+
+## SenseNova-RoboRSI-27B: VLA/SAM3
+
+[`libero_tools.py`](libero_tools.py) prepares the tool environment, downloads
+RLinf Pi0.5/SAM3 weights, and serves both tools.
+See the [English commands](../../docs/sensenova-roborsi-27b-preview.md).
+
+该脚本准备工具环境、下载 RLinf Pi0.5/SAM3 权重并部署两个服务。
+使用方式见 [27B 部署与评测命令](../../docs/sensenova-roborsi-27b-preview.zh-CN.md)。

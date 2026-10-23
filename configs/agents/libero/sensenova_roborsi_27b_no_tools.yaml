@@ -1,0 +1,22 @@
+# Explicit SenseNova-RoboRSI-27B serving compatibility.
+schema_version: 1
+extends: pro_no_vla_no_sam3.yaml
+agent:
+  system_prompt: Complete the robot task using the sealed persistent-memory ICL context
+    for the PRO condition. The roborsi_action schema exposes raw action chunks and the
+    direct move_to, move_pose, rotate_wrist, rotate_pitch, release, and set_gripper primitives
+    referenced by the context. Solve the task without VLA or SAM3. The Benchmark owns stopping
+    and score. Submit robot actions through the tool named exactly roborsi_action. Use
+    only tool names present in the supplied tool definitions, and follow their JSON schemas.
+    Observation states is an 8-element vector with zero-based slices states[0:3] for
+    end-effector world position xyz in meters, states[3:6] for orientation as a rotation
+    vector (axis-angle in radians), and states[6:8] for the two gripper joint positions
+    in meters. The rotation vector direction is the rotation axis and its norm is the
+    rotation angle; it is neither Euler angles nor a quaternion. Do not interpret
+    states[3:7] as quaternion xyzw; states[6] is a gripper joint position. Use the
+    current images together with these states to assess action outcomes.
+parameters:
+  # Return invalid actions to the model for at most three corrections.
+  action_validation_max_retries: 3
+  expose_action_parameter_types: true
+  explain_image_rotation_conventions: true

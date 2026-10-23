@@ -106,8 +106,35 @@ curl --fail http://127.0.0.1:8000/v1/chat/completions \
 
 ### 2. 接入 RoboRSI Harness 并运行评测
 
-可参照现有的 [LIBERO-Pro](../benchmarks/libero_pro/README.md) 和
-[RoboCasa365](../benchmarks/robocasa365/README.zh-CN.md) 评测指南，
-将模型接入 RoboRSI Harness 并运行评测。
+按照[模型评测指南](model-evaluation.zh-CN.md)安装 RoboRSI Harness 和配套评测环境，使用下面指令运行评测：
 
-我们正在开发和整理便于适配自研模型的一键复现代码，将很快发布。
+```bash
+export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
+export OPENAI_API_KEY='EMPTY'
+export MODEL_NAME='sensenova-roborsi-27b-preview'
+
+# LIBERO-Pro：VLM + VLA（System 2 + System 1）
+# 准备工具环境、下载权重并在后台部署 VLA/SAM3；不自动启动评测
+python scripts/deploy/libero_tools.py serve \
+  --model-config configs/models/roborsi_27b.yaml \
+  --work-dir work/model_eval/libero_tools &
+
+# 等待输出 Services ready 后，再执行下面的评测命令（地址为默认值）
+ROBORSI_VLA_URL=http://host.docker.internal:24001 \
+ROBORSI_SAM3_URL=http://host.docker.internal:24002 \
+python scripts/evaluation/evaluate_model.py --benchmark libero_pro \
+  --benchmark-config configs/benchmarks/libero_pro_80.yaml \
+  --model-config configs/models/roborsi_27b.yaml \
+  --agent-config configs/agents/libero/sensenova_roborsi_27b_vla_sam3.yaml
+
+# LIBERO-Pro：VLM 直接控制（System 2）；无需执行上面的 VLA/SAM3 部署命令
+python scripts/evaluation/evaluate_model.py --benchmark libero_pro \
+  --benchmark-config configs/benchmarks/libero_pro_80.yaml \
+  --model-config configs/models/roborsi_27b.yaml \
+  --agent-config configs/agents/libero/sensenova_roborsi_27b_no_tools.yaml
+
+# RoboCasa365；Agent 配置待补充，xxx 为占位路径
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --agent-config xxx
+
+# RoboDojo：评测支持将随后续 RoboRSI Harness 更新开放
+```

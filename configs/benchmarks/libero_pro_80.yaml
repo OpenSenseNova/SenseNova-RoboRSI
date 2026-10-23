@@ -1,0 +1,18 @@
+schema_version: 1
+benchmark: libero_pro
+model: ../models/roborsi_27b.yaml
+agent: ../agents/libero/sensenova_roborsi_27b_no_tools.yaml
+protocol: ../evaluations/libero_pro_80_2000.yaml
+agent_overrides: {}
+case_timeout_s: 43200
+environment:
+  kind: libero_three
+  gpus: all
+  image: ghcr.io/opensensenova/sensenova-roborsi-libero-pro@sha256:a83417f1459a4c555c457caa82ef00a5de50191e3d8deb943894fa9285cff172
+  native_bundle: libero_pro_image_tools
+  catalog:
+    profile: migration_subset
+  icl:
+    group: pro
+    root_env: ROBORSI_LIBERO_PRO_ICL_ROOT
+    asset_lock: ../../benchmarks/libero_three_combined/assets.lock.json

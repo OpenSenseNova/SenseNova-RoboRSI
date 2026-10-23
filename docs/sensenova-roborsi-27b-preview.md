@@ -122,9 +122,35 @@ curl --fail http://127.0.0.1:8000/v1/chat/completions \
 
 ### 2. Connect RoboRSI Harness and run evaluations
 
-Follow the existing [LIBERO-Pro](../benchmarks/libero_pro/README.md) and
-[RoboCasa365](../benchmarks/robocasa365/README.md) evaluation guides to connect
-your model to RoboRSI Harness and run evaluations.
+Install RoboRSI Harness and the evaluation environment following the [model evaluation guide](model-evaluation.md), then use the commands below:
 
-One-command reproduction scripts for evaluating custom models are under
-development and will be available soon.
+```bash
+export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
+export OPENAI_API_KEY='EMPTY'
+export MODEL_NAME='sensenova-roborsi-27b-preview'
+
+# LIBERO-Pro: VLM + VLA (System 2 + System 1)
+# Set up the tool environment, download weights, and deploy VLA/SAM3 in the background; no automatic evaluation
+python scripts/deploy/libero_tools.py serve \
+  --model-config configs/models/roborsi_27b.yaml \
+  --work-dir work/model_eval/libero_tools &
+
+# Wait for Services ready before running the evaluation command below (default URLs shown)
+ROBORSI_VLA_URL=http://host.docker.internal:24001 \
+ROBORSI_SAM3_URL=http://host.docker.internal:24002 \
+python scripts/evaluation/evaluate_model.py --benchmark libero_pro \
+  --benchmark-config configs/benchmarks/libero_pro_80.yaml \
+  --model-config configs/models/roborsi_27b.yaml \
+  --agent-config configs/agents/libero/sensenova_roborsi_27b_vla_sam3.yaml
+
+# LIBERO-Pro: Direct VLM control (System 2); skip the VLA/SAM3 deployment command above
+python scripts/evaluation/evaluate_model.py --benchmark libero_pro \
+  --benchmark-config configs/benchmarks/libero_pro_80.yaml \
+  --model-config configs/models/roborsi_27b.yaml \
+  --agent-config configs/agents/libero/sensenova_roborsi_27b_no_tools.yaml
+
+# RoboCasa365; Agent configuration to be added, xxx is a placeholder path
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --agent-config xxx
+
+# RoboDojo: Evaluation support will be available in a future RoboRSI Harness update
+```

@@ -194,3 +194,36 @@ def test_pins_live_in_benchmark_yaml_instead_of_bootstrap(configuration):
     assert pro.environment["image"] not in source
     assert casa.environment["icl"]["revision"] not in source
     assert "secret" not in json.dumps(yaml.safe_load(casa.path.read_text()))
+
+
+def test_pro_80_uses_separate_protocol_without_changing_original_pro(configuration):
+    from robots.libero.pro_protocol import load_pro_config
+
+    original = configuration.load_benchmark("libero_pro")
+    selected = configuration.load_benchmark(
+        "libero_pro", path=ROOT / "configs/benchmarks/libero_pro_80.yaml"
+    )
+    assert original.protocol is None
+    assert original.agent.name == "pro.yaml"
+    assert original.agent_overrides["agent"]["reasoning_effort"] == "none"
+    assert selected.benchmark == "libero_pro"
+    assert selected.agent.name == "sensenova_roborsi_27b_no_tools.yaml"
+    assert original.environment["native_bundle"] == "libero_pro"
+    assert selected.environment == {
+        **original.environment,
+        "native_bundle": "libero_pro_image_tools",
+    }
+    assert selected.agent_overrides == {}
+    protocol = load_pro_config(selected.protocol)
+    assert protocol["init_state_ids"] == [0]
+    assert protocol["seed"] == 0 and protocol["max_env_steps"] == 2000
+
+
+def test_rlinf_model_settings_are_separate_from_agent(configuration):
+    selected = configuration.resolve_model(ROOT / "configs/models/roborsi_27b.yaml")
+    assert selected.vla is None
+    assert selected.tools["deployment"]["vla"]["repo_id"] == (
+        "RLinf/RLinf-Pi05-LIBERO-130-fullshot-SFT"
+    )
+    assert selected.tools["deployment"]["sam3"]["repo_id"] == "facebook/sam3"
+    assert "libero_pro_80" not in configuration.BENCHMARKS

@@ -1,0 +1,10 @@
+# Shared PRO protocol: 4 categories x 2 variants x 10 tasks = 80 cases.
+# max_env_steps counts physical simulator steps, including VLA actions.
+# Configured runs disable extra-budget recovery.
+benchmark: libero_pro
+categories: [spatial, object, goal, "10"]
+variants: [task, swap]
+task_indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+init_state_ids: [0]
+seed: 0
+max_env_steps: 2000

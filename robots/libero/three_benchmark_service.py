@@ -121,6 +121,41 @@ class ThreeLiberoBenchmark:
             raise ValueError(
                 "ROBORSI_LIBERO_PROFILE must be official or migration_subset"
             )
+        default_bundle = "libero_pro" if self.name == "libero_pro" else "libero_lilo"
+        self.source_bundle = get_project_env(
+            "ROBORSI_LIBERO_SOURCE_BUNDLE", default_bundle
+        )
+        allowed = {default_bundle}
+        if self.name == "libero_pro":
+            allowed.add("libero_pro_image_tools")
+        if self.source_bundle not in allowed:
+            raise ValueError("source bundle does not match benchmark")
+        config_path = get_project_env("ROBORSI_PRO_EVAL_CONFIG")
+        if (
+            config_path or _flag("ROBORSI_IMAGE_OBSERVATION_TOOLS")
+        ) and self.source_bundle != "libero_pro_image_tools":
+            raise ValueError(
+                "custom protocol/tools require the libero_pro_image_tools source bundle"
+            )
+        self.pro_config = None
+        if config_path:
+            if self.name != "libero_pro":
+                raise ValueError("PRO config cannot be used with another benchmark")
+            from robots.libero.pro_protocol import load_pro_config
+
+            self.pro_config = load_pro_config(config_path)
+        self.image_observation_tools = _flag("ROBORSI_IMAGE_OBSERVATION_TOOLS")
+        if self.image_observation_tools:
+            if self.name != "libero_pro":
+                raise ValueError("Image observation tools currently require PRO")
+            from robots.libero.image_tools import image_manifest
+
+            self.image_tool_manifest = image_manifest()
+        self.tool_urls = {}
+        if self.image_observation_tools:
+            from robots.libero.image_tools import tool_endpoints
+
+            self.tool_urls = tool_endpoints()
         self.plus9 = _flag("ROBORSI_LIBERO_PLUS9", default=False)
 
     def _cases(self):
@@ -141,6 +176,15 @@ class ThreeLiberoBenchmark:
                     for variant in ("task", "swap")
                 )
             }
+            if self.pro_config is not None:
+                from robots.libero.pro_protocol import pro_cases as configured_cases
+
+                return configured_cases(
+                    instructions,
+                    profile=self.profile,
+                    plus9_on_failure=self.plus9,
+                    config=self.pro_config,
+                )
             return pro_cases(
                 instructions, profile=self.profile, plus9_on_failure=self.plus9
             )
@@ -163,11 +207,26 @@ class ThreeLiberoBenchmark:
             "action_schema": ACTION_SCHEMA,
             "observation_channels": observation_channels,
         }
+        if self.image_observation_tools:
+            from robots.libero.image_tools import PROFILE, action_schema
+
+            capabilities.update(
+                action_schema=action_schema(bool(self.tool_urls)),
+                image_observation_tools=PROFILE,
+                image_tool_source=self.image_tool_manifest,
+                observation_channels=[
+                    "agentview",
+                    "agentview_high",
+                    "wrist_high",
+                    "states",
+                    "camera_state",
+                ],
+            )
         return [
             Task(
                 benchmark=case.benchmark,
                 task_id=case.task_id,
-                seed=0,
+                seed=getattr(case, "seed", 0),
                 instruction=case.instruction,
                 max_steps=case.max_env_steps,
                 native=case.native,
@@ -194,7 +253,9 @@ class ThreeLiberoBenchmark:
             if self.name == "libero_pro"
             else "task_weighted_mean"
         )
-        digest = benchmark_source_digest(Path(__file__).resolve().parents[2], bundle)
+        digest = benchmark_source_digest(
+            Path(__file__).resolve().parents[2], self.source_bundle
+        )
         return BenchmarkRuntimeInfo(
             benchmark=self.name,
             benchmark_version=get_project_env(
@@ -235,6 +296,12 @@ class ThreeLiberoBenchmark:
     def create_adapter(
         self, directory: Path, artifacts: ArtifactPublisher
     ) -> ThreeBenchmarkAdapter:
+        if self.image_observation_tools:
+            from robots.libero.image_tool_adapter import ObservationAdapter
+
+            return ObservationAdapter(directory, artifacts, tool_urls=self.tool_urls)
+        if self.tool_urls:
+            raise ValueError("VLA/SAM3 require the image tool profile")
         return ThreeBenchmarkAdapter(directory, artifacts)
 
 
