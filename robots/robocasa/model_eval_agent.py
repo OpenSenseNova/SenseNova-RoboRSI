@@ -16,11 +16,16 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import time
 from pathlib import Path, PurePosixPath
 
-from roborsi.evaluation.messages import Task
+from roborsi.evaluation.messages import Action, Observation, StepResult, Task
 from roborsi.evaluation.result import write_json_atomic
 
+# The planner's own timeout sits past the Target50 limit so that the Agent ends
+# the episode at the limit and the scene at that moment is scored.
+PLANNER_GRACE_S = 900
+PLANNER_ENDED = "Embodied Agent ended before the Benchmark episode"
 CHECKSUMS_SHA256 = "88dfecd78fada13a6fc7aa2b13d1a7c61cb005451b72d53c0d3f25cc2f6a90bf"
 PACKAGE_REVISION = "e977b5ad667b4ce753ee947cbb0b95d4fc0fe98c"
 NO_MEMORY = frozenset(
@@ -173,7 +178,12 @@ def load_task_context(
 
 
 class RoboCasaMemoryAgent:
-    """Add verified task memory before starting a normal EmbodiedAgent."""
+    """Add verified task memory before starting a normal EmbodiedAgent.
+
+    When the Target50 time limit or the planner's turn budget runs out, the
+    Agent finishes the episode itself so the Benchmark scores the scene as it
+    stands, as the Target50 protocol does.
+    """
 
     def __init__(
         self,
@@ -183,11 +193,17 @@ class RoboCasaMemoryAgent:
         *,
         checksums_sha256=CHECKSUMS_SHA256,
         package_revision=PACKAGE_REVISION,
+        finish_on_budget: bool = True,
+        clock=time.monotonic,
     ):
         self.delegate = delegate
         self.case_dir, self.package = Path(case_dir), Path(package)
         self.checksums_sha256 = checksums_sha256
         self.package_revision = package_revision
+        self.finish_on_budget = finish_on_budget
+        self._clock = clock
+        self._deadline: float | None = None
+        self._ended_by_budget = False
         self._started = False
 
     def reset(self, task: Task) -> None:
@@ -205,13 +221,43 @@ class RoboCasaMemoryAgent:
             *self.delegate.evaluation_initial_context,
             *context,
         )
+        limit = int(task.native["timeout_s"])
+        if self.finish_on_budget:
+            self.delegate.planner_timeout_s = limit + PLANNER_GRACE_S
+            self._deadline = self._clock() + limit
         self.delegate.reset(task)
         self._started = True
 
-    def act(self, observation):
-        return self.delegate.act(observation)
+    def act(self, observation: Observation) -> Action:
+        if self._deadline is not None and self._clock() >= self._deadline:
+            return self._finish(observation, "Target50 time limit reached")
+        try:
+            action = self.delegate.act(observation)
+        except RuntimeError as exc:
+            if not (self.finish_on_budget and PLANNER_ENDED in str(exc)):
+                raise
+            return self._finish(observation, "planner turn limit reached")
+        if self._deadline is not None and self._clock() >= self._deadline:
+            return self._finish(observation, "Target50 time limit reached")
+        return action
 
-    def observe_end(self, step):
+    def _finish(self, observation: Observation, reason: str) -> Action:
+        self._ended_by_budget = True
+        write_json_atomic(
+            self.case_dir / "budget-finish.json",
+            {"step_index": observation.step_index, "reason": reason},
+        )
+        return Action(
+            benchmark=observation.benchmark,
+            episode_id=observation.episode_id,
+            step_index=observation.step_index,
+            data={"primitive": "finish", "status": "stuck", "summary": reason},
+        )
+
+    def observe_end(self, step: StepResult):
+        if self._ended_by_budget:
+            # The planner's last proposal was not executed; end its dialogue.
+            return self.delegate.close()
         return self.delegate.observe_end(step)
 
     def close(self):
@@ -223,7 +269,7 @@ def make_agent(case_dir: Path, *, config) -> RoboCasaMemoryAgent:
     if set(config.resources) != {"icl_package"}:
         raise ValueError("RoboCasa ICL Agent requires resources.icl_package")
     parameters = config.parameters
-    if set(parameters) - {"icl_manifest_sha256", "icl_revision"}:
+    if set(parameters) - {"icl_manifest_sha256", "icl_revision", "finish_on_budget"}:
         raise ValueError("Unknown RoboCasa ICL Agent parameter")
     checksum = parameters.get("icl_manifest_sha256", CHECKSUMS_SHA256)
     revision = parameters.get("icl_revision", PACKAGE_REVISION)
@@ -234,10 +280,14 @@ def make_agent(case_dir: Path, *, config) -> RoboCasaMemoryAgent:
         or not re.fullmatch(r"[0-9a-f]{40}", revision)
     ):
         raise ValueError("RoboCasa ICL requires a pinned manifest SHA256 and revision")
+    finish_on_budget = parameters.get("finish_on_budget", True)
+    if type(finish_on_budget) is not bool:
+        raise ValueError("parameters.finish_on_budget must be a boolean")
     return RoboCasaMemoryAgent(
         config.embodied_agent(case_dir),
         case_dir,
         config.resources["icl_package"],
         checksums_sha256=checksum,
         package_revision=revision,
+        finish_on_budget=finish_on_budget,
     )

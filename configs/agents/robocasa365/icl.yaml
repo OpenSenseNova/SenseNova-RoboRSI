@@ -1,12 +1,22 @@
+# RoboCasa365 Target50 Agent: the harness prompt, the task's own seed-0 memory
+# and the planner settings used for the reported Target50 runs.
 schema_version: 1
 extends: ../embodied/default.yaml
 factory: robots.robocasa.model_eval_agent:make_agent
+prompt_file: target50_prompt.md
 code:
   - ../../../robots/robocasa/model_eval_agent.py
 agent:
-  action_timeout_s: 1800
-  reasoning_effort: none
+  max_tokens: 32768
+  action_timeout_s: 3600
+  reasoning_effort: xhigh
+  # A malformed action is returned to the model with the reason instead of
+  # ending the case.
+  invalid_action_retries: 3
 runtime:
   llm:
     openai_format: chat
+  context:
+    strategy: default
+    image_history_groups: 2
 # Automatic setup supplies resources.icl_package as a verified local directory.

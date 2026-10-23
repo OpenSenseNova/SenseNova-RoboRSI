@@ -520,15 +520,20 @@ def build_commands(args: argparse.Namespace) -> list[list[str]]:
             "runtime.llm.base_url": model.base_url,
             "runtime.llm.model": model.model_name,
         }
+        # RoboCasa365 keeps the planner settings of its Target50 Agent; the
+        # other automatic presets use the generic API-compatible defaults.
+        generic = not custom and benchmark != "robocasa365"
         for key, explicit, default in (
             ("runtime.llm.openai_format", model.openai_format, "chat"),
             ("agent.max_turns", args.max_turns, 100),
             ("agent.max_tokens", args.max_tokens, 2048),
             ("runtime.context.keep_turns", args.keep_turns, 8),
         ):
-            if explicit is not None or not custom:
-                overrides[key] = explicit if explicit is not None else default
-        if not custom:
+            if explicit is not None:
+                overrides[key] = explicit
+            elif generic or (not custom and key == "runtime.llm.openai_format"):
+                overrides[key] = default
+        if generic:
             overrides["agent.reasoning_effort"] = "none"
         if budget is not None:
             overrides["agent.planner_timeout_s"] = budget

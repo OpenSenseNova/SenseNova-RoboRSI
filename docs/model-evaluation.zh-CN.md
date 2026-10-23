@@ -141,6 +141,11 @@ RoboCasa ICL 只注入**同一任务 source seed 0 的经验**，覆盖 50 个�
 每个 case 写入 `icl-evidence.json`，不使用全局或跨任务记忆。
 RLDX-1 是原生动作执行模型，与被评测模型 API 独立，由环境自动启动。
 
+RoboCasa Agent 见 [`configs/agents/robocasa365/icl.yaml`](../configs/agents/robocasa365/icl.yaml)，
+使用 Target50 harness 提示词，最多 100 轮、单次输出 32768 token，上下文中保留最近两组图像。
+时间或轮数用完时由 Agent 结束 episode，按当时的场景评分。不符合动作 schema 的动作会把原因
+返回给模型重新提交，每步最多 3 次。
+
 首次运行会下载较大的镜像并安装构建依赖。Docker 缓存镜像；资产、ICL 和生成的预设默认放在
 `work/model_eval/`，可用 `--work-dir /path/to/cache` 修改。复用缓存时会校验，
 改动或不完整的缓存会报错，请更换 work directory 或移走对应缓存后重试。
@@ -251,8 +256,8 @@ HTTP 服务需要鉴权时，在 benchmark YAML 填 `token_env: ENV_NAME`，
 完整参数见 `python scripts/evaluation/evaluate_model.py --help`。
 `--max-turns`、`--max-tokens`、`--keep-turns` 可覆盖 Agent 预算。增强 LIBERO 保留对应预设
 的上下文和较大输出预算，请按服务模型的能力配置。标准 LIBERO 通用预设默认 100 轮、
-2048 输出 token、保留 8 轮。RoboCasa 保留 catalog 的原生 planner 预算：atomic 1800 秒、
-composite 3600 秒。`--timeout-s` 为单次传输调用限制，默认 1800 秒。
+2048 输出 token、保留 8 轮。RoboCasa 使用其 Agent YAML 中的设置，并保留 catalog 的原生
+planner 预算：atomic 1800 秒、composite 3600 秒。`--timeout-s` 为单次传输调用限制，默认 1800 秒。
 完整 case 的 `--case-timeout-s` 默认增强 LIBERO 43200 秒，其余 4500 秒。
 自动/HTTP 模式要求 `--max-concurrent 1`。
 

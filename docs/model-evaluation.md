@@ -152,6 +152,13 @@ without memory run with empty ICL. Each case records `icl-evidence.json`; global
 and cross-task memory are not used. RLDX-1 is the native execution model, separate
 from the evaluated model API, and starts automatically inside the environment.
 
+The RoboCasa Agent ([`configs/agents/robocasa365/icl.yaml`](../configs/agents/robocasa365/icl.yaml))
+uses the Target50 harness prompt with up to 100 turns, 32768 output tokens and the
+two most recent image groups in context. When the time limit or the turn budget
+runs out, the Agent ends the episode and the scene at that moment is scored. An
+action that does not match the action schema is returned to the model with the
+reason, up to three times per step.
+
 The first run can download large images and build dependencies. Docker caches
 images; assets, ICL and generated presets live under `work/model_eval/`.
 `--work-dir /path/to/cache` changes this location. Reused assets/ICL are verified;
@@ -276,8 +283,9 @@ See `python scripts/evaluation/evaluate_model.py --help` for all options.
 `--max-turns`, `--max-tokens`, and `--keep-turns` override Agent limits.
 Enhanced LIBERO retains its preset's context and large output budget; set limits
 compatible with your model. Generic LIBERO defaults to 100 turns, 2048 output
-tokens and eight retained turns. RoboCasa preserves its native planner budgets:
-1800 seconds for atomic tasks, 3600 for composite tasks. `--timeout-s` defaults
+tokens and eight retained turns. RoboCasa keeps the settings of its Agent YAML
+and the native planner budgets: 1800 seconds for atomic tasks, 3600 for composite
+tasks. `--timeout-s` defaults
 to 1800 seconds per transport call. Whole-case `--case-timeout-s` defaults to
 43200 seconds for enhanced LIBERO and 4500 otherwise.
 Automatic/HTTP services require `--max-concurrent 1`.

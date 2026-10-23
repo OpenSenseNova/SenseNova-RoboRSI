@@ -18,7 +18,7 @@ from pathlib import Path
 
 import pytest
 
-from roborsi.evaluation.messages import Task
+from roborsi.evaluation.messages import Action, Observation, StepResult, Task
 
 NO_MEMORY = [
     "HeatKebabSandwich",
@@ -255,3 +255,99 @@ def test_factory_uses_the_configured_icl_pin_and_records_its_revision(tmp_path, 
     assert "Only the drawer demonstration" in "\n".join(
         delegate.evaluation_initial_context
     )
+
+
+class Planner:
+    """Stand-in EmbodiedAgent recording how the episode ends."""
+
+    def __init__(self, actions):
+        self.evaluation_initial_context = ()
+        self.planner_timeout_s = 1800
+        self.actions = list(actions)
+        self.ended, self.closed = [], False
+
+    def reset(self, task):
+        pass
+
+    def act(self, observation):
+        action = self.actions.pop(0)
+        if isinstance(action, Exception):
+            raise action
+        return Action(
+            benchmark=observation.benchmark,
+            episode_id=observation.episode_id,
+            step_index=observation.step_index,
+            data=action,
+        )
+
+    def observe_end(self, step):
+        self.ended.append(step)
+
+    def close(self):
+        self.closed = True
+
+
+def observation(step):
+    return Observation(benchmark="robocasa365", episode_id="e", step_index=step)
+
+
+def budget_agent(tmp_path, loader, actions, now, **options):
+    package = tmp_path / "package"
+    digest = release(package)
+    planner = Planner(actions)
+    agent = loader.RoboCasaMemoryAgent(
+        planner,
+        tmp_path / "case",
+        package,
+        checksums_sha256=digest,
+        clock=lambda: now[0],
+        **options,
+    )
+    agent.reset(task())
+    return agent, planner
+
+
+def test_time_limit_ends_the_episode_so_the_scene_is_scored(tmp_path, loader):
+    now = [0.0]
+    agent, planner = budget_agent(
+        tmp_path, loader, [{"primitive": "view_env_state"}] * 2, now
+    )
+    assert planner.planner_timeout_s == 1800 + loader.PLANNER_GRACE_S
+    assert agent.act(observation(0)).data == {"primitive": "view_env_state"}
+    now[0] = 1800.0
+    action = agent.act(observation(1))
+    assert action.data["primitive"] == "finish" and action.step_index == 1
+    end = StepResult(
+        observation=observation(2),
+        terminated=True,
+        truncated=False,
+        termination_reason="finish",
+    )
+    agent.observe_end(end)
+    assert planner.closed and planner.ended == []
+    record = json.loads((tmp_path / "case/budget-finish.json").read_text())
+    assert record == {"step_index": 1, "reason": "Target50 time limit reached"}
+
+
+def test_turn_limit_ends_the_episode_so_the_scene_is_scored(tmp_path, loader):
+    ended = RuntimeError(loader.PLANNER_ENDED)
+    agent, _ = budget_agent(tmp_path, loader, [ended], [0.0])
+    action = agent.act(observation(7))
+    assert action.data["summary"] == "planner turn limit reached"
+    agent, _ = budget_agent(
+        tmp_path / "off", loader, [ended], [0.0], finish_on_budget=False
+    )
+    with pytest.raises(RuntimeError, match="ended before"):
+        agent.act(observation(0))
+
+
+def test_agent_preset_uses_the_target50_prompt(tmp_path):
+    from roborsi.agents.config import AgentConfig
+
+    root = Path(__file__).parents[4]
+    config = AgentConfig.load(root / "configs/agents/robocasa365/icl.yaml")
+    agent = config.embodied_agent(tmp_path)
+    assert "RoboCasa365" in agent.system_prompt
+    assert "roborsi_action" in agent.system_prompt
+    assert agent.invalid_action_retries == 3
+    assert agent.max_tokens == 32768

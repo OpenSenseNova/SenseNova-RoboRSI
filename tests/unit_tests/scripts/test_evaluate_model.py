@@ -244,7 +244,10 @@ def test_execution_passes_secret_only_in_environment_and_respects_robocasa_budge
         assert secret not in " ".join(command)
         assert kwargs["env"]["OPENAI_API_KEY"] == secret
         assert Path(kwargs["cwd"]) == ROOT
-        assert 'agent.reasoning_effort="none"' in command
+        robocasa = any(value.startswith("trial-robocasa365") for value in command)
+        # RoboCasa365 keeps the reasoning and output budget of its Target50 Agent.
+        assert ('agent.reasoning_effort="none"' in command) is not robocasa
+        assert ("agent.max_tokens=2048" in command) is not robocasa
         assert 'runtime.llm.openai_format="chat"' in command
         assert "--seed" in command
     atomic = next(
