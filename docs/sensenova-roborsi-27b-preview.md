@@ -149,8 +149,8 @@ python scripts/evaluation/evaluate_model.py --benchmark libero_pro \
   --model-config configs/models/roborsi_27b.yaml \
   --agent-config configs/agents/libero/sensenova_roborsi_27b_no_tools.yaml
 
-# RoboCasa365; Agent configuration to be added, xxx is a placeholder path
-python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --agent-config xxx
+# RoboCasa365: Target50 Agent with the same task's seed-0 memory, all 340 cells
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365
 
 # RoboDojo: Evaluation support will be available in a future RoboRSI Harness update
 ```
