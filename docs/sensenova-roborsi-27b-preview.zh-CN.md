@@ -133,7 +133,7 @@ python scripts/evaluation/evaluate_model.py --benchmark libero_pro \
   --model-config configs/models/roborsi_27b.yaml \
   --agent-config configs/agents/libero/sensenova_roborsi_27b_no_tools.yaml
 
-# RoboCasa365：Target50 Agent，加载同一任务 seed 0 的经验，评测全部 340 个 cell
+# RoboCasa365
 python scripts/evaluation/evaluate_model.py --benchmark robocasa365
 
 # RoboDojo：评测支持将随后续 RoboRSI Harness 更新开放
