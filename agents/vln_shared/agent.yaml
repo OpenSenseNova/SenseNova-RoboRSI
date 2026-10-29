@@ -1,0 +1,3 @@
+# Compatibility entry; Benchmark-specific entries live under robots/.
+schema_version: 1
+extends: ../../robots/vln_shared/agents/baseline/agent.yaml

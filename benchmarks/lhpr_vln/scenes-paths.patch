@@ -1,0 +1,22 @@
+--- a/_runtime.py
++++ b/_runtime.py
+@@ -56 +56 @@
+-    def __init__(self, data_root, protocol=None, gpu_id=0):
++    def __init__(self, data_root, protocol=None, gpu_id=0, *, scenes_root=None, scene_dataset=None):
+@@ -57,0 +58,10 @@
++        self.scenes_root = (
++            # Habitat matches stage templates by path spelling. Keep the public
++            # dataset path used by the scene config, even if it is a symlink.
++            Path(scenes_root).expanduser().absolute() if scenes_root is not None
++            else self.data_root / "hm3d"
++        )
++        self.scene_dataset = (
++            Path(scene_dataset).expanduser().resolve() if scene_dataset is not None
++            else self.data_root / "hm3d" / "hm3d_annotated_basis.scene_dataset_config.json"
++        )
+@@ -144 +154 @@
+-        config = self.data_root / "hm3d" / "hm3d_annotated_basis.scene_dataset_config.json"
++        config = self.scene_dataset
+@@ -166 +176 @@
+-            scene_base_path=str(self.data_root / "hm3d") + "/",
++            scene_base_path=str(self.scenes_root) + "/",

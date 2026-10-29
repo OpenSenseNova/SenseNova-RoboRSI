@@ -1,0 +1,7 @@
+{
+  "native_commit": "729d141b2ee10628061ada74dd3a5b9f70faeba5",
+  "source_project": "gpt6-test",
+  "source_files_sha256": {
+    "src/gpt6_astra_eval/agentcanvas/navigation_worker.py": "6cd173a98c25d3401f17034057d7478d9f7dca426103a4fcbdcda2b0653938c7"
+  }
+}

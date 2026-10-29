@@ -1,0 +1,10 @@
+# SOURCE_RUNTIME_IMAGE must be pinned to the exported source environment digest.
+ARG SOURCE_RUNTIME_IMAGE
+FROM ${SOURCE_RUNTIME_IMAGE}
+USER root
+COPY native-fixes.txt native-environment.json /opt/build-inputs/
+COPY wheels/ /opt/build-inputs/wheels/
+RUN /opt/native/bin/python -m pip install --no-cache-dir --no-deps --no-index --require-hashes --find-links=/opt/build-inputs/wheels -r /opt/build-inputs/native-fixes.txt \
+    && /opt/native/bin/python -m pip check
+RUN /opt/native/bin/python -c "import json,platform,importlib.metadata as m; d=json.load(open('/opt/build-inputs/native-environment.json')); assert platform.python_version()==d['python']; assert all(m.version(k)==v for k,v in d['packages'].items())"
+LABEL org.opencontainers.image.source="https://github.com/OpenSenseNova/SenseNova-RoboRSI"
