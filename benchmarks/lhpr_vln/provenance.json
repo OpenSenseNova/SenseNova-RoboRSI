@@ -1,0 +1,11 @@
+{
+  "native_commit": "6c0a17d3830be5fa9c64e8dec35be29808581f2d",
+  "source_project": "gpt6-test",
+  "source_files_sha256": {
+    "src/gpt6_astra_eval/agentcanvas/sn_lhvln_episode.py": "3d0e4791b3e82d7df1d1473669c08feb72b60db086f125b330e4d610bfd834bc"
+  },
+  "runtime_sha256": {
+    "original": "8d9da11b50fd11997793613e584cfb9f76db2e9e7224e7d39984421719dec7b8",
+    "scenes_path_patch": "a062f9b9b59462ea2ba547514b7215ce395f70c1d632709479f05334f321613a"
+  }
+}

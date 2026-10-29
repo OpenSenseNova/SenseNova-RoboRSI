@@ -1,0 +1,6 @@
+**
+!benchmark-runtime
+!benchmark-runtime/**
+!service-requirements.txt
+!native-environment.json
+!Dockerfile
