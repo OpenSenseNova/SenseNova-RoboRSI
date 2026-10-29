@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "inputs": [
+    "service-requirements.txt",
+    "native-environment.json",
+    "Dockerfile.native",
+    "native-fixes.txt",
+    "python-system-gl"
+  ]
+}

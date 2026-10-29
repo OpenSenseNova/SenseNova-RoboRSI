@@ -1,0 +1,14 @@
+# Only this benchmark's local simulation/memory tools are pre-approved.
+# Shell commands retain the workspace-write sandbox.
+[mcp_servers.roborsi.tools.roborsi_action]
+approval_mode = "approve"
+[mcp_servers.roborsi.tools.training_tasks]
+approval_mode = "approve"
+[mcp_servers.roborsi.tools.reset_training]
+approval_mode = "approve"
+[mcp_servers.roborsi.tools.training_action]
+approval_mode = "approve"
+[mcp_servers.roborsi.tools.save_memory]
+approval_mode = "approve"
+[mcp_servers.roborsi.tools.ready]
+approval_mode = "approve"
