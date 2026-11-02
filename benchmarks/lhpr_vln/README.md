@@ -1,5 +1,32 @@
 # LHPR-VLN delivery recipe
 
+## Published release
+
+Version `v1.0.0-cu120`, platform `linux/amd64`, built from `1435a63f853649c9e04fe135b664b9835d10fde7`:
+
+```bash
+docker pull ghcr.io/opensensenova/sensenova-roborsi-lhvln@sha256:7d72dd910d5c9048ca6ec40ad158214497c3a9ac276641df1429314f2d7a3695
+```
+
+Tag: `ghcr.io/opensensenova/sensenova-roborsi-lhvln:v1.0.0-cu120`. Use the digest above for evaluation. The package
+currently requires GHCR access; public visibility is being coordinated separately.
+`release-inputs.json` pins the source/native layers used to rebuild it.
+
+Frozen ICL: `lhvln/v1.0.0` at HF commit `495b4e2a9a3652726f52dd6363f7e2c5a77c2b34`,
+submitted in [HF PR #1](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/discussions/1) and verified after re-download; maintainer merge is
+pending. See the [release/download guide](../../docs/vln_shared_evaluation.md#published-artifacts)
+and [Chinese guide](../../docs/vln_shared_evaluation.zh-CN.md#已提交的交付物).
+
+Docker execution depends on the independent framework fix in
+[PR #36](https://github.com/OpenSenseNova/SenseNova-RoboRSI/pull/36). Acceptance
+used this image's source plus fix commit `8e4894abffc6f94e4bf614ac1af45ae93303368a` on the host. It allows final
+asset hashing up to thirty seconds within the case deadline; it does not alter
+native scoring. Apply the accepted framework fix before running the Docker path.
+
+The [release record](../../docs/vln_release_20261102.json) includes source/context
+hashes and actual container/installation checks. Full accuracy remains pending
+the benchmark owner's rerun after merge. [中文交付入口](README.zh-CN.md).
+
 Runtime: Python 3.9.23 / Habitat-Sim 0.3.0. The independent native environment
 comes from AgentCanvas commit `6c0a17d3830be5fa9c64e8dec35be29808581f2d`,
 directory `workspace/nodesets/env/env_lhvln`. It is loaded as an isolated native
@@ -113,3 +140,6 @@ The resulting base must pass the inventory assertions and `pip check` in the
 Dockerfile. Build the benchmark from its exported context using the published
 native digest; keep the generated `build.json` and `source.json` as receipts.
 GPU reset/step/finish validation is required separately from a successful build.
+
+Agent/framework wheels and verification summaries are available in the
+[contributor artifact release](https://github.com/panda7777777/SenseNova-RoboRSI/releases/tag/vln-delivery-20261102); validate `SHA256SUMS` before installation.

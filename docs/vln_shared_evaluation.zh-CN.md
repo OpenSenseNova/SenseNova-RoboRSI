@@ -161,3 +161,83 @@ python -m build --wheel /tmp/vln-shared-r2r-package
 安装导出的 Agent wheel 时使用 `python -m pip install --no-compile <wheel>`。
 训练记忆含 Python 辅助脚本，默认编译会在冻结资源内生成额外缓存，触发严格文件清单校验。
 配置的可执行文件须为 Codex CLI `0.161.0`；Python SDK 的版本与此可执行文件检查分别记录。
+
+## 已提交的交付物
+
+[交付记录](vln_release_20261102.json) 固定两份 GHCR 镜像、冻结经验包 commit 和独立框架依赖。
+镜像获取与重建入口为 [LHPR](../benchmarks/lhpr_vln/README.zh-CN.md) 和
+[VLN-CE](../benchmarks/vlnce/README.zh-CN.md)。GHCR 公开权限仍在协调；经验包通过
+[HF PR #1](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/discussions/1) 提交，等待管理员合并。119 个提交文件均已按固定 commit
+重新下载并与批准的文件逐一匹配。
+
+已有校验通过的本地副本请直接复用。新机器可按以下方式下载和核验：
+
+```python
+from huggingface_hub import snapshot_download
+
+snapshot_download(
+    repo_id="sensenova/SenseNova-RoboRSI-Packages",
+    repo_type="dataset",
+    revision="495b4e2a9a3652726f52dd6363f7e2c5a77c2b34",
+    allow_patterns=["lhvln/v1.0.0/*", "vln-ce/v1.0.0/*", "scripts/verify_package.py"],
+    local_dir="/path/to/roborsi-icl",
+)
+```
+
+```bash
+python /path/to/roborsi-icl/scripts/verify_package.py /path/to/roborsi-icl/lhvln/v1.0.0 \
+  --manifest-sha256 16e34a59a0d806135926945be328251b4790b7fc0dbfefa0733e0911311423dc
+python /path/to/roborsi-icl/scripts/verify_package.py /path/to/roborsi-icl/vln-ce/v1.0.0 \
+  --manifest-sha256 c13ee26190ad749fc362d657e5e2e57cb54f00a6719efa29300b26b17df1b044
+```
+
+在已准备好的 campaign 中，将各数据集的 `import_snapshot` 设置为对应 `payload` 目录的
+绝对路径：`lhvln/v1.0.0/packages/lhvln/payload`、`vln-ce/v1.0.0/packages/r2r/payload`、
+`vln-ce/v1.0.0/packages/rxr/payload`。不要指向仓库总目录，也不要覆盖已经启动的 campaign。
+HF 原始文件保持冻结；Agent 导出器另行生成下文说明的 canonical 快照。
+
+框架 PR #36 合并前，可以在独立工作树重建已经验收的 Docker 主控代码；这里的 `origin`
+指向 OpenSenseNova 公共仓库：
+
+```bash
+git fetch origin pull/33/head
+git worktree add --detach /path/to/vln-delivery 1435a63f853649c9e04fe135b664b9835d10fde7
+cd /path/to/vln-delivery
+git fetch origin pull/36/head
+git cherry-pick 8e4894abffc6f94e4bf614ac1af45ae93303368a
+```
+
+按照安装章节安装主控锁定依赖，导出数据集 Agent wheel 并使用 `--no-compile` 安装。
+按对应 Benchmark 配方准备有使用权限的场景和 manifest。需要 5000 步 Registry 时，
+使用 `Path` 参数调用 `robots.vln_shared.assets.manifest(assets, output, image, budget=5000)`，
+输出到新的 manifest；步数属于任务 manifest，并非 Agent 回合数。两个阶段的结果分开保存。
+
+查询 Registry 并检查标准安装入口：
+
+```python
+from roborsi.benchmarks.registry import BenchmarkRegistry
+
+locked = BenchmarkRegistry(["/path/to/r2r-registry"]).lock("vlnce")
+print(locked.list_tasks()[:3])
+```
+
+```bash
+bench eval --registry-root /path/to/r2r-registry --benchmark vlnce \
+  --task vlnce:r2r-7 --seed 0 --agent-config bundle:vln_shared_r2r \
+  --agent-set 'agent.codex_cli.executable="/path/to/pinned/codex"' \
+  --results-root /path/to/new-results --run-id r2r-check \
+  --max-concurrent 1 --dry-run
+```
+
+准备调用模型时再移除 `--dry-run`；每次运行使用新的结果目录和 run ID。以上仅测 R2R
+单个 500 步任务，不包含条件触发的 5000 步重跑；两阶段协议使用下文 campaign 入口。
+
+最终镜像验收在每个容器内对照 HTTP 与直接原生执行的初始图片哈希、动作数、评分和资源释放。
+导航单测 1613 项、独立框架修复单测 1540 项通过；两份 PR 的 Python 3.11/3.12 CI 和
+pre-commit 均通过。三个已安装 Agent 的资源及主控依赖已在仓库外校验。
+这些结果不代表完整模型精度，合并后的全量复测由负责人完成。
+
+三个 Agent wheel、已验证的框架 wheel、主控依赖锁、组件许可说明及容器验收摘要可从
+[贡献者交付附件](https://github.com/panda7777777/SenseNova-RoboRSI/releases/tag/vln-delivery-20261102) 下载。安装前校验 `SHA256SUMS`。
+这是配合 PR #33/#36 的贡献者预发布附件，并非 OpenSenseNova 组织正式 Release；
+框架 wheel 已包含独立超时修复，Agent wheel 保留冻结资源指纹。

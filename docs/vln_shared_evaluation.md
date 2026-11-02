@@ -224,3 +224,92 @@ Install exported Agent wheels with `python -m pip install --no-compile <wheel>`.
 This preserves the frozen resource inventory when training memory includes Python
 helpers. Keep Codex CLI `0.161.0` available at the configured executable path;
 the separately pinned Python SDK is not the executable version check.
+
+## Published artifacts
+
+[Release identities and checks](vln_release_20261102.json) pin both GHCR images,
+the frozen ICL commit and the independent framework dependency. Image references
+are in the [LHPR recipe](../benchmarks/lhpr_vln/README.md) and
+[VLN-CE recipe](../benchmarks/vlnce/README.md). GHCR visibility is pending; the
+HF resources are in [PR #1](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/discussions/1), awaiting maintainer merge. All 119 submitted
+files were re-downloaded at the following commit and matched the approved bytes.
+
+Reuse an already verified local copy. For a new machine, download and verify:
+
+```python
+from huggingface_hub import snapshot_download
+
+snapshot_download(
+    repo_id="sensenova/SenseNova-RoboRSI-Packages",
+    repo_type="dataset",
+    revision="495b4e2a9a3652726f52dd6363f7e2c5a77c2b34",
+    allow_patterns=["lhvln/v1.0.0/*", "vln-ce/v1.0.0/*", "scripts/verify_package.py"],
+    local_dir="/path/to/roborsi-icl",
+)
+```
+
+```bash
+python /path/to/roborsi-icl/scripts/verify_package.py /path/to/roborsi-icl/lhvln/v1.0.0 \
+  --manifest-sha256 16e34a59a0d806135926945be328251b4790b7fc0dbfefa0733e0911311423dc
+python /path/to/roborsi-icl/scripts/verify_package.py /path/to/roborsi-icl/vln-ce/v1.0.0 \
+  --manifest-sha256 c13ee26190ad749fc362d657e5e2e57cb54f00a6719efa29300b26b17df1b044
+```
+
+Set each prepared campaign dataset's `import_snapshot` to the corresponding
+absolute `payload` directory: `lhvln/v1.0.0/packages/lhvln/payload`,
+`vln-ce/v1.0.0/packages/r2r/payload`, or `vln-ce/v1.0.0/packages/rxr/payload`.
+Do not pass the aggregate repository root. Do not overwrite a running campaign.
+The original HF payload remains frozen; the Agent exporter creates its separate
+canonical snapshot as described below.
+
+Before framework PR #36 is merged, reproduce the validated Docker host in an
+isolated worktree; `origin` here is the public OpenSenseNova repository:
+
+```bash
+git fetch origin pull/33/head
+git worktree add --detach /path/to/vln-delivery 1435a63f853649c9e04fe135b664b9835d10fde7
+cd /path/to/vln-delivery
+git fetch origin pull/36/head
+git cherry-pick 8e4894abffc6f94e4bf614ac1af45ae93303368a
+```
+
+Install the pinned host requirements from the installation section. Export and
+install the generated dataset Agent wheel using `--no-compile`. Prepare the
+licensed scene assets and their manifest using the relevant benchmark recipe.
+For a 5000-step Registry, call `robots.vln_shared.assets.manifest(assets, output,
+image, budget=5000)` with `Path` arguments and a new output manifest. Budgets are
+part of the manifest, not an Agent turn limit. Keep the two stage outputs separate.
+
+Inspect the Registry and validate the standard installed Agent entry:
+
+```python
+from roborsi.benchmarks.registry import BenchmarkRegistry
+
+locked = BenchmarkRegistry(["/path/to/r2r-registry"]).lock("vlnce")
+print(locked.list_tasks()[:3])
+```
+
+```bash
+bench eval --registry-root /path/to/r2r-registry --benchmark vlnce \
+  --task vlnce:r2r-7 --seed 0 --agent-config bundle:vln_shared_r2r \
+  --agent-set 'agent.codex_cli.executable="/path/to/pinned/codex"' \
+  --results-root /path/to/new-results --run-id r2r-check \
+  --max-concurrent 1 --dry-run
+```
+
+Remove `--dry-run` only when ready to run the model. Use a fresh results/run ID
+for each run. This command evaluates one 500-step R2R task; it does not implement
+the conditional 5000-step campaign. Use the campaign entry below for that protocol.
+
+Final image acceptance compared HTTP and direct native execution inside each
+image, including initial image hashes, actions, native scores and cleanup.
+Navigation unit tests: 1613 passed; standalone framework fix: 1540 passed.
+Both PRs passed Python 3.11/3.12 CI and pre-commit. Installed Agent resources
+and host dependencies were verified outside the checkout. These checks do not
+claim a new full-model benchmark score; the owner will rerun after merge.
+
+Download the three Agent wheels, the validated framework wheel, host dependency lock,
+component license notices and container summaries from the [contributor artifact release](https://github.com/panda7777777/SenseNova-RoboRSI/releases/tag/vln-delivery-20261102).
+Verify its `SHA256SUMS` before installation. This prerelease accompanies PRs #33/#36;
+it is not an OpenSenseNova organization release. The framework wheel already contains
+the separate timeout fix, and the Agent wheels preserve their frozen resource fingerprints.
