@@ -46,7 +46,7 @@ registered source digest as `adapter_version`.
 
 ```bash
 python -m benchmarks.package --benchmark lhpr_vln --output /tmp/lhpr-context
-docker build --build-arg NATIVE_RUNTIME_IMAGE=REGISTRY/IMAGE@sha256:ACTUAL_DIGEST \
+docker build \
   -t YOUR_LHPR_IMAGE /tmp/lhpr-context
 ```
 
@@ -93,3 +93,23 @@ The delivery pins NumPy to `1.23.5` to satisfy Habitat-Sim `0.3.0`'s
 `numpy<1.24` requirement. `native-fixes.txt` records the wheel hash, and
 `Dockerfile.native` applies it to the pinned exported source environment.
 Both the native base and benchmark build must pass `pip check`.
+
+## Pinned native image rebuild
+
+`release-inputs.json` records the immutable source and normalized native images.
+Both Dockerfiles default to these digest-pinned inputs. The source image is an
+exported upstream environment; `Dockerfile.native` applies the separately
+hashed dependency fixes. Rebuild that layer from this benchmark directory:
+
+```bash
+python3.9 -m pip download --only-binary=:all: --no-deps --require-hashes \
+  --dest wheels -r native-fixes.txt
+docker build -f Dockerfile.native -t roborsi-lhpr_vln-native-rebuilt .
+
+```
+
+Use a matching Linux x86_64 Python interpreter to download the native wheels.
+The resulting base must pass the inventory assertions and `pip check` in the
+Dockerfile. Build the benchmark from its exported context using the published
+native digest; keep the generated `build.json` and `source.json` as receipts.
+GPU reset/step/finish validation is required separately from a successful build.

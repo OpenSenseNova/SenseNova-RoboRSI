@@ -1,7 +1,7 @@
 # Context: python -m benchmarks.package, after the framework source registration.
 # The digest-pinned base supplies /opt/native/bin/python and Python 3.11 at
 # /opt/roborsi-service/bin/python. See README.md for the native runtime contract.
-ARG NATIVE_RUNTIME_IMAGE
+ARG NATIVE_RUNTIME_IMAGE=ghcr.io/opensensenova/sensenova-roborsi-lhvln@sha256:c5e60c092699a84c64d7e09fdfbb2b54a1e1580138845333ec194b1f76ea909c
 FROM ${NATIVE_RUNTIME_IMAGE}
 USER root
 ENV PATH=/opt/roborsi-service/bin:${PATH}

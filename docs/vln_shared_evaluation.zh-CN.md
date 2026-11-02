@@ -27,6 +27,12 @@
 
 宿主环境使用 Python 3.11；原生模拟器保留独立环境。已验证 VLNCE 为 Python 3.8.20 / Habitat 0.1.7，LHPR 为 Python 3.9.23 / Habitat-Sim 0.3.0。具体包版本见两个 `benchmarks/` 目录的 `native-environment.json`。
 
+请安装完整的固定版本 Codex CLI（默认 `0.161.0`）。启用 Code Mode 时，同版本的
+`codex-code-mode-host` 必须与原生 CLI 可执行文件放在同一目录；仅复制主程序会遗漏
+此组件。流程预检会记录组件哈希。`--dry-run` 校验流程输入，CLI 预检核对固定的
+二进制版本；两者均不证明模型可用或账号仍有额度。`codex login status` 成功只表示
+已配置登录。
+
 ```bash
 uv venv --python 3.11 .venv-vln
 uv pip install --python .venv-vln/bin/python -r agents/vln_shared/requirements.txt

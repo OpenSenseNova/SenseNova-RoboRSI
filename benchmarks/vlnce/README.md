@@ -40,7 +40,7 @@ registered source digest as `adapter_version`.
 
 ```bash
 python -m benchmarks.package --benchmark vlnce --output /tmp/vlnce-context
-docker build --build-arg NATIVE_RUNTIME_IMAGE=REGISTRY/IMAGE@sha256:ACTUAL_DIGEST \
+docker build \
   -t YOUR_VLNCE_IMAGE /tmp/vlnce-context
 ```
 
@@ -98,3 +98,23 @@ old Conda graphics libraries with the NVIDIA driver. For an isolated host
 environment, install `python-system-gl` alongside its `bin/python` and use the
 launcher as the campaign's native Python executable. This does not modify
 system libraries or the existing Python executable.
+
+## Pinned native image rebuild
+
+`release-inputs.json` records the immutable source and normalized native images.
+Both Dockerfiles default to these digest-pinned inputs. The source image is an
+exported upstream environment; `Dockerfile.native` applies the separately
+hashed dependency fixes. Rebuild that layer from this benchmark directory:
+
+```bash
+python3.8 -m pip download --only-binary=:all: --no-deps --require-hashes \
+  --dest wheels -r native-fixes.txt
+docker build -f Dockerfile.native -t roborsi-vlnce-native-rebuilt .
+
+```
+
+Use a matching Linux x86_64 Python interpreter to download the native wheels.
+The resulting base must pass the inventory assertions and `pip check` in the
+Dockerfile. Build the benchmark from its exported context using the published
+native digest; keep the generated `build.json` and `source.json` as receipts.
+GPU reset/step/finish validation is required separately from a successful build.

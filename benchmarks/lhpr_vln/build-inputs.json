@@ -4,6 +4,7 @@
     "service-requirements.txt",
     "native-environment.json",
     "Dockerfile.native",
-    "native-fixes.txt"
+    "native-fixes.txt",
+    "release-inputs.json"
   ]
 }

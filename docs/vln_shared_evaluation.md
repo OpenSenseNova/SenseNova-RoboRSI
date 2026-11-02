@@ -47,6 +47,14 @@ versions are Python 3.8.20 / Habitat 0.1.7 for VLNCE and Python 3.9.23 /
 Habitat-Sim 0.3.0 for LHPR. Package inventories are recorded in each benchmark's
 `native-environment.json`.
 
+Install the complete pinned Codex CLI distribution (default `0.161.0`). When
+Code Mode is enabled, its matching `codex-code-mode-host` executable must remain
+beside the native CLI executable. Copying only the main binary omits this
+required component. The campaign records companion hashes in its preflight.
+`--dry-run` validates campaign inputs, while the CLI preflight checks the pinned
+binary version; neither proves that model access or account quota is available.
+A successful `codex login status` only confirms the configured login.
+
 ```bash
 uv venv --python 3.11 .venv-vln
 uv pip install --python .venv-vln/bin/python -r agents/vln_shared/requirements.txt

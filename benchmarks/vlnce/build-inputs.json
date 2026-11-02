@@ -5,6 +5,7 @@
     "native-environment.json",
     "Dockerfile.native",
     "native-fixes.txt",
-    "python-system-gl"
+    "python-system-gl",
+    "release-inputs.json"
   ]
 }

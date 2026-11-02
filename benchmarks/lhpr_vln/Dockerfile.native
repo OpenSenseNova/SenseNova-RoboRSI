@@ -1,5 +1,5 @@
 # SOURCE_RUNTIME_IMAGE must be pinned to the exported source environment digest.
-ARG SOURCE_RUNTIME_IMAGE
+ARG SOURCE_RUNTIME_IMAGE=ghcr.io/opensensenova/sensenova-roborsi-lhvln@sha256:556e45d8a3b7294be7a4098e0a57c4bb09b1d7aae13050398cf0c772200b157c
 FROM ${SOURCE_RUNTIME_IMAGE}
 USER root
 COPY native-fixes.txt native-environment.json /opt/build-inputs/
