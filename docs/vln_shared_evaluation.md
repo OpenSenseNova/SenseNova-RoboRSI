@@ -1,6 +1,7 @@
 # Shared VLN exploration and conditional evaluation
 
-Navigation code and HF packages are under review; GHCR requires pull access.
+Initial code and usage guides for LHPR-VLN and VLN-CE (R2R / RxR)
+are available in this branch.
 The [frozen evaluation input package](https://github.com/panda7777777/SenseNova-RoboRSI/releases/tag/vln-evaluation-inputs-v1.0.0) and local scene preparation are
 documented in [LHPR-VLN](../benchmarks/lhpr_vln/README.md) and
 [VLN-CE](../benchmarks/vlnce/README.md). The historical importer below supports

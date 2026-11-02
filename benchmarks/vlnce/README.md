@@ -4,11 +4,9 @@
 
 This integration exposes VLN-CE (R2R / RxR) through the shared Benchmark service,
 Registry and Runner, with isolated native workers and native scoring.
-**Delivery is under review:** [code PR #33](https://github.com/OpenSenseNova/SenseNova-RoboRSI/pull/33),
-[framework dependency #36](https://github.com/OpenSenseNova/SenseNova-RoboRSI/pull/36)
-and [HF PR #1](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/discussions/1)
-are pending merge. GHCR pull access and the exact evaluation inputs below are
-required. This is not yet an unrestricted, complete public release.
+Initial code and usage guides are available in this branch.
+Pinned artifacts and installation requirements are documented below and in the
+[shared evaluation guide](../../docs/vln_shared_evaluation.md).
 
 ## Tasks, actions and scores
 

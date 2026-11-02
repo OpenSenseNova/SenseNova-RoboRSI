@@ -1,6 +1,6 @@
 # VLN 共享探索与两阶段测评
 
-当前导航代码和 HF 包在审核中，GHCR 仍需拉取权限。
+本分支已提供 LHPR-VLN 和 VLN-CE（R2R / RxR）的首批代码与使用指南。
 冻结测试目录已有独立[评测输入包](https://github.com/panda7777777/SenseNova-RoboRSI/releases/tag/vln-evaluation-inputs-v1.0.0)及场景复用命令，见
 [LHPR-VLN](../benchmarks/lhpr_vln/README.zh-CN.md) 和
 [VLN-CE](../benchmarks/vlnce/README.zh-CN.md)。下述历史导入器服务于已有项目的完整训练集

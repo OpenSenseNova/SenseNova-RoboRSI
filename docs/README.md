@@ -2,8 +2,8 @@
 
 This release contains the Agent runtime, benchmark evaluation, and adapters for
 LIBERO, LIBERO-PRO, LIBERO Long++, LIBERO Ultra-Long, Bench2Dex, DexJoCo,
-BEHAVIOR-1K, RoboCasa365 and RoboLab. LHPR-VLN and VLN-CE (R2R/RxR)
-integrations are under review; their guides include the frozen evaluation input package.
+BEHAVIOR-1K, RoboCasa365, RoboLab, LHPR-VLN and VLN-CE (R2R / RxR).
+The navigation guides include the frozen evaluation input package.
 Benchmark task definitions and scoring belong to each native runtime.
 
 | Guide | English | 简体中文 |
@@ -26,7 +26,7 @@ BEHAVIOR-1K ([English](../benchmarks/behavior_1k/README.md) /
 [简体中文](../benchmarks/behavior_1k/README.zh-CN.md)), and
 RoboCasa365 ([English](../benchmarks/robocasa365/README.md) /
 [简体中文](../benchmarks/robocasa365/README.zh-CN.md)).
-Navigation guides under review:
+Navigation guides:
 LHPR-VLN ([English](../benchmarks/lhpr_vln/README.md) /
 [简体中文](../benchmarks/lhpr_vln/README.zh-CN.md)) and
 VLN-CE ([English](../benchmarks/vlnce/README.md) /

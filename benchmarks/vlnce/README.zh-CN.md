@@ -4,10 +4,8 @@
 
 本接入通过公共 Benchmark 服务、Registry 和 Runner 运行 VLN-CE (R2R / RxR)，
 采用隔离的原生进程及原生评分。
-**交付仍在审核中：**[代码 PR #33](https://github.com/OpenSenseNova/SenseNova-RoboRSI/pull/33)、
-[框架依赖 #36](https://github.com/OpenSenseNova/SenseNova-RoboRSI/pull/36) 和
-[HF PR #1](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/discussions/1)
-尚待合并；运行还需要 GHCR 拉取权限及下述精确评测输入。目前不能视为完整的无权限公开发布。
+本分支已提供首批代码与使用指南。
+固定版本的交付物及安装要求见下文和[共享评测指南](../../docs/vln_shared_evaluation.zh-CN.md)。
 
 ## 任务、动作与评分
 
