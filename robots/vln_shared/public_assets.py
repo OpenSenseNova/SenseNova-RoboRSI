@@ -65,6 +65,7 @@ def prepare(
     output = output.absolute()
     if any(path.is_symlink() for path in (output, *output.parents)):
         raise ValueError("Registry output must not contain symlinks")
+    output = output.resolve()
     if output.exists():
         raise FileExistsError(output)
     if any(output.is_relative_to(root) for root in (package, scenes_root)):

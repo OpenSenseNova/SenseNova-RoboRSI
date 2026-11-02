@@ -129,3 +129,11 @@ def test_output_symlink_rejected(inputs, tmp_path):
     (tmp_path / "linked").symlink_to(scenes, target_is_directory=True)
     with pytest.raises(ValueError, match="symlink"):
         prepare(package, "r2r", scenes, tmp_path / "linked/registry", IMAGE)
+
+
+def test_output_parent_traversal_cannot_write_into_sources(inputs, tmp_path):
+    package, scenes, _, _ = inputs
+    output = tmp_path / "unused" / ".." / "scenes" / "registry"
+    with pytest.raises(ValueError, match="outside"):
+        prepare(package, "r2r", scenes, output, IMAGE)
+    assert not (scenes / "registry").exists()
