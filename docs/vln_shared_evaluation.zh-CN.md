@@ -1,5 +1,11 @@
 # VLN 共享探索与两阶段测评
 
+当前导航代码和 HF 包在审核中，GHCR 仍需拉取权限。
+冻结测试目录已有独立[评测输入包](https://github.com/panda7777777/SenseNova-RoboRSI/releases/tag/vln-evaluation-inputs-v1.0.0)及场景复用命令，见
+[LHPR-VLN](../benchmarks/lhpr_vln/README.zh-CN.md) 和
+[VLN-CE](../benchmarks/vlnce/README.zh-CN.md)。下述历史导入器服务于已有项目的完整训练集
+探索／迁移，仍需要该项目的训练输入；使用公开输入包和冻结 Agent wheel 评测不依赖该导入器。
+
 入口为 `scripts/run_vln_shared.sh`。默认每个数据集完成一次训练集探索并冻结文件，再对全部测试任务执行最多 500 步。仅原生评分失败的任务从初始状态重跑最多 5000 步；两次最多累计 5500 个动作。支持选择数据集、限制每个数据集的测试 episode 数量及仅运行 500 步阶段。超时、工具异常、提前退出和缺少评分均保持未评分，不触发第二阶段。
 
 ## 标准 Agent 入口
@@ -156,7 +162,7 @@ python -m roborsi.agents.package --config work/vln-shared-new/agent-input/r2r/ag
 python -m build --wheel /tmp/vln-shared-r2r-package
 ```
 
-交付配方与资产命令见 [VLNCE](../benchmarks/vlnce/README.md)、[LHPR](../benchmarks/lhpr_vln/README.md)。两个服务均已在此公共仓库中登记，无需私有仓库的前置 PR。发布时应保存镜像验收证据、不可变镜像 digest 和 HF commit。合并后的完整模型成绩由操作者重新测评，不能使用历史成绩代替。
+交付配方与资产命令见 [VLNCE](../benchmarks/vlnce/README.md)、[LHPR](../benchmarks/lhpr_vln/README.md)。两个服务均已在公共分支中登记，冻结测试输入通过独立评测输入包交付。发布时应保存镜像验收证据、不可变镜像 digest 和 HF commit。合并后的完整模型成绩由操作者重新测评，不能使用历史成绩代替。
 
 安装导出的 Agent wheel 时使用 `python -m pip install --no-compile <wheel>`。
 训练记忆含 Python 辅助脚本，默认编译会在冻结资源内生成额外缓存，触发严格文件清单校验。
@@ -241,3 +247,45 @@ pre-commit 均通过。三个已安装 Agent 的资源及主控依赖已在仓�
 [贡献者交付附件](https://github.com/panda7777777/SenseNova-RoboRSI/releases/tag/vln-delivery-20261102) 下载。安装前校验 `SHA256SUMS`。
 这是配合 PR #33/#36 的贡献者预发布附件，并非 OpenSenseNova 组织正式 Release；
 框架 wheel 已包含独立超时修复，Agent wheel 保留冻结资源指纹。
+
+## 安装固定 CLI
+
+以下步骤使用本次已验证的官方 npm Linux x64 发布包，解压完整发行内容并保留配套程序；
+如已安装且摘要一致，可复用原副本，无须再次下载。不要修改全局 CLI。
+
+```bash
+export VLN_CLI_DIR=/absolute/path/outside/checkout/codex-0.161.0
+mkdir -p "$VLN_CLI_DIR"
+python - "$VLN_CLI_DIR" <<'PY'
+import base64
+import hashlib
+from pathlib import Path
+import sys
+import urllib.request
+
+archive = Path(sys.argv[1]) / "codex-0.161.0-linux-x64.tgz"
+url = "https://registry.npmjs.org/@openai/codex/-/codex-0.161.0-linux-x64.tgz"
+if not archive.exists():
+    with urllib.request.urlopen(url) as source, archive.open("xb") as target:
+        import shutil
+        shutil.copyfileobj(source, target)
+expected = "AVkNzeJWyCHHPyg5vxD8UE6aFsYaOwq0/x6mtmkOKy6LdjvsyxLr7Q7UULlk+Ma3+PnrN8uIxG2/XGPQ936hgA=="
+assert base64.b64encode(hashlib.sha512(archive.read_bytes()).digest()).decode() == expected
+print("Verified official 0.161.0 Linux x64 archive")
+PY
+tar -xzf "$VLN_CLI_DIR/codex-0.161.0-linux-x64.tgz" -C "$VLN_CLI_DIR"
+export VLN_CODEX="$VLN_CLI_DIR/package/vendor/x86_64-unknown-linux-musl/bin/codex"
+"$VLN_CODEX" --version
+sha256sum "$VLN_CODEX" "$(dirname "$VLN_CODEX")/codex-code-mode-host"
+```
+
+期望版本为 `codex-cli 0.161.0`；两个 SHA-256 依次为：
+
+```text
+9a820c17865fa825d04db416818679a9d63bd72e50835c396f496e5684626c9c
+e87096087c02aa6ab90a5a85031659665aa0bf3ee20c07ca0b8ab701c83fcd5b
+```
+
+用此绝对路径配置 `agent.codex_cli.executable`，在实际 Agent 账号下运行 `"$VLN_CODEX" login`。
+预设使用原生 CLI provider／账号配置；凭据不写入 YAML 或镜像。
+`login status` 只确认认证状态，不证明账号额度或目标模型请求可用。

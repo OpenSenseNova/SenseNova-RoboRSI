@@ -1,5 +1,12 @@
 # Shared VLN exploration and conditional evaluation
 
+Navigation code and HF packages are under review; GHCR requires pull access.
+The [frozen evaluation input package](https://github.com/panda7777777/SenseNova-RoboRSI/releases/tag/vln-evaluation-inputs-v1.0.0) and local scene preparation are
+documented in [LHPR-VLN](../benchmarks/lhpr_vln/README.md) and
+[VLN-CE](../benchmarks/vlnce/README.md). The historical importer below supports
+new exploration/migration from an existing project's training inputs. It is
+not needed to evaluate the public frozen test package with the released Agent wheels.
+
 `scripts/run_vln_shared.sh` runs one training-only exploration per dataset, freezes
 its workspace, evaluates every test at 500 physical actions, then restarts only
 scored failures with a fresh 5000-action budget. Both runs use the same snapshot,
@@ -215,8 +222,8 @@ python -m build --wheel /tmp/vln-shared-r2r-package
 ```
 
 See [VLNCE packaging](../benchmarks/vlnce/README.md) and
-[LHPR packaging](../benchmarks/lhpr_vln/README.md). Both services are registered
-in this public repository; no private-repository prerequisite is needed.
+[LHPR packaging](../benchmarks/lhpr_vln/README.md). Both service wrappers are registered in this public repository; the
+frozen evaluation inputs are distributed separately from the training-memory packages.
 Keep image acceptance evidence, immutable image digests and HF revisions with the
 release. Report full-model scores only after a fresh run of the merged public commit.
 
@@ -313,3 +320,47 @@ component license notices and container summaries from the [contributor artifact
 Verify its `SHA256SUMS` before installation. This prerelease accompanies PRs #33/#36;
 it is not an OpenSenseNova organization release. The framework wheel already contains
 the separate timeout fix, and the Agent wheels preserve their frozen resource fingerprints.
+
+## Install the pinned CLI
+
+Use the verified official npm Linux x64 artifact below and retain its complete
+distribution, including companion programs. Reuse an existing copy if its
+hashes match. The task-specific directory leaves a global CLI unchanged.
+
+```bash
+export VLN_CLI_DIR=/absolute/path/outside/checkout/codex-0.161.0
+mkdir -p "$VLN_CLI_DIR"
+python - "$VLN_CLI_DIR" <<'PY'
+import base64
+import hashlib
+from pathlib import Path
+import sys
+import urllib.request
+
+archive = Path(sys.argv[1]) / "codex-0.161.0-linux-x64.tgz"
+url = "https://registry.npmjs.org/@openai/codex/-/codex-0.161.0-linux-x64.tgz"
+if not archive.exists():
+    with urllib.request.urlopen(url) as source, archive.open("xb") as target:
+        import shutil
+        shutil.copyfileobj(source, target)
+expected = "AVkNzeJWyCHHPyg5vxD8UE6aFsYaOwq0/x6mtmkOKy6LdjvsyxLr7Q7UULlk+Ma3+PnrN8uIxG2/XGPQ936hgA=="
+assert base64.b64encode(hashlib.sha512(archive.read_bytes()).digest()).decode() == expected
+print("Verified official 0.161.0 Linux x64 archive")
+PY
+tar -xzf "$VLN_CLI_DIR/codex-0.161.0-linux-x64.tgz" -C "$VLN_CLI_DIR"
+export VLN_CODEX="$VLN_CLI_DIR/package/vendor/x86_64-unknown-linux-musl/bin/codex"
+"$VLN_CODEX" --version
+sha256sum "$VLN_CODEX" "$(dirname "$VLN_CODEX")/codex-code-mode-host"
+```
+
+Expected version: `codex-cli 0.161.0`. The two expected SHA-256 values, in order:
+
+```text
+9a820c17865fa825d04db416818679a9d63bd72e50835c396f496e5684626c9c
+e87096087c02aa6ab90a5a85031659665aa0bf3ee20c07ca0b8ab701c83fcd5b
+```
+
+Set `agent.codex_cli.executable` to this absolute path and authenticate using
+`"$VLN_CODEX" login` in the Agent account. The preset uses native CLI provider/account
+configuration; keep credentials out of YAML and images. `login status` confirms
+authentication, not quota or a successful request to the target model.

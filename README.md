@@ -118,8 +118,10 @@ simulator installation.
   [Bench2Dex](benchmarks/bench2dex/README.md),
   [DexJoCo](benchmarks/dexjoco/README.md),
   [BEHAVIOR-1K](benchmarks/behavior_1k/README.md),
-  [RoboCasa365](benchmarks/robocasa365/README.md), and
-  [RoboLab](benchmarks/robolab/README.md).
+  [RoboCasa365](benchmarks/robocasa365/README.md),
+  [RoboLab](benchmarks/robolab/README.md),
+  [LHPR-VLN](benchmarks/lhpr_vln/README.md), and
+  [VLN-CE (R2R / RxR)](benchmarks/vlnce/README.md).
 - **Agent configuration:** [Models, prompts, context and budgets](docs/agents.md).
 - **Evaluation:** [Batch execution, results and resume](docs/evaluation.md).
 
@@ -229,10 +231,14 @@ corresponding image reference from the table.
 | [RoboLab](benchmarks/robolab/) | Released | — | `ghcr.io/opensensenova/sensenova-roborsi-robolab@sha256:519585576bb09c5fc4a09e6255e30d74189b86b0f8c526d3fe8d99c5031da04f` |
 | [Bench2Dex](benchmarks/bench2dex/) | Released | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/main/bench2dex/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-bench2dex@sha256:edb0701c6ea3904c53a64820775336b998e6a3d0a9ac8b3b5be2caf824db3a1b` |
 | [DexJoCo](benchmarks/dexjoco/) | Released | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/main/dexjoco/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-dexjoco@sha256:19fa30540e3956ae460efa0a4b473586637cb330d863ea65ba0fd6318c376d4d` |
-| LHVLN | Coming soon | — | — |
-| VLN-CE | Coming soon | — | — |
+| [LHPR-VLN](benchmarks/lhpr_vln/README.md) | In review | [v1.0.0 (PR #1)](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/495b4e2a9a3652726f52dd6363f7e2c5a77c2b34/lhvln/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-lhvln@sha256:7d72dd910d5c9048ca6ec40ad158214497c3a9ac276641df1429314f2d7a3695` |
+| [VLN-CE (R2R / RxR)](benchmarks/vlnce/README.md) | In review | [v1.0.0 (PR #1)](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/495b4e2a9a3652726f52dd6363f7e2c5a77c2b34/vln-ce/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-vln-ce@sha256:f54607562ca465101d6e1091f97d776755c2b00517f1852643bd8e0161c0e787` |
 | SIMPLE | Coming soon | — | — |
 | [BEHAVIOR-1K](benchmarks/behavior_1k/) | Released | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/main/behavior/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-behavior-1k:v1.0.0-cu128` |
+
+LHPR-VLN and VLN-CE code/ICL are under review. GHCR currently requires pull
+access. The exact frozen evaluation inputs are linked from each README;
+code/ICL merges and the post-merge full-model rerun remain pending.
 
 ## Harness Results
 
