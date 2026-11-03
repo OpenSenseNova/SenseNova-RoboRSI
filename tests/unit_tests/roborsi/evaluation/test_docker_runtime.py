@@ -427,3 +427,53 @@ def test_assets_are_checked_after_the_episode_and_cleanup_survives_mismatch(tmp_
         container.close()
     assert not container.runtime_record.verified_after_close
     assert docker.calls[-1] == ["docker", "rm", "--force", "c" * 64]
+
+
+@pytest.mark.parametrize("case_seconds", [None, 60.0, 3.0])
+def test_final_asset_verification_can_exceed_five_seconds_within_case_deadline(
+    tmp_path, case_seconds
+):
+    _manifest(tmp_path)
+    lock = BenchmarkRegistry([tmp_path]).lock("demo")
+    case_dir = tmp_path / "case"
+    case_dir.mkdir()
+    now = [0.0]
+
+    class HashingRpc(FakeRpc):
+        def __init__(self):
+            super().__init__()
+            self.runtime_calls = 0
+            self.final_budget = None
+
+        def call(self, method, *args, **kwargs):
+            if method == "healthz":
+                return {"status": "ok", "runtime_info_versions": [1]}
+            if method == "runtime_info":
+                self.runtime_calls += 1
+                if self.runtime_calls == 2:
+                    # Model a complete asset hash requiring six seconds of I/O.
+                    self.final_budget = kwargs["timeout_s"]
+                    if self.final_budget < 6.0:
+                        raise TimeoutError("asset verification needs more time")
+                    now[0] += 6.0
+                return "null"
+            return super().call(method, *args, **kwargs)
+
+    docker, rpc = FakeDocker(), HashingRpc()
+    deadline = (
+        CaseDeadline(case_seconds, clock=lambda: now[0])
+        if case_seconds is not None
+        else None
+    )
+    executor = DockerExecutor(command_runner=docker, client_factory=lambda _: rpc)
+    container = executor.start_adapter(lock, case_dir, deadline=deadline)
+    if case_seconds == 3.0:
+        with pytest.raises(TimeoutError, match="asset verification"):
+            container.close()
+        assert rpc.final_budget <= case_seconds
+        assert not container.runtime_record.verified_after_close
+    else:
+        container.close()
+        assert container.runtime_record.verified_after_close
+    assert rpc.closed
+    assert docker.calls[-1] == ["docker", "rm", "--force", "c" * 64]

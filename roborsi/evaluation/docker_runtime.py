@@ -261,8 +261,10 @@ class DockerExecutor(DockerRuntime):
             probe = self._authenticated_client(port, token)
             try:
                 with interrupt_http_calls(deadline.check if deadline else None):
+                    # Asset-backed metadata may hash gigabytes of scene files.
+                    # Keep the initial verification budget, capped by the case.
                     current_info = AdapterClient(probe).runtime_info(
-                        timeout_s=deadline.remaining(5.0) if deadline else 5.0
+                        timeout_s=deadline.remaining(30.0) if deadline else 30.0
                     )
             finally:
                 probe.close()
