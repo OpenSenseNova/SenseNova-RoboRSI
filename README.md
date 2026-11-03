@@ -25,9 +25,6 @@
 
 ## News
 
-<details>
-<summary>Latest updates</summary>
-
 - **2026-11-03** — Initial code and usage guides for [**LHPR-VLN**](benchmarks/lhpr_vln/README.md) and [**VLN-CE (R2R / RxR)**](benchmarks/vlnce/README.md) are available in this branch.
 
 - **2026-10-30** — Initial code and usage guides for [**RoboLab**](benchmarks/robolab/README.md) are available in this branch.
@@ -37,6 +34,9 @@
 - **2026-10-26** — SenseNova-RoboRSI is now ranked **No. 1** on the [RoboLab leaderboard](https://research.nvidia.com/labs/srl/projects/robolab/leaderboard.html).
 
 - **2026-10-22** — **SenseNova-RoboRSI-27B-Preview** now runs across different environments, including on real robots and in simulation! [🤗 Model weights](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview) and [usage guides](docs/sensenova-roborsi-27b-preview.md) are now available. The technical report is coming soon.
+
+<details>
+<summary>Earlier updates</summary>
 
 - **2026-10-22** — Initial code and usage guides for [**RoboCasa365 Target50**](benchmarks/robocasa365/README.md) are available in this branch.
 
