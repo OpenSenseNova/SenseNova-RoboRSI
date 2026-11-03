@@ -25,6 +25,9 @@
 
 ## News
 
+<details>
+<summary>Latest updates</summary>
+
 - **2026-11-03** — Initial code and usage guides for [**LHPR-VLN**](benchmarks/lhpr_vln/README.md) and [**VLN-CE (R2R / RxR)**](benchmarks/vlnce/README.md) are available in this branch.
 
 - **2026-10-30** — Initial code and usage guides for [**RoboLab**](benchmarks/robolab/README.md) are available in this branch.
@@ -47,15 +50,7 @@
 
 - **2026-10-09** — SenseNova-RoboRSI achieves an **average score of 60.08** and a **success rate of 54.17%** on RoboDojo, a gain of **+31.11 points** over the GPT-6 Astra baseline (**28.97**). Results are being submitted to the official RoboDojo leaderboard. See [Harness Results](#harness-results) for benchmark comparisons.
 
-## Contributors
-
-- **Project leads:** Hanming Deng, Zhongang Cai, Haiwen Diao, Zhi Hou, Zhonghua Wu, Qingyi Tao
-- **Model team:** Silei Wu\*, Weiye Xu, Bo Liu, Pengfei Liu, Tailai Chen, Chenjing Ding, Jiahao Wang, Changxu Wei, Zongpu Zhang
-- **Harness team:** Jiapeng Luo\*, Yuyao Shao, Linjun Dai, Ziyi Shang, Wanqi Yin, Xiaowan Li, Donghao Wu, Tianbo Zhong
-- **Collaborators:** Quanzhou Li, Han Chong Chua, Ruisi Wang, Xiaoming Wu, Tianqi Liu, Jing Zuo, Hongcan Xiao, Qinyue Li
-- **Advisor:** Dahua Lin, Xiaogang Wang, Ziwei Liu, Lewei Lu, Lei Yang
-
-\* denotes team leads.
+</details>
 
 ## Overview
 
@@ -354,6 +349,16 @@ VLA policies, simulation platforms, and real robots.
   licenses.
 
 **This achievement reflects the joint team's continued exploration and close collaboration in embodied AI and agent systems. SenseNova-RoboRSI has been used in the published report [Has GPT-6 Achieved Embodied Intelligence?](https://www.sensenova.ai/has-gpt-6-astra-achieved-embodied-intelligence). We will continue to advance and validate these technologies.**
+
+## Contributors
+
+- **Project leads:** Hanming Deng, Zhongang Cai, Haiwen Diao, Zhi Hou, Zhonghua Wu, Qingyi Tao
+- **Model team:** Silei Wu\*, Weiye Xu, Bo Liu, Pengfei Liu, Tailai Chen, Chenjing Ding, Jiahao Wang, Changxu Wei, Zongpu Zhang
+- **Harness team:** Jiapeng Luo\*, Yuyao Shao, Linjun Dai, Ziyi Shang, Wanqi Yin, Xiaowan Li, Donghao Wu, Tianbo Zhong
+- **Collaborators:** Quanzhou Li, Han Chong Chua, Ruisi Wang, Xiaoming Wu, Tianqi Liu, Jing Zuo, Hongcan Xiao, Qinyue Li
+- **Advisor:** Dahua Lin, Xiaogang Wang, Ziwei Liu, Lewei Lu, Lei Yang
+
+\* denotes team leads.
 
 ## Citation
 
