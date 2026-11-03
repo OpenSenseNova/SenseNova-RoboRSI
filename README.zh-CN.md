@@ -25,9 +25,9 @@
 
 ## News
 
-- **2026-11-03** — 本分支已提供 [**LHPR-VLN**](benchmarks/lhpr_vln/README.zh-CN.md) 和 [**VLN-CE（R2R / RxR）**](benchmarks/vlnce/README.zh-CN.md) 的首批代码与使用指南。
+- **2026-11-03** — 已提供 [**LHPR-VLN**](benchmarks/lhpr_vln/README.zh-CN.md) 和 [**VLN-CE（R2R / RxR）**](benchmarks/vlnce/README.zh-CN.md) 的首批代码与使用指南。
 
-- **2026-10-30** — 本分支已提供 [**RoboLab**](benchmarks/robolab/README.zh-CN.md) 的首批代码与使用指南。
+- **2026-10-30** — 已提供 [**RoboLab**](benchmarks/robolab/README.zh-CN.md) 的首批代码与使用指南。
 
 - **2026-10-27** — 我们的 LIBERO-PRO 结果（**98.25% 成功率**）现已正式位列 [Papers With Code 榜单](https://paperswithcode.co/benchmark/libero-pro) **第 1 名**。
 
@@ -38,13 +38,13 @@
 <details>
 <summary>历史动态</summary>
 
-- **2026-10-22** — 本分支已提供 [**RoboCasa365 Target50**](benchmarks/robocasa365/README.zh-CN.md) 的首批代码与使用指南。
+- **2026-10-22** — 已提供 [**RoboCasa365 Target50**](benchmarks/robocasa365/README.zh-CN.md) 的首批代码与使用指南。
 
 - **2026-10-21** — 已在 [BenchZoo](#benchzoo) 中补充 **benchmark 镜像与 ICL 经验包**，提供镜像地址和资源包下载链接。
 
-- **2026-10-20** — 本分支已提供 [**BEHAVIOR-1K**](benchmarks/behavior_1k/README.zh-CN.md)、[**Bench2Dex**](benchmarks/bench2dex/README.zh-CN.md) 和 [**DexJoCo**](benchmarks/dexjoco/README.zh-CN.md) 的首批代码与使用指南。
+- **2026-10-20** — 已提供 [**BEHAVIOR-1K**](benchmarks/behavior_1k/README.zh-CN.md)、[**Bench2Dex**](benchmarks/bench2dex/README.zh-CN.md) 和 [**DexJoCo**](benchmarks/dexjoco/README.zh-CN.md) 的首批代码与使用指南。
 
-- **2026-10-16** — 本分支已提供 [**LIBERO**](benchmarks/libero/README.md)、[**LIBERO-PRO**](benchmarks/libero_pro/README.md)、[**LIBERO-Long++**](benchmarks/libero_lilo/README.md) 和 [**LIBERO-Ultra-Long**](benchmarks/libero_lilo/README.md) 的首批代码与使用指南，详见[快速开始](docs/getting-started.zh-CN.md)。
+- **2026-10-16** — 已提供 [**LIBERO**](benchmarks/libero/README.md)、[**LIBERO-PRO**](benchmarks/libero_pro/README.md)、[**LIBERO-Long++**](benchmarks/libero_lilo/README.md) 和 [**LIBERO-Ultra-Long**](benchmarks/libero_lilo/README.md) 的首批代码与使用指南，详见[快速开始](docs/getting-started.zh-CN.md)。
 
 - **2026-10-16** — SenseNova-RoboRSI 作为实验框架支持了实证研究 [**Has GPT-6 Achieved Embodied Intelligence?**](https://www.sensenova.ai/has-gpt-6-astra-achieved-embodied-intelligence)。
 
