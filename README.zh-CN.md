@@ -25,6 +25,9 @@
 
 ## News
 
+<details>
+<summary>最新动态</summary>
+
 - **2026-11-03** — 本分支已提供 [**LHPR-VLN**](benchmarks/lhpr_vln/README.zh-CN.md) 和 [**VLN-CE（R2R / RxR）**](benchmarks/vlnce/README.zh-CN.md) 的首批代码与使用指南。
 
 - **2026-10-30** — 本分支已提供 [**RoboLab**](benchmarks/robolab/README.zh-CN.md) 的首批代码与使用指南。
@@ -47,15 +50,7 @@
 
 - **2026-10-09** — SenseNova-RoboRSI 在 RoboDojo 上取得 **60.08 的平均得分**和 **54.17% 的成功率**，平均得分较 GPT-6 Astra 基线（**28.97**）提升 **+31.11 分**。结果正在提交至 RoboDojo 官方榜单。更多评测对比见 [Harness 结果](#harness-results)。
 
-## Contributors
-
-- **Project leads:** Hanming Deng, Zhongang Cai, Haiwen Diao, Zhi Hou, Zhonghua Wu, Qingyi Tao
-- **Model team:** Silei Wu\*, Weiye Xu, Bo Liu, Pengfei Liu, Tailai Chen, Chenjing Ding, Jiahao Wang, Changxu Wei, Zongpu Zhang
-- **Harness team:** Jiapeng Luo\*, Yuyao Shao, Linjun Dai, Ziyi Shang, Wanqi Yin, Xiaowan Li, Donghao Wu, Tianbo Zhong
-- **Collaborators:** Quanzhou Li, Han Chong Chua, Ruisi Wang, Xiaoming Wu, Tianqi Liu, Jing Zuo, Hongcan Xiao, Qinyue Li
-- **Advisor:** Dahua Lin, Xiaogang Wang, Ziwei Liu, Lewei Lu, Lei Yang
-
-\* 表示对应团队的 Leads。
+</details>
 
 ## Overview
 
@@ -321,6 +316,16 @@ RoboCasa365 上开展评测，并展示了仿真与真机任务能力。开放�
 - **许可证：** 外部模型、模拟器与数据集遵循各自的许可证。
 
 **这一成果凝聚了联合团队在具身智能与 Agent 系统方向上的持续探索和紧密协作。SenseNova-RoboRSI 已用于现已发布的实证研究 [Has GPT-6 Achieved Embodied Intelligence?](https://www.sensenova.ai/has-gpt-6-astra-achieved-embodied-intelligence)。未来，我们将继续推动相关技术的迭代与验证。**
+
+## Contributors
+
+- **Project leads:** Hanming Deng, Zhongang Cai, Haiwen Diao, Zhi Hou, Zhonghua Wu, Qingyi Tao
+- **Model team:** Silei Wu\*, Weiye Xu, Bo Liu, Pengfei Liu, Tailai Chen, Chenjing Ding, Jiahao Wang, Changxu Wei, Zongpu Zhang
+- **Harness team:** Jiapeng Luo\*, Yuyao Shao, Linjun Dai, Ziyi Shang, Wanqi Yin, Xiaowan Li, Donghao Wu, Tianbo Zhong
+- **Collaborators:** Quanzhou Li, Han Chong Chua, Ruisi Wang, Xiaoming Wu, Tianqi Liu, Jing Zuo, Hongcan Xiao, Qinyue Li
+- **Advisor:** Dahua Lin, Xiaogang Wang, Ziwei Liu, Lewei Lu, Lei Yang
+
+\* 表示对应团队的 Leads。
 
 ## 引用
 
