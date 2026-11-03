@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "release": "v1.0.0-cu120",
+  "platform": "linux/amd64",
+  "image_source_commit": "1435a63f853649c9e04fe135b664b9835d10fde7",
+  "framework_dependency": {
+    "pull_request": "https://github.com/OpenSenseNova/SenseNova-RoboRSI/pull/36",
+    "commit": "8e4894abffc6f94e4bf614ac1af45ae93303368a"
+  },
+  "images": [
+    {
+      "benchmark": "lhpr_vln",
+      "image": "ghcr.io/opensensenova/sensenova-roborsi-lhvln@sha256:7d72dd910d5c9048ca6ec40ad158214497c3a9ac276641df1429314f2d7a3695",
+      "release_tag": "ghcr.io/opensensenova/sensenova-roborsi-lhvln:v1.0.0-cu120",
+      "source_revision": "1435a63f853649c9e04fe135b664b9835d10fde7",
+      "service_pip_check": "No broken requirements found.",
+      "runtime_source_sha256": "07cb79d815a4fe742a23aaf9e705c2ef558ace98a03e83366fc1d63fa2bc5c72",
+      "build_context_sha256": "9cbb883483a6cfba17455b65ce38dd414d86dd571cdbb5844ee35818aeb75205"
+    },
+    {
+      "benchmark": "vlnce",
+      "image": "ghcr.io/opensensenova/sensenova-roborsi-vln-ce@sha256:f54607562ca465101d6e1091f97d776755c2b00517f1852643bd8e0161c0e787",
+      "release_tag": "ghcr.io/opensensenova/sensenova-roborsi-vln-ce:v1.0.0-cu120",
+      "source_revision": "1435a63f853649c9e04fe135b664b9835d10fde7",
+      "service_pip_check": "No broken requirements found.",
+      "runtime_source_sha256": "110d0bddbdb4387d31e61d9575e84f60f46f077c6f0524bea9b1a7ecbc73fe4b",
+      "build_context_sha256": "75fb63f2deebad86fb512b3bab98ca886b8578cedf48e265488206bfc5c34aee"
+    }
+  ],
+  "icl": {
+    "repository": "sensenova/SenseNova-RoboRSI-Packages",
+    "pull_request": "https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/discussions/1",
+    "commit": "495b4e2a9a3652726f52dd6363f7e2c5a77c2b34",
+    "merged_at_validation": false,
+    "verified_files": 119,
+    "packages": [
+      {
+        "path": "lhvln/v1.0.0",
+        "manifest_sha256": "16e34a59a0d806135926945be328251b4790b7fc0dbfefa0733e0911311423dc"
+      },
+      {
+        "path": "vln-ce/v1.0.0",
+        "manifest_sha256": "c13ee26190ad749fc362d657e5e2e57cb54f00a6719efa29300b26b17df1b044"
+      }
+    ]
+  },
+  "validation": {
+    "navigation_unit_tests": 1613,
+    "framework_unit_tests": 1540,
+    "pre_commit_passed": true,
+    "containers": [
+      {
+        "dataset": "lhpr_vln",
+        "task_id": "lhpr_vln-batch_1_episode_19",
+        "seed": 42,
+        "initial_image_count": 3,
+        "physical_steps": 4,
+        "actions": [
+          "turn_left",
+          "stop",
+          "stop",
+          "stop"
+        ],
+        "direct_native_parity": true,
+        "verified_after_close": true,
+        "result_sha256": "c1060841e96183f8901cb3dfe3c7b402b24778a086efc1302b41fd1dd9cd013d"
+      },
+      {
+        "dataset": "r2r",
+        "task_id": "r2r-13",
+        "seed": 0,
+        "initial_image_count": 1,
+        "physical_steps": 2,
+        "actions": [
+          "turn_left",
+          "stop"
+        ],
+        "direct_native_parity": true,
+        "verified_after_close": true,
+        "result_sha256": "c455472cf48cfe2a96b7964ade7542ea5025b564ad20a33bc72dae86e139b3fe"
+      },
+      {
+        "dataset": "rxr",
+        "task_id": "rxr-377",
+        "seed": 0,
+        "initial_image_count": 1,
+        "physical_steps": 2,
+        "actions": [
+          "turn_left",
+          "stop"
+        ],
+        "direct_native_parity": true,
+        "verified_after_close": true,
+        "result_sha256": "8337421bc2a6d40a0f76dd226e2305599d82376db0137a75d3dc26f3e9023d76"
+      }
+    ],
+    "installed_agent_bundles": {
+      "lhpr_vln": {
+        "verified": true,
+        "fingerprint": "f2399bffae61975d081a9660090f11cfa114cfece96db589127cc390b50c4ba7",
+        "input_files": 73
+      },
+      "r2r": {
+        "verified": true,
+        "fingerprint": "83a3ee2d0f4aae42a23d57a47f00e42d30993b306cb35f4ee17d213b5be9f8e8",
+        "input_files": 24
+      },
+      "rxr": {
+        "verified": true,
+        "fingerprint": "922203c59fa9d2f6896ded7992af8f039bda44fc85c47790460f0f41c2dde19b",
+        "input_files": 19
+      }
+    },
+    "installed_runtime_pip_check": "No broken requirements found.",
+    "full_model_accuracy_rerun": "Pending benchmark owner rerun after merge"
+  },
+  "access_at_publication": "GHCR packages private; organization visibility change coordinated by benchmark owner."
+}

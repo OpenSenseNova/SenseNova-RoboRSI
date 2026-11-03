@@ -25,6 +25,8 @@
 
 ## News
 
+- **2026-11-03** — 本分支已提供 [**LHPR-VLN**](benchmarks/lhpr_vln/README.zh-CN.md) 和 [**VLN-CE（R2R / RxR）**](benchmarks/vlnce/README.zh-CN.md) 的首批代码与使用指南。
+
 - **2026-10-30** — 本分支已提供 [**RoboLab**](benchmarks/robolab/README.zh-CN.md) 的首批代码与使用指南。
 
 - **2026-10-27** — 我们的 LIBERO-PRO 结果（**98.25% 成功率**）现已正式位列 [Papers With Code 榜单](https://paperswithcode.co/benchmark/libero-pro) **第 1 名**。
@@ -107,8 +109,10 @@ Windows 使用 `.venv\Scripts\Activate.ps1` 激活环境。
   [Bench2Dex](benchmarks/bench2dex/README.zh-CN.md)、
   [DexJoCo](benchmarks/dexjoco/README.zh-CN.md)、
   [BEHAVIOR-1K](benchmarks/behavior_1k/README.zh-CN.md)、
-  [RoboCasa365](benchmarks/robocasa365/README.zh-CN.md) 和
-  [RoboLab](benchmarks/robolab/README.zh-CN.md)。
+  [RoboCasa365](benchmarks/robocasa365/README.zh-CN.md)、
+  [RoboLab](benchmarks/robolab/README.zh-CN.md)、
+  [LHPR-VLN](benchmarks/lhpr_vln/README.zh-CN.md) 和
+  [VLN-CE（R2R / RxR）](benchmarks/vlnce/README.zh-CN.md)。
 - **Agent 配置：** [模型、提示词、上下文与预算](docs/agents.zh-CN.md)。
 - **评测：** [批量执行、结果查看与中断恢复](docs/evaluation.zh-CN.md)。
 
@@ -207,8 +211,8 @@ ICL 经验包统一托管在
 | [RoboLab](benchmarks/robolab/) | 已开源 | — | `ghcr.io/opensensenova/sensenova-roborsi-robolab@sha256:519585576bb09c5fc4a09e6255e30d74189b86b0f8c526d3fe8d99c5031da04f` |
 | [Bench2Dex](benchmarks/bench2dex/) | 已开源 | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/main/bench2dex/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-bench2dex@sha256:edb0701c6ea3904c53a64820775336b998e6a3d0a9ac8b3b5be2caf824db3a1b` |
 | [DexJoCo](benchmarks/dexjoco/) | 已开源 | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/main/dexjoco/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-dexjoco@sha256:19fa30540e3956ae460efa0a4b473586637cb330d863ea65ba0fd6318c376d4d` |
-| LHVLN | 即将开源 | — | — |
-| VLN-CE | 即将开源 | — | — |
+| [LHPR-VLN](benchmarks/lhpr_vln/README.zh-CN.md) | 已开源 | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/495b4e2a9a3652726f52dd6363f7e2c5a77c2b34/lhvln/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-lhvln@sha256:7d72dd910d5c9048ca6ec40ad158214497c3a9ac276641df1429314f2d7a3695` |
+| [VLN-CE (R2R / RxR)](benchmarks/vlnce/README.zh-CN.md) | 已开源 | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/495b4e2a9a3652726f52dd6363f7e2c5a77c2b34/vln-ce/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-vln-ce@sha256:f54607562ca465101d6e1091f97d776755c2b00517f1852643bd8e0161c0e787` |
 | SIMPLE | 即将开源 | — | — |
 | [BEHAVIOR-1K](benchmarks/behavior_1k/) | 已开源 | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/main/behavior/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-behavior-1k:v1.0.0-cu128` |
 

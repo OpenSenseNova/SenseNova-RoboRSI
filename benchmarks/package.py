@@ -106,6 +106,8 @@ def main() -> None:
             "dexjoco",
             "behavior_1k",
             "robocasa365",
+            "lhpr_vln",
+            "vlnce",
         ),
         help="Benchmark source bundle name",
     )

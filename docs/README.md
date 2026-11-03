@@ -2,7 +2,8 @@
 
 This release contains the Agent runtime, benchmark evaluation, and adapters for
 LIBERO, LIBERO-PRO, LIBERO Long++, LIBERO Ultra-Long, Bench2Dex, DexJoCo,
-BEHAVIOR-1K and RoboCasa365.
+BEHAVIOR-1K, RoboCasa365, RoboLab, LHPR-VLN and VLN-CE (R2R / RxR).
+The navigation guides include the frozen evaluation input package.
 Benchmark task definitions and scoring belong to each native runtime.
 
 | Guide | English | 简体中文 |
@@ -12,6 +13,7 @@ Benchmark task definitions and scoring belong to each native runtime.
 | LIBERO VLA download and deployment | [OpenPI VLA](libero-vla.md) | [VLA 自动部署](libero-vla.zh-CN.md) |
 | Model, prompt, context and budgets | [Agents](agents.md) | [Agent 配置](agents.zh-CN.md) |
 | Batch execution, results and comparison | [Evaluation](evaluation.md) | [评测](evaluation.zh-CN.md) |
+| Navigation exploration and conditional evaluation | [VLN evaluation](vln_shared_evaluation.md) | [VLN 共享探索与测评](vln_shared_evaluation.zh-CN.md) |
 
 The benchmark build recipes are in [LIBERO](../benchmarks/libero/README.md),
 [LIBERO-PRO](../benchmarks/libero_pro/README.md),
@@ -24,6 +26,11 @@ BEHAVIOR-1K ([English](../benchmarks/behavior_1k/README.md) /
 [简体中文](../benchmarks/behavior_1k/README.zh-CN.md)), and
 RoboCasa365 ([English](../benchmarks/robocasa365/README.md) /
 [简体中文](../benchmarks/robocasa365/README.zh-CN.md)).
+Navigation guides:
+LHPR-VLN ([English](../benchmarks/lhpr_vln/README.md) /
+[简体中文](../benchmarks/lhpr_vln/README.zh-CN.md)) and
+VLN-CE ([English](../benchmarks/vlnce/README.md) /
+[简体中文](../benchmarks/vlnce/README.zh-CN.md)).
 See [the test guide](../tests/README.md) for offline and native checks.
 
 Generic EmbodiedAgent presets can connect to the supported services.

@@ -57,6 +57,12 @@ _ENV_FACADE = (
     "roborsi/robots/components/__init__.py",
     "roborsi/robots/components/env_facade_base.py",
 )
+_VLN_SHARED = (
+    "robots/vln_shared/benchmark.py",
+    "robots/vln_shared/native_process.py",
+    "robots/vln_shared/native_worker.py",
+    "robots/vln_shared/storage.py",
+)
 _BENCHMARK = {
     "robolab": (
         "robots/robolab/assets.py",
@@ -74,6 +80,16 @@ _BENCHMARK = {
         "robots/robolab/worker.py",
         "benchmarks/robolab/__init__.py",
         "benchmarks/robolab/manifest.py",
+    ),
+    "vlnce": (
+        *_VLN_SHARED,
+        "robots/vlnce/benchmark_service.py",
+        "robots/vlnce/native.py",
+    ),
+    "lhpr_vln": (
+        *_VLN_SHARED,
+        "robots/lhpr_vln/benchmark_service.py",
+        "robots/lhpr_vln/native.py",
     ),
     "robocasa365": (
         *_ENV_FACADE,

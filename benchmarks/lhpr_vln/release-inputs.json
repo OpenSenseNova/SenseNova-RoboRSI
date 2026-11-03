@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "platform": "linux/amd64",
+  "source_runtime_image": "ghcr.io/opensensenova/sensenova-roborsi-lhvln@sha256:556e45d8a3b7294be7a4098e0a57c4bb09b1d7aae13050398cf0c772200b157c",
+  "native_runtime_image": "ghcr.io/opensensenova/sensenova-roborsi-lhvln@sha256:c5e60c092699a84c64d7e09fdfbb2b54a1e1580138845333ec194b1f76ea909c",
+  "service_base_image": "ghcr.io/opensensenova/sensenova-roborsi-vln-ce@sha256:5158d6041c593f2a2b9f3f6f9805dc298f06d70208a3088130c7e2ca561c35e3",
+  "service_python": "3.11.15",
+  "native_inventory": "native-environment.json",
+  "normalization_requirements": "native-fixes.txt",
+  "service_requirements": "service-requirements.txt",
+  "source_snapshot_policy": "Immutable exported upstream environment; normalized with Dockerfile.native. No simulator scenes or Agent ICL are included."
+}

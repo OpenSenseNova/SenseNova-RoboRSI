@@ -1,0 +1,27 @@
+schema_version: 1
+source_root: ../../../..
+factory: robots.vln_shared.agents.baseline.factory:make_agent
+code:
+  - factory.py
+prompt_file: prompt.md
+resources:
+  tool_policy: tool-policy.toml
+  exploration_prompt: explore.md
+agent:
+  planner: codex_cli
+  model: gpt-6-astra
+  reasoning_effort: max
+  max_turns: null
+  max_tokens: null
+  planner_timeout_s: 0
+  action_timeout_s: 600
+  codex_cli:
+    executable: codex
+    expected_version: codex-cli 0.161.0
+    tools: mcp
+    config_overrides:
+      approval_policy: never
+    cli_args:
+      - --skip-git-repo-check
+      - --sandbox
+      - workspace-write
