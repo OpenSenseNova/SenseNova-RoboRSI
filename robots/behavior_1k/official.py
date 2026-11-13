@@ -4,8 +4,20 @@
 """Official R1Pro 21D control configuration."""
 
 import copy
+import math
+
+from .contracts import validate_action
 
 EEF21 = "r1pro_eef21_v1"
+JOINT23 = "r1pro_joint23_v1"
+ACTION_LAYOUT = (
+    ("base", 0, 3),
+    ("torso", 3, 7),
+    ("left_eef", 7, 13),
+    ("left_gripper", 13, 14),
+    ("right_eef", 14, 20),
+    ("right_gripper", 20, 21),
+)
 
 
 def action_dimension(profile=EEF21):
@@ -39,3 +51,17 @@ def robot_config_for_profile(config, profile=EEF21):
             "smoothing_filter_size": 2,
         }
     return result
+
+
+def quat_to_rotvec(quaternion):
+    """Convert public xyzw quaternions to a canonical rotation vector for FK."""
+    values = validate_action(quaternion, action_dim=4)
+    norm = math.sqrt(sum(value * value for value in values))
+    if norm < 1e-12:
+        raise ValueError("Cannot convert a zero quaternion")
+    x, y, z, w = (value / norm for value in values)
+    if w < 0:
+        x, y, z, w = -x, -y, -z, -w
+    sine = math.sqrt(x * x + y * y + z * z)
+    scale = 2.0 if sine < 1e-12 else 2 * math.atan2(sine, w) / sine
+    return [x * scale, y * scale, z * scale]

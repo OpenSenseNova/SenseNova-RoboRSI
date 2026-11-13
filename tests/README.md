@@ -29,6 +29,7 @@ pytest tests/unit_tests/robots/bench2dex -q
 pytest tests/unit_tests/robots/dexjoco -q
 pytest tests/unit_tests/roborsi/runtime tests/unit_tests/roborsi/planner -q
 pytest tests/unit_tests/robots/behavior_1k -q
+pytest tests/unit_tests/roborsi/components/icl tests/unit_tests/roborsi/cli/test_icl.py -q
 pytest tests/unit_tests/robots/robocasa tests/unit_tests/roborsi/benchmarks/test_robocasa365_registration.py -q
 ```
 
@@ -72,6 +73,11 @@ recipes.
 
 Offline tests cover the 21D action contract, RGB-D conversion, task catalogs,
 native metric handling, isolated worker cleanup and exported build inputs.
+ICL checks cover deterministic package construction, pinned retrieval, writable
+copies and snapshots, read-only context tools, CLI receipts, learned-only export,
+task binding and learning cleanup. BEHAVIOR tests additionally check actual
+training instance selection, offline FK layout, RGB time bounds and video hash
+rejection. The [ICL guide](../docs/icl.md) includes a synthetic offline example.
 Follow the [benchmark guide](../benchmarks/behavior_1k/README.md) to build an
 image and prepare licensed assets. Catalog generation performs a native reset
 for each selected task and records its instruction and step limit. Native

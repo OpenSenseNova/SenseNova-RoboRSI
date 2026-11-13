@@ -1,0 +1,33 @@
+schema_version: 1
+source_root: ../../../..
+factory: robots.behavior_1k.agents.baseline.factory:make_agent
+code:
+  - factory.py
+prompt_file: prompt.md
+resources:
+  workspace: workspace
+agent:
+  working_dir: ./workspace
+  planner: codex_cli
+  model: gpt-6-astra
+  reasoning_effort: xhigh
+  max_turns: null
+  max_tokens: null
+  planner_timeout_s: 0
+  action_timeout_s: null
+  codex_cli:
+    executable: ./codex_mcp.py
+    expected_version: codex-cli 0.162.0
+    tools: mcp
+    inherit_env: false
+    env_vars: [OPENAI_API_KEY, PATH, HOME]
+    cli_args: [--ignore-user-config, --ignore-rules, --ephemeral, --skip-git-repo-check, --sandbox, workspace-write]
+    config_overrides:
+      model_provider: behavior_openai
+      model_providers.behavior_openai.name: BEHAVIOR OpenAI Responses
+      model_providers.behavior_openai.base_url: https://api.openai.com/v1
+      model_providers.behavior_openai.env_key: OPENAI_API_KEY
+      model_providers.behavior_openai.wire_api: responses
+      web_search: disabled
+      sandbox_workspace_write.network_access: false
+parameters: {}
