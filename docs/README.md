@@ -13,6 +13,7 @@ Benchmark task definitions and scoring belong to each native runtime.
 | LIBERO VLA download and deployment | [OpenPI VLA](libero-vla.md) | [VLA 自动部署](libero-vla.zh-CN.md) |
 | Model, prompt, context and budgets | [Agents](agents.md) | [Agent 配置](agents.zh-CN.md) |
 | Build, verify and use ICL materials | [ICL](icl.md) | [ICL 材料构建](icl.zh-CN.md) |
+| Original ICL sources across benchmarks | [Source coverage](icl-coverage.md) | [原始源码覆盖核对](icl-coverage.zh-CN.md) |
 | Batch execution, results and comparison | [Evaluation](evaluation.md) | [评测](evaluation.zh-CN.md) |
 | Navigation exploration and conditional evaluation | [VLN evaluation](vln_shared_evaluation.md) | [VLN 共享探索与测评](vln_shared_evaluation.zh-CN.md) |
 
