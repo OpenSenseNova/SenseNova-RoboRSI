@@ -240,4 +240,123 @@ case 服务。以上是全量运行说明，不代表已经完成 100 个任务�
 预算、产物与恢复见 [Agent 配置](../../docs/agents.zh-CN.md)和
 [评测指南](../../docs/evaluation.zh-CN.md)，离线检查见[测试指南](../../tests/README.md)。
 
+## ICL 与评测
+
+可以下载冻结的任务包，也可以从该任务的 200 条公开演示中学习。
+两种方式生成相同的封存 ICL 格式。任务专用预设使用现有 Codex CLI planner，
+评测前必须附加学习包。上面的通用 Agent 命令仍可独立使用。
+
+### 下载冻结任务包
+
+来源集成固定使用聚合仓库
+[SenseNova-RoboRSI-Packages](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/e977b5ad667b4ce753ee947cbb0b95d4fc0fe98c/behavior/v1.0.0)
+的指定版本。在 Agent 环境运行，`BEHAVIOR_DELIVERY` 按前文设置在 checkout 外。
+缓存可复用，学习、预设和构建输出必须使用新目录：
+
+```bash
+ICL_PACKAGE=$(python -m robots.behavior_1k.agents.baseline.icl download \
+  --task sorting_vegetables --version v1.0.0 \
+  --revision e977b5ad667b4ce753ee947cbb0b95d4fc0fe98c \
+  --cache-dir "$BEHAVIOR_DELIVERY/icl-cache")
+```
+
+命令输出校验后的任务目录，不重新封包。缓存旁的 receipt 记录固定 HF revision、
+subpath 和 manifest 哈希。会校验 payload 哈希、任务标识、学习阶段、21 维动作
+profile，以及 `TASK.md`、`SOURCES.md`。仅在仓库需要时进行 HF 身份认证。
+
+### 或者从 200 条演示学习
+
+使用独立环境：材料转换需要原生 BEHAVIOR 源码、Isaac Sim 的 Lula 扩展和
+R1Pro 资产；学习只需 Agent、Codex CLI 和已准备的材料。
+在实际使用相应依赖的环境中安装附加锁文件：
+
+```bash
+python -m pip install --require-hashes -r benchmarks/behavior_1k/requirements-icl.txt
+```
+
+从 `behavior-1k/2026-challenge-demos` 下载固定 revision
+`4f50b44796641a4d526a19d9aeadc8aa51e2f2c2` 到 `BEHAVIOR_DEMOS`：
+
+```python
+import os
+from huggingface_hub import snapshot_download
+
+snapshot_download(
+    repo_id="behavior-1k/2026-challenge-demos", repo_type="dataset",
+    revision="4f50b44796641a4d526a19d9aeadc8aa51e2f2c2",
+    local_dir=os.environ["BEHAVIOR_DEMOS"],
+)
+```
+
+必须先下载指定 revision。材料构建会记录配置声明的 revision，并在存在
+`selection.json` receipt 时检查其是否冲突；普通本地目录本身不证明 HF 来源。
+`BEHAVIOR_NATIVE` 应包含固定原生仓库的 `OmniGibson/` 目录，
+`BEHAVIOR_DATA` 指向前文下载的资产。
+每个任务必须有 200 个不同的训练 instance ID，范围为 1–300；ID 允许不连续，
+转换保留真实值，不重新编号。只暴露该任务的 RGB 视频、标注和数值记录。
+离线 FK 将原始 23 维关节目标转换为评测的 21 维格式，并记录资产和转换器哈希，
+不运行评测 episode。
+
+在原生材料准备环境运行：
+
+```bash
+python -m benchmarks.behavior_1k.materials --task sorting_vegetables \
+  --source "$BEHAVIOR_DEMOS" --native-root "$BEHAVIOR_NATIVE" \
+  --data-root "$BEHAVIOR_DATA" --output "$BEHAVIOR_DELIVERY/materials"
+```
+
+在 Agent 环境通过独立 npm prefix 安装 `@openai/codex@0.162.0`，将其 `bin`
+加入 `PATH`；`codex --version` 必须输出 `codex-cli 0.162.0`。
+设置 `OPENAI_API_KEY` 并选择获授权使用的模型：
+
+```bash
+python -m robots.behavior_1k.agents.baseline.icl learn \
+  --agent-set 'agent.model="YOUR_MODEL_ID"' \
+  --materials "$BEHAVIOR_DELIVERY/materials" \
+  --case-dir "$BEHAVIOR_DELIVERY/icl-run" --output "$BEHAVIOR_DELIVERY/icl-package"
+ICL_PACKAGE="$BEHAVIOR_DELIVERY/icl-package"
+```
+
+学习提示词允许网络参考，要求在 `learned/` 保存有演示依据的 `TASK.md`、
+`SOURCES.md` 和可复用程序。提供记录与抽帧工具，逐条查看演示，解码前校验视频哈希。
+学习结束后先关闭 Agent，再只封存 `learned/`；演示数据、对话记录和生成的字节码
+不进入交接包。学习 planner 默认预算 960 秒，可用 `--agent-set` 调整。
+
+### 准备、导出并评测任务 Agent
+
+两种来源都通过以下命令生成独立源码目录：
+
+```bash
+python -m robots.behavior_1k.agents.baseline.icl preset \
+  --package "$ICL_PACKAGE" --baseline robots/behavior_1k/agent.yaml \
+  --output "$BEHAVIOR_DELIVERY/task-agent"
+bench eval --registry-root "$BEHAVIOR_DELIVERY/registry" \
+  --results-root "$BEHAVIOR_DELIVERY/results" --run-id behavior-icl-001 \
+  --benchmark behavior_1k --task behavior_1k:sorting_vegetables --seed 0 \
+  --timeout-s 900 --case-timeout-s 7200 \
+  --agent-config "$BEHAVIOR_DELIVERY/task-agent/robots/behavior_1k/agent.yaml" \
+  --agent-set 'agent.model="YOUR_MODEL_ID"'
+```
+
+预设使用与学习相同的固定版本 Codex CLI。评测禁用网页搜索，使用当前公开观测和
+已学习的任务文件。每个 case 获得校验后的独立可写副本；任务或 benchmark 不匹配时，
+在模型会话启动前拒绝运行。工作副本不是操作系统访问边界；部署评测 Agent 时，
+应使其无法访问演示、模拟器内部状态或历史运行目录。
+
+需要独立安装 Agent 时，可导出声明的输入并安装 wheel：
+
+```bash
+python -m roborsi.agents.package \
+  --config "$BEHAVIOR_DELIVERY/task-agent/robots/behavior_1k/agent.yaml" \
+  --name behavior_official_icl --output "$BEHAVIOR_DELIVERY/agent-build"
+python -m build --wheel "$BEHAVIOR_DELIVERY/agent-build"
+python -m pip install --no-compile "$BEHAVIOR_DELIVERY"/agent-build/dist/*.whl
+# 安装后使用：--agent-config bundle:behavior_official_icl
+```
+
+使用 `--no-compile`，防止安装在封存 payload 中生成额外 `.pyc` 文件。
+学习程序应在可写 case 副本中执行。预设、学习文件、视频和日志放在代码 checkout 外。
+通用封包与快照见 [ICL 指南](../../docs/icl.zh-CN.md)。本次移植运行离线检查；
+以上命令不代表已完成真实模型学习、原生 FK 转换或原生任务评测。
+
 原生模拟器、机器人资产与数据集遵循各自的上游许可证及访问条款。
