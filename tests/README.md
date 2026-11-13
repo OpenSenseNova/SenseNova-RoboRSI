@@ -86,6 +86,11 @@ Record the actual image digest and native score alongside the run artifacts.
 
 ## Bench2Dex
 
+Restored upstream ICL tests cover package mutation, suite receipts, exported
+Agent inputs and the original action-file protocol. The external-session tests
+also exercise a real offline CLI subprocess on Linux, including cancellation
+and process cleanup. See the [source audit](../docs/icl-coverage.md).
+
 The focused unit command above checks this adapter offline. Native execution
 requires the separate runtime and asset preparation described in
 [Bench2Dex](../benchmarks/bench2dex/README.md). Passing unit tests, building a source
@@ -93,6 +98,9 @@ bundle or collecting tests does not establish a successful Docker build, GPU
 run or native task result.
 
 ## DexJoCo
+
+Restored upstream checks cover frozen policy configuration, two-session
+lifecycle and persistent CLI process ownership across request threads.
 
 The focused unit command above checks this adapter offline. Native execution
 requires the separate runtime and asset preparation described in

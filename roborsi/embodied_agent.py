@@ -225,7 +225,7 @@ class _ToolBridge:
 
 
 class EmbodiedEpisode:
-    """Run an agent while the benchmark executes selected tool calls."""
+    """Run an agent while the benchmark owns tools or external file feedback."""
 
     def __init__(self, bridge: _ToolBridge, worker: threading.Thread) -> None:
         self._bridge = bridge
@@ -278,10 +278,14 @@ class EmbodiedEpisode:
         Raises TimeoutError if cleanup is still running; callers can inspect
         ``done`` and call ``close`` again. ``timeout=None`` waits without a limit.
         """
-        self._bridge.close()
+        self.cancel()
         self._worker.join(timeout=timeout)
         if self._worker.is_alive():
             raise TimeoutError("embodied episode cleanup is still running")
+
+    def cancel(self) -> None:
+        """Request cancellation; use wait or close to confirm resource release."""
+        self._bridge.close()
 
     def __enter__(self) -> EmbodiedEpisode:
         return self
@@ -752,7 +756,7 @@ class EmbodiedAgent:
         task: str,
         *,
         system_prompt: str,
-        deferred_tools: Sequence[str],
+        deferred_tools: Sequence[str] = (),
         skills: Sequence[str | Path] = (),
         skill_paths: Sequence[str | Path] = (),
         memory: Sequence[TextDocument] = (),
@@ -761,9 +765,17 @@ class EmbodiedAgent:
         include_finish: bool = False,
         episode_ctx: dict[str, Any] | None = None,
     ) -> EmbodiedEpisode:
-        """Start one persistent run with benchmark-executed MCP tools."""
-        if not deferred_tools:
+        """Start a persistent run with deferred tools or an external protocol.
+
+        With ``codex_cli.tools=external``, omit tools and own the file/socket
+        feedback in the caller. The returned episode owns the model worker,
+        result, cancellation and bounded cleanup across caller threads.
+        """
+        external = self._uses_external_protocol()
+        if not deferred_tools and not external:
             raise ValueError("start_episode requires at least one deferred tool")
+        if external and (deferred_tools or include_finish):
+            raise ValueError("external protocol cannot use deferred or finish tools")
         bridge = _ToolBridge()
         episode: EmbodiedEpisode
 
@@ -796,6 +808,15 @@ class EmbodiedAgent:
         worker.start()
         return episode
 
+    def _uses_external_protocol(self) -> bool:
+        from roborsi.planner.codex_cli_config import CodexCliConfig
+
+        return (
+            self.planner == "codex_cli"
+            and isinstance(self.codex_cli, CodexCliConfig)
+            and self.codex_cli.tools == "external"
+        )
+
     def _run(
         self,
         task: str,
@@ -811,6 +832,7 @@ class EmbodiedAgent:
         include_finish: bool = True,
         episode_ctx: dict[str, Any] | None = None,
     ) -> PlannerResult:
+        external = self._uses_external_protocol()
         if self.planner not in {"api", "claude_code", "codex", "codex_cli"}:
             raise ValueError(f"unsupported embodied planner: {self.planner}")
         if self.planner == "codex_cli":
@@ -824,10 +846,6 @@ class EmbodiedAgent:
                 )
             if self.max_tokens is not None:
                 raise ValueError("codex_cli requires max_tokens=None")
-            if self.codex_cli.tools == "external":
-                raise ValueError(
-                    "tools=external requires a custom Agent using CodexCliPlanner directly"
-                )
         elif self.codex_cli is not None:
             raise ValueError("codex_cli settings require the codex_cli planner")
         if self.provider_capture is not None and self.planner not in {
@@ -865,12 +883,14 @@ class EmbodiedAgent:
             self.model is not None or self.base_url is not None
         ):
             raise ValueError("pass either llm or model/base_url")
-        if not self.mcp_servers and not self.local_tools:
+        if external and (self.mcp_servers or self.local_tools or deferred_tools):
+            raise ValueError("external protocol cannot use MCP or local tools")
+        if not external and not self.mcp_servers and not self.local_tools:
             raise ValueError("at least one MCP server or local tool is required")
         names = [server.name for server in self.mcp_servers]
         if len(names) != len(set(names)):
             raise ValueError("MCP server names must be unique")
-        if not task.strip() or not system_prompt.strip():
+        if not task.strip() or (not external and not system_prompt.strip()):
             raise ValueError("task and system_prompt must be non-empty")
         if self.planner != "codex_cli" and (
             type(self.max_turns) is not int or self.max_turns < 1
@@ -888,13 +908,17 @@ class EmbodiedAgent:
         if not self._run_lock.acquire(blocking=False):
             raise RuntimeError("EmbodiedAgent already has an active episode")
         try:
-            toolkit = _McpToolkit(
-                self.mcp_servers,
-                output,
-                local_tools=self.local_tools,
-                bridge=bridge,
-                deferred_tools=deferred_tools,
-                include_finish=include_finish,
+            toolkit = (
+                None
+                if external
+                else _McpToolkit(
+                    self.mcp_servers,
+                    output,
+                    local_tools=self.local_tools,
+                    bridge=bridge,
+                    deferred_tools=deferred_tools,
+                    include_finish=include_finish,
+                )
             )
             trace = None
             result = None
@@ -926,7 +950,7 @@ class EmbodiedAgent:
                     dashboard_events=NullDashboardEventSink(),
                     runtime=runtime,
                     include_image_reader=False,
-                    require_tool_call=bridge is not None,
+                    require_tool_call=bridge is not None and not external,
                     working_dir=Path(self.working_dir).resolve()
                     if self.working_dir is not None
                     else output.resolve(),
@@ -942,7 +966,8 @@ class EmbodiedAgent:
                 trace = create_trace(
                     output, runtime, NullDashboardEventSink(), toolkit=toolkit
                 )
-                toolkit.start()
+                if toolkit is not None:
+                    toolkit.start()
                 with activate_trace(trace):
                     result = planner.solve(
                         system_prompt=initial.system_prompt
@@ -982,11 +1007,12 @@ class EmbodiedAgent:
                     )
                 return result
             finally:
-                close_toolkit_trace(
-                    toolkit,
-                    trace,
-                    error=result.error if result is not None else None,
-                    cancelled=bridge is not None and bridge.cancelled.is_set(),
-                )
+                if toolkit is not None:
+                    close_toolkit_trace(
+                        toolkit,
+                        trace,
+                        error=result.error if result is not None else None,
+                        cancelled=bridge is not None and bridge.cancelled.is_set(),
+                    )
         finally:
             self._run_lock.release()

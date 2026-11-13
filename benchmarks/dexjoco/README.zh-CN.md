@@ -52,7 +52,8 @@ python -m benchmarks.dexjoco.manifest --upstream ../dexjoco-upstream \
 在环境变量中设置模型服务凭据，选择支持视觉和工具调用的模型。
 使用通用 Agent 配置，并按下方命令指定 DexJoCo benchmark 名称与任务 ID。
 服务提供原生动作协议和评分规则。[快速开始](../../docs/getting-started.zh-CN.md)
-中的固定动作示例仅适用 LIBERO。本次不包含专用 Agent 策略或历史 ICL 包，
+中的固定动作示例仅适用 LIBERO。原始 ICL 构建源码、冻结包准备和双会话任务 Agent
+见 [ICL 指南](ICL.zh-CN.md)。历史 ICL 包本身需要单独下载，
 通用配置不代表能够复现历史成绩或已经成功完成任务。
 
 ```bash

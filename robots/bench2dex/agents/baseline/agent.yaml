@@ -1,0 +1,110 @@
+schema_version: 1
+source_root: ../../../..
+factory: robots.bench2dex.agents.baseline.factory:make_agent
+agent:
+  planner: codex_cli
+  model: gpt-6-astra
+  reasoning_effort: max
+  max_turns: null
+  max_tokens: null
+  planner_timeout_s: 0
+  action_timeout_s: null
+  codex_cli:
+    executable: codex
+    expected_version: codex-cli 0.154.0
+    expected_sha256: 3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022
+    tools: external
+    inherit_env: false
+    env:
+      PATH: /usr/bin:/bin
+    cli_args:
+    - --ignore-user-config
+    - --ignore-rules
+    - --skip-git-repo-check
+    - --sandbox
+    - workspace-write
+    - --disable
+    - multi_agent
+    - --disable
+    - multi_agent_v2
+    - --disable
+    - apps
+    - --disable
+    - plugins
+    - --disable
+    - remote_plugin
+    - --disable
+    - hooks
+    - --disable
+    - memories
+    - --disable
+    - external_agent_memory_import
+    - --disable
+    - browser_use
+    - --disable
+    - browser_use_external
+    - --disable
+    - computer_use
+    - --disable
+    - in_app_browser
+    - --disable
+    - image_generation
+    - --disable
+    - guardian_approval
+    - --disable
+    - guardian_ext
+    - --disable
+    - guardianv2
+    - --disable
+    - workspace_dependencies
+    - --disable
+    - skill_search
+    - --disable
+    - skill_mcp_dependency_install
+    - --disable
+    - shell_snapshot
+    - --disable
+    - goals
+    config_overrides:
+      approval_policy: never
+      web_search: disabled
+      sandbox_workspace_write.network_access: false
+      allow_login_shell: false
+      project_doc_max_bytes: 0
+code:
+- ../../icl.py
+- ../../icl_inventory.py
+- ../../../../robots/bench2dex/compat_agent.py
+- ../../../../robots/bench2dex/frozen_reference.py
+- ../../../../robots/bench2dex/contracts.py
+- ../../../../robots/bench2dex/reference/__init__.py
+- ../../../../robots/bench2dex/reference/core.py
+- ../../../../robots/bench2dex/reference/robot.py
+- ../../../../robots/bench2dex/reference/knowledge.py
+- ../../../../robots/bench2dex/reference/calibration.py
+- ../../../../robots/bench2dex/reference/kinematics_tool.py
+- ../../../../robots/bench2dex/reference/throughput.py
+- ../../../../robots/bench2dex/reference/isolation.py
+- ../../../../robots/bench2dex/reference/LICENSE_NOTICE.md
+- ../../../../robots/bench2dex/reference/SOURCES.json
+- ../__init__.py
+- ./__init__.py
+- ./factory.py
+- ./cli_episode.py
+- ./step_helper.py
+resources:
+  icl_package: ../../../../robots/bench2dex/package_required
+  protocol: ../../../../robots/bench2dex/icl_protocol.json
+  native_protocol: ../../../../robots/bench2dex/protocol.json
+  task_catalog: ../../../../robots/bench2dex/tasks.json
+  icl_catalog: ../../../../robots/bench2dex/icl_catalog.json
+  reference: ../../../../agents/bench2dex_compat/reference-code.zip
+  reference_license: ../../../../agents/bench2dex_compat/LICENSE_NOTICE.md
+dependencies:
+- openai-codex-cli-bin==0.154.0
+- numpy==1.26.4
+- scipy==1.15.3
+- Pillow==11.3.0
+- PyYAML==6.0.2
+prompt_file: ./prompts/policy.md
+skills: []

@@ -1,0 +1,10 @@
+# Install the separately built RoboRSI wheel and Agent wheel with --no-deps
+# after installing the complete requirements.txt generated from both inputs.
+numpy==1.26.4
+scipy==1.15.3
+Pillow==11.3.0
+PyYAML==6.0.2
+openai-codex==0.162.1
+claude-agent-sdk==0.2.165
+# These SDKs satisfy framework dependencies. The compatibility policy executes
+# a separate external Codex CLI 0.154.0 and does not use either SDK planner.

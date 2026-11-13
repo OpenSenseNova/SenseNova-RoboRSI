@@ -2,6 +2,9 @@
 
 [简体中文](icl.zh-CN.md) · [All guides](README.md)
 
+See [source coverage](icl-coverage.md) for each benchmark's original construction
+code, source archives and existing equivalent workflows.
+
 ICL packages preserve selected notes, skills, images, programs and supporting
 files. Building or loading a package does not execute its programs or call a
 model. The caller chooses the material and its context exports.

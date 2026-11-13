@@ -10,7 +10,9 @@
     "rendering.py": "2fef53bc90c9f4c2d71dde1bd907270dddee6766bbd0ba951067904a4b32d675",
     "transport.py": "96290719e1b8bf9bbd715de6762704ec3957fa4b8a4cabfe0f0a1bc4ba89fbad",
     "throughput.py": "6ea2bb8044b0ff789fc1306489c0bd7cd62c48880de5d62ac4425828a20c967d",
-    "simulator.py": "e7c09a6418de7bfaea2961388bb0384e22adf935a737e71384356e8c9f73a947"
+    "simulator.py": "e7c09a6418de7bfaea2961388bb0384e22adf935a737e71384356e8c9f73a947",
+    "knowledge.py": "43e01a39eee9ec45d6e5712db1b00f10e4bbbfcb5e6893a6e1df68beafa08db2",
+    "isolation.py": "c957d0345023ee749d9f815544f4b5ae0af81e0ea3834c989582d48071e2ac11"
   },
-  "note": "Subset of the standalone evaluation harness. original_files contains SHA-256 hashes of the original source files, not hashes of the integrated local files. Unused policy, ICL and export helpers have been removed; integration edits are tracked by Git."
+  "note": "Subset of the standalone evaluation harness. original_files records original source hashes. Native helpers remain separate from restored ICL Agent helpers; integration adaptations are recorded in docs/icl-port-sources.json and Git."
 }

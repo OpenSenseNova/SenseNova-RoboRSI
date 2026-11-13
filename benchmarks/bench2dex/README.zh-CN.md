@@ -100,8 +100,10 @@ bench eval --registry-root work/bench2dex/registry \
   --timeout-s 900 --case-timeout-s 86400 --max-concurrent 1
 ```
 
-该预设用于演示通用接口，不是复现策略。本次不包含专用 Agent 策略或历史 ICL 包，
-通用配置不代表能够复现历史成绩。[快速开始](../../docs/getting-started.zh-CN.md)
+该预设用于演示通用接口，不代表复现历史分数。原始任务 ICL Agent、包准备和构建源码
+见[冻结 ICL](ICL.zh-CN.md)和[从演示学习](../../docs/bench2dex-icl.zh-CN.md)，
+保留原始模型、CLI 和包校验约定。
+[快速开始](../../docs/getting-started.zh-CN.md)
 中的 LIBERO 固定动作示例仅适用于 LIBERO。请为实际运行设置模型、上下文和决策预算。
 
 服务提供 Bench2Dex 原生动作协议和评分规则。动作使用有限数值的绝对关节位置目标：

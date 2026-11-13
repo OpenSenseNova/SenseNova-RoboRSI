@@ -1,0 +1,1061 @@
+{
+  "schema_version": 1,
+  "repository": "SenseTime-FVG/RoboRSI",
+  "revision": "8d9a0af66422e1faad7696281a76819cd165eb44",
+  "hash_note": "Text comparisons normalize CRLF to LF, as Git does in this checkout; ZIP hashes are exact bytes.",
+  "files": [
+    {
+      "path": "agents/bench2dex_compat/LICENSE_NOTICE.md",
+      "content_sha256": "297c6f62a7731bc45004dee99dfbc7a1da2a9c337f26712264a68afc5b3cd386",
+      "upstream_path": "agents/bench2dex_compat/LICENSE_NOTICE.md",
+      "upstream_git_blob": "d3078f28178a8ba9f54fc419060b51ee72f1ac46",
+      "status": "original_content"
+    },
+    {
+      "path": "agents/bench2dex_compat/README.md",
+      "content_sha256": "8ad3bf777a240240f28ff3a258e5228fc9613254261e520c9f98b264c9c46102",
+      "upstream_path": "agents/bench2dex_compat/README.md",
+      "upstream_git_blob": "872423aa6abefe12046dd5dfea8fa85de670d43d",
+      "status": "original_content"
+    },
+    {
+      "path": "agents/bench2dex_compat/agent.lock.txt",
+      "content_sha256": "c80682a0bff73e5849e38418f811e36be5ee749bf29481003ee767454b304d2b",
+      "upstream_path": "agents/bench2dex_compat/agent.lock.txt",
+      "upstream_git_blob": "cff5c95f99474eb0853c4d0fa555c9aa3128c67d",
+      "status": "original_content"
+    },
+    {
+      "path": "agents/bench2dex_compat/dev.lock.txt",
+      "content_sha256": "6ad1ac5dfd05c9b118db769080d9c2645d7c3c48031baa99082f06fa802e21e1",
+      "upstream_path": "agents/bench2dex_compat/dev.lock.txt",
+      "upstream_git_blob": "71f1fa952aaef1dbc1555ea776e9770517e4ebf6",
+      "status": "original_content"
+    },
+    {
+      "path": "agents/bench2dex_compat/reference-code.zip",
+      "content_sha256": "cfe38f4cdf051df401dc85f4eb33d79c77ce87bcd618e9ed2121f8bb679b7371",
+      "upstream_path": "agents/bench2dex_compat/reference-code.zip",
+      "upstream_git_blob": "e76258f961d63f379bd79a7d1cd42a91bf334714",
+      "status": "original_content"
+    },
+    {
+      "path": "agents/dexjoco_compat/LICENSE.reference",
+      "content_sha256": "101a2b0afd49b0373fc4283afcb1e90d4a6d51aac4d335b954bed24e52222661",
+      "upstream_path": "agents/dexjoco_compat/LICENSE.reference",
+      "upstream_git_blob": "394ea6076b333d62d999a48b6dd70318036cc94b",
+      "status": "original_content"
+    },
+    {
+      "path": "agents/dexjoco_compat/README.md",
+      "content_sha256": "3dac84df080fef73af1669313551cffe8988cf3f2ea68f14ae1db339af6cc222",
+      "upstream_path": "agents/dexjoco_compat/README.md",
+      "upstream_git_blob": "c2550a761195a288fe24d10dc8c71068d308e0d1",
+      "status": "original_content"
+    },
+    {
+      "path": "agents/dexjoco_compat/requirements-policy.txt",
+      "content_sha256": "ed8ae7cca277a51489aab1e10b6a413849ce9ca081cc999dd0ca2fcd45aad979",
+      "upstream_path": "agents/dexjoco_compat/requirements-policy.txt",
+      "upstream_git_blob": "c1854b9ecad60c25c765090d11fa1583e92d2e52",
+      "status": "original_content"
+    },
+    {
+      "path": "agents/dexjoco_compat/requirements.in",
+      "content_sha256": "fe4918a0f77b89845386cee2a77ee10776987ca7ecfcc387a78ec382c6ca46f2",
+      "upstream_path": "agents/dexjoco_compat/requirements.in",
+      "upstream_git_blob": "001dc923e16e8d7dd725c32536f5fa5f9b6b30fe",
+      "status": "original_content"
+    },
+    {
+      "path": "agents/dexjoco_compat/requirements.txt",
+      "content_sha256": "7994906a98bd56d6d6850dd06f798422864a1e5619a7e5460cf138702660e930",
+      "upstream_path": "agents/dexjoco_compat/requirements.txt",
+      "upstream_git_blob": "169c43d0b1b0d1ecbb169990bb40d1fd68db03f7",
+      "status": "original_content"
+    },
+    {
+      "path": "benchmarks/behavior_1k/README.md",
+      "content_sha256": "45a1872b80e7a95f99691f6de7b568deb1c8ee6efe5895972eeb7b95e75fe9b1",
+      "upstream_path": "benchmarks/behavior_1k/README.md",
+      "upstream_git_blob": "c38632f9cb96935a6c7476491fb047298980c15b",
+      "status": "adapted_from_upstream",
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+    },
+    {
+      "path": "benchmarks/behavior_1k/README.zh-CN.md",
+      "content_sha256": "a4534546ee5a9e51cd5dcb728f4cd4e048061a9dfefdb74d1dea2ec7399e383d",
+      "upstream_path": "benchmarks/behavior_1k/README.zh-CN.md",
+      "upstream_git_blob": "153503404a9cdb2e78b65737d5574b0a56502d08",
+      "status": "adapted_from_upstream",
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+    },
+    {
+      "path": "benchmarks/behavior_1k/materials.py",
+      "content_sha256": "ea7a676b5da0c5776fe262e723be530b6cdf9a59ab1d4177862458baa2987c8e",
+      "upstream_path": "benchmarks/behavior_1k/materials.py",
+      "upstream_git_blob": "ff62b6340b4d6dc846fb8f599b0e9214740aa19d",
+      "status": "original_content"
+    },
+    {
+      "path": "benchmarks/behavior_1k/official_demonstrations.py",
+      "content_sha256": "c9050d8ca6c3f21b47008e4913680bc34481e4c8fc7453b06bdb5bbe68c42076",
+      "upstream_path": "benchmarks/behavior_1k/official_demonstrations.py",
+      "upstream_git_blob": "e9489091db0b61d160069742a7af2368e65d22c4",
+      "status": "adapted_from_upstream",
+      "adaptation": "Keep offline JOINT23 validation local rather than widening native action_dimension."
+    },
+    {
+      "path": "benchmarks/behavior_1k/official_materials.py",
+      "content_sha256": "fbd7a3c4ac29764c50fe9798a80034e5cb2591f3980dd5e8f0978b956ea2d43c",
+      "upstream_path": "benchmarks/behavior_1k/official_materials.py",
+      "upstream_git_blob": "200ea8f16a29cdfc9b1ebb64f972ba18794066ad",
+      "status": "original_content"
+    },
+    {
+      "path": "benchmarks/behavior_1k/r1pro_fk.py",
+      "content_sha256": "d78525670817ff12dd79122b4086cc017288b5c7614b2eebb59f94c070f1b314",
+      "upstream_path": "benchmarks/behavior_1k/r1pro_fk.py",
+      "upstream_git_blob": "e21e6465955eb91e3ea21395f3a2cca47bd9038e",
+      "status": "original_content"
+    },
+    {
+      "path": "benchmarks/behavior_1k/requirements-icl.in",
+      "content_sha256": "44074f2053c2c89cfaeab89fc2813208d74083d36a1cd9e14b6306874e729ee7",
+      "upstream_path": "benchmarks/behavior_1k/requirements-icl.in",
+      "upstream_git_blob": "a8baf9ef2d1044e5391c2ed4da12a8284614b318",
+      "status": "original_content"
+    },
+    {
+      "path": "benchmarks/behavior_1k/requirements-icl.txt",
+      "content_sha256": "de49ddf366b419b89ed6a93f0afc3255e1ecbe76d395195780816165c803cc16",
+      "upstream_path": "benchmarks/behavior_1k/requirements-icl.txt",
+      "upstream_git_blob": "0138d7e660ed18c751c422a1cda6dd1fb24a7f97",
+      "status": "original_content"
+    },
+    {
+      "path": "benchmarks/bench2dex/ICL.md",
+      "content_sha256": "7f13e72a2f7a5f22adf74cfd3af7df09cd0e39abfa78472c050f925c60ce3833",
+      "upstream_path": "benchmarks/bench2dex/ICL.md",
+      "upstream_git_blob": "c39edfce316ae313516b660dece7bb17fd361434",
+      "status": "adapted_from_upstream",
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+    },
+    {
+      "path": "benchmarks/bench2dex/ICL.zh-CN.md",
+      "content_sha256": "1817005401ec98d85d2552fe77100abad73644ed00a9e6c54e6b4dd93ccf88d6",
+      "upstream_path": "benchmarks/bench2dex/ICL.zh-CN.md",
+      "upstream_git_blob": "10175981e9ded62bd0c48b85a3cf85e0b9d386eb",
+      "status": "adapted_from_upstream",
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+    },
+    {
+      "path": "benchmarks/bench2dex/README.md",
+      "content_sha256": "ef21afb78ef62b9e97b869ebbf837eb958db58d37b2b1db1ca9f713d989c91f7",
+      "upstream_path": "benchmarks/bench2dex/README.md",
+      "upstream_git_blob": "3cb4d66f82f0c4c965e4622d2f8cbccc31dee41f",
+      "status": "adapted_from_upstream",
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+    },
+    {
+      "path": "benchmarks/bench2dex/README.zh-CN.md",
+      "content_sha256": "d947d9f17a9d7895a8a67c5680e1a9ce27a7b4885b4c3da9bce9e83cc972ade1",
+      "upstream_path": "benchmarks/bench2dex/README.zh-CN.md",
+      "upstream_git_blob": "793294f43b7285c73ea020aa081d0653d0e1f4bd",
+      "status": "adapted_from_upstream",
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+    },
+    {
+      "path": "benchmarks/bench2dex/agent_bundle.py",
+      "content_sha256": "2e3087e06228bb43ae9f18b6f0213072a42207f73322c4a7451745603d76c904",
+      "upstream_path": "benchmarks/bench2dex/agent_bundle.py",
+      "upstream_git_blob": "dccd96977d6ac10ed3c784a7961b0262fe64d05b",
+      "status": "adapted_from_upstream",
+      "adaptation": "Update ICL helper imports, including the original model-bearing protocol kept in an Agent-only resource."
+    },
+    {
+      "path": "benchmarks/bench2dex/check_runtime.py",
+      "content_sha256": "8137a94b24e13ead832f4702421b851a1dfdde503c6081afad32e6144468b9a8",
+      "upstream_path": "benchmarks/bench2dex/check_runtime.py",
+      "upstream_git_blob": "d8f63a52c8daa0eb8966de9bc2b9461dff9b24ea",
+      "status": "adapted_from_upstream",
+      "adaptation": "Import the unchanged historical model-bearing protocol from the separated ICL module."
+    },
+    {
+      "path": "benchmarks/bench2dex/plan-78.json",
+      "content_sha256": "6e0913058698f69dfa89a55c28193b930cf972e735c80a1c612c0fd5710bb74c",
+      "upstream_path": "benchmarks/bench2dex/plan-78.json",
+      "upstream_git_blob": "ed0b5c966e039dea8d46386b331cd521218f7107",
+      "status": "original_content"
+    },
+    {
+      "path": "benchmarks/bench2dex/run_suite.py",
+      "content_sha256": "44f2eba1c21ba97a18731bc2c338313ea07025e9fd9db86354d3675e034fd5ad",
+      "upstream_path": "benchmarks/bench2dex/run_suite.py",
+      "upstream_git_blob": "ae1aa80e8bd7e77a32e0872f767b0cd1d5cfc872",
+      "status": "adapted_from_upstream",
+      "adaptation": "Update only the ICL experiment identity import location."
+    },
+    {
+      "path": "benchmarks/dexjoco/ICL.md",
+      "content_sha256": "13e6ea23381f71a104fc66d5ba3c38ab101f86741592cbfffb1ab860c6145ac9",
+      "upstream_path": "benchmarks/dexjoco/README.md",
+      "upstream_git_blob": "7ed4cb9f92f04f1ea6a1e644727ca7c85be7e645",
+      "status": "adapted_from_upstream",
+      "adaptation": "Extract current ICL instructions from the original guide and the verified archive's actual CLI parsers."
+    },
+    {
+      "path": "benchmarks/dexjoco/ICL.zh-CN.md",
+      "content_sha256": "a786b281fb0b06972db85c1ef8603f1a46d0155247f257e08c9c52fd4af4b5a0",
+      "upstream_path": "benchmarks/dexjoco/README.zh-CN.md",
+      "upstream_git_blob": "e7710dc25c7783af33b1b543d4f4d36517895eff",
+      "status": "adapted_from_upstream",
+      "adaptation": "Extract current ICL instructions from the original guide and the verified archive's actual CLI parsers."
+    },
+    {
+      "path": "benchmarks/dexjoco/README.md",
+      "content_sha256": "5782c2dc4a8185bd2bcb5baa2c6442a9afc55323247dded7bbc3d624d3df2e45",
+      "upstream_path": "benchmarks/dexjoco/README.md",
+      "upstream_git_blob": "7ed4cb9f92f04f1ea6a1e644727ca7c85be7e645",
+      "status": "adapted_from_upstream",
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+    },
+    {
+      "path": "benchmarks/dexjoco/README.zh-CN.md",
+      "content_sha256": "0f66b4d7caa26d814e95d4e8f8bc8d794fc9ce3051a33acb284ac6b1a211283a",
+      "upstream_path": "benchmarks/dexjoco/README.zh-CN.md",
+      "upstream_git_blob": "e7710dc25c7783af33b1b543d4f4d36517895eff",
+      "status": "adapted_from_upstream",
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+    },
+    {
+      "path": "benchmarks/dexjoco/prepare_agent_assets.py",
+      "content_sha256": "e72693cbea1bd3ec01463946494ca4df0338c34be21cf7b914d7192ab5e82d97",
+      "upstream_path": "benchmarks/dexjoco/prepare_agent_assets.py",
+      "upstream_git_blob": "711602ea86505ff03c18c3084a9dbcf83ab400ac",
+      "status": "original_content"
+    },
+    {
+      "path": "configs/agents/bench2dex/compat.yaml",
+      "content_sha256": "5912d680cf57ccc8616cdb8fbea1793508b78188cdbdee3ee60520d6597c6ba3",
+      "upstream_path": "configs/agents/bench2dex/compat.yaml",
+      "upstream_git_blob": "bd14cde4127ef54188a885fc861eb0549493b8f3",
+      "status": "original_content"
+    },
+    {
+      "path": "configs/agents/dexjoco/compat.yaml",
+      "content_sha256": "1a6f4ad7558554fcc0f3d20074e4051d1def2d74f7e477964729335686cbc415",
+      "upstream_path": "configs/agents/dexjoco/compat.yaml",
+      "upstream_git_blob": "24c4bd65eb4707837b3514b2563091cc3b75114e",
+      "status": "original_content"
+    },
+    {
+      "path": "docs/README.md",
+      "content_sha256": "0a1aa259880e9b4f69d7b8e7710e677a6d84d612c26e0e23c6342ad4252369dc",
+      "upstream_path": "docs/README.md",
+      "upstream_git_blob": "5b63d3dece7ae0d107961521b296ac682db9173d",
+      "status": "adapted_from_upstream",
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+    },
+    {
+      "path": "docs/bench2dex-icl.md",
+      "content_sha256": "54da73c8d8fc8c564ebec3a76c7432e2a4e13899fdcad5f4b6b0dcb945ef4374",
+      "upstream_path": "docs/bench2dex-icl.md",
+      "upstream_git_blob": "c84422fd3e7521ce382b2db2f1b296af5129ee2a",
+      "status": "adapted_from_upstream",
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+    },
+    {
+      "path": "docs/bench2dex-icl.zh-CN.md",
+      "content_sha256": "1d9401e86f1c46e6ded589c467754c561ba918ad7e15ee2fadd01c5c1f4a25e0",
+      "upstream_path": "docs/bench2dex-icl.zh-CN.md",
+      "upstream_git_blob": "b9c5de6b9517b6acb5ff04917a9b3fa72bc62550",
+      "status": "adapted_from_upstream",
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+    },
+    {
+      "path": "docs/icl-coverage.md",
+      "content_sha256": "7db67f1af0df9713fd1bd038c11fd8eed1ba61a81fdb4647f28818c1cb1f32d6",
+      "status": "integration_documentation",
+      "note": "New audit or execution notes; not claimed as original upstream implementation."
+    },
+    {
+      "path": "docs/icl-coverage.zh-CN.md",
+      "content_sha256": "ba725c5d1769b42ffc7971e395f5763a1b84bb0047e6054d2b0e478fd965b548",
+      "status": "integration_documentation",
+      "note": "New audit or execution notes; not claimed as original upstream implementation."
+    },
+    {
+      "path": "docs/icl.md",
+      "content_sha256": "2f7710bc090e74ad11a410b4f1f061d2a36b5861bde5a552b392f241b9b559af",
+      "upstream_path": "docs/source-en/rst_source/usage/icl.rst",
+      "upstream_git_blob": "68a2d017cee85e731af1d8c22e60b40d85a61184",
+      "status": "adapted_from_upstream",
+      "adaptation": "Adapt original component documentation to the current Markdown guides and restored entrypoints."
+    },
+    {
+      "path": "docs/icl.zh-CN.md",
+      "content_sha256": "9723e76ebd628eee723925d2bfe74536a371af0732dc30aaeaf99b580d460265",
+      "upstream_path": "docs/source-zh/rst_source/usage/icl.rst",
+      "upstream_git_blob": "8f372f15021bf34d87500e43043e3ef2dca3e7e4",
+      "status": "adapted_from_upstream",
+      "adaptation": "Adapt original component documentation to the current Markdown guides and restored entrypoints."
+    },
+    {
+      "path": "docs/superpowers/plans/2026-11-13-icl-port.md",
+      "content_sha256": "b582c8087543957d4f06644011eb91e6692c517e05e8db4861ba8a411fcfc51e",
+      "status": "integration_documentation",
+      "note": "New audit or execution notes; not claimed as original upstream implementation."
+    },
+    {
+      "path": "examples/components/icl_build_and_load.py",
+      "content_sha256": "e09680ad2d0b9f1a638b16738dca27a719d86326ccfe47e75dcbfc270cacb608",
+      "upstream_path": "examples/components/icl_build_and_load.py",
+      "upstream_git_blob": "5b8fac29404635ae70fa3a9b11b7e2e27aa48bc6",
+      "status": "original_content"
+    },
+    {
+      "path": "examples/components/study_and_pack.py",
+      "content_sha256": "0ec7f72469f0693825959e2aabdad8bf87506088509bf02abfed386c45dcbafc",
+      "upstream_path": "examples/components/study_and_pack.py",
+      "upstream_git_blob": "bad2bbd9c5affed545c092f76103f21e93e3e7ef",
+      "status": "original_content"
+    },
+    {
+      "path": "pyproject.toml",
+      "content_sha256": "2021bbee1e59894ef34cb4b81524426651a981a40f5f7b327113a1642fc449bc",
+      "upstream_path": "pyproject.toml",
+      "upstream_git_blob": "850ee29047d13f5b4c79043a0df2a6ad30c765d5",
+      "status": "adapted_from_upstream",
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+    },
+    {
+      "path": "roborsi/agents/context_package.py",
+      "content_sha256": "de1eef930ee9b43268e8fe8d8329b4df8e0774919615d384d4cf4bac14ebd16b",
+      "upstream_path": "roborsi/agents/context_package.py",
+      "upstream_git_blob": "a8a8d9f2f5bfefaac183c55f4269331265608b79",
+      "status": "original_content"
+    },
+    {
+      "path": "roborsi/cli/icl.py",
+      "content_sha256": "b86d92712201adb3707748bb830ec87911b5a17b9f72edb3eeaf199f0603621a",
+      "upstream_path": "roborsi/cli/icl.py",
+      "upstream_git_blob": "b87a7eae4f4418fca723b00008134cc732b31de9",
+      "status": "original_content"
+    },
+    {
+      "path": "roborsi/components/__init__.py",
+      "content_sha256": "80f889b7558c51a740422fe28473578b24132254de591610aba2e8cc6bd35f4c",
+      "upstream_path": "roborsi/components/__init__.py",
+      "upstream_git_blob": "635298bc7e03a62715fc93383b8fa26cbebaae77",
+      "status": "original_content"
+    },
+    {
+      "path": "roborsi/components/icl/__init__.py",
+      "content_sha256": "644dacc8b4efd3b16bc9e88d6101c4bb0aa838e8b27036b38507dd3937d45614",
+      "upstream_path": "roborsi/components/icl/__init__.py",
+      "upstream_git_blob": "668ca49b7a7cc606cd76b777716203d72d1c7618",
+      "status": "original_content"
+    },
+    {
+      "path": "roborsi/components/icl/adapters.py",
+      "content_sha256": "c8e06b741e50d46159978a41e435f2d847031d7061a190467d5f8bde7fecc68c",
+      "upstream_path": "roborsi/components/icl/adapters.py",
+      "upstream_git_blob": "daa2b3868e657ff75446784b638eaa7b7ef4b21e",
+      "status": "original_content"
+    },
+    {
+      "path": "roborsi/components/icl/build.py",
+      "content_sha256": "0d73515964cc7a31e13e76af8d41e4ccdae49cba2217091d15426f0efd75d8a4",
+      "upstream_path": "roborsi/components/icl/build.py",
+      "upstream_git_blob": "533e95e98a06f1ac427b2de803dd47f82c43f9d1",
+      "status": "original_content"
+    },
+    {
+      "path": "roborsi/components/icl/importers.py",
+      "content_sha256": "69fe8efcae3a55cb235785b13084136730e9dbe44f6772c41407e6ec955d1a18",
+      "upstream_path": "roborsi/components/icl/importers.py",
+      "upstream_git_blob": "ee8ad903f807a9a42c8efcc0a2d8f1128a04267a",
+      "status": "original_content"
+    },
+    {
+      "path": "roborsi/components/icl/package.py",
+      "content_sha256": "0e5a5569e5e2a04986e32d57c7db76ad4c1fc2a42303ec84e15488ff169f61fb",
+      "upstream_path": "roborsi/components/icl/package.py",
+      "upstream_git_blob": "1367c169c2c2934569f761babae97f6e4ad056f6",
+      "status": "original_content"
+    },
+    {
+      "path": "roborsi/components/icl/sources.py",
+      "content_sha256": "6493c85b62ab1c818a18e8f33a796d2d520c529624a7235eebba7560b225697e",
+      "upstream_path": "roborsi/components/icl/sources.py",
+      "upstream_git_blob": "2967e31600ad24fea50e467e494131392c88fad7",
+      "status": "original_content"
+    },
+    {
+      "path": "roborsi/components/icl/workspace.py",
+      "content_sha256": "d96f66ef77bf67acf06f2f6f005d1db114919be5f31af766024f183c4713ead8",
+      "upstream_path": "roborsi/components/icl/workspace.py",
+      "upstream_git_blob": "6499f53cbb84a594f4253b9ef0f24ef20db362fc",
+      "status": "original_content"
+    },
+    {
+      "path": "roborsi/embodied_agent.py",
+      "content_sha256": "bb73a002efe16d9636b73fe5c85b4e30a645d6c309987b2d19638d3437d3c2fc",
+      "upstream_path": "roborsi/embodied_agent.py",
+      "upstream_git_blob": "60a232bd3cfc18e905191305804f0d7cc1ea3075",
+      "status": "adapted_from_upstream",
+      "adaptation": "Restore the original external CLI session/cancellation support; retain current invalid_action_retries field and forwarding."
+    },
+    {
+      "path": "robots/behavior_1k/agent.yaml",
+      "content_sha256": "ca1b3118c667976a780cdaf54e2044c3a6c6c2a87a732105cea2c0695f97b65e",
+      "upstream_path": "robots/behavior_1k/agent.yaml",
+      "upstream_git_blob": "19948427aaf0e6e7273f12ab294bd0837964a48b",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/behavior_1k/agents/.gitignore",
+      "content_sha256": "08361a0c9cf923a1e95c7bf8bcb2b921699e13241c68a84514cc212182673978",
+      "upstream_path": "robots/behavior_1k/agents/.gitignore",
+      "upstream_git_blob": "aacbd939cf773faa640c775ab9a85ca461050f44",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/behavior_1k/agents/__init__.py",
+      "content_sha256": "1fb5b32b800a1d48adf6f8f7d7915e6937d364e1983a97234232257db6cd7d5c",
+      "upstream_path": "robots/behavior_1k/agents/__init__.py",
+      "upstream_git_blob": "577f4a7c45120245dc88aee8a2905b5e08e650b8",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/behavior_1k/agents/baseline/__init__.py",
+      "content_sha256": "1fb5b32b800a1d48adf6f8f7d7915e6937d364e1983a97234232257db6cd7d5c",
+      "upstream_path": "robots/behavior_1k/agents/baseline/__init__.py",
+      "upstream_git_blob": "577f4a7c45120245dc88aee8a2905b5e08e650b8",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/behavior_1k/agents/baseline/agent.yaml",
+      "content_sha256": "c68c5d2eb63e92f1521ce78e21b539394fb6f66d3d38bd39d56d2ac0bfa9311d",
+      "upstream_path": "robots/behavior_1k/agents/baseline/agent.yaml",
+      "upstream_git_blob": "0cbaf670b8ba3a10eadfc4882d25b55e6572e12f",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/behavior_1k/agents/baseline/download.py",
+      "content_sha256": "9c30077d860d58fb4ba4aa8d3812e2f8f7df4e116d6eecf76f544346e854018b",
+      "upstream_path": "robots/behavior_1k/agents/baseline/download.py",
+      "upstream_git_blob": "3dc6688f20ca1cbb2acfa68df1fc7e7c316f61a6",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/behavior_1k/agents/baseline/factory.py",
+      "content_sha256": "3dd007919b08b0fab0d50d395ea57988da8b9aee548bcd1199c8482870c551f7",
+      "upstream_path": "robots/behavior_1k/agents/baseline/factory.py",
+      "upstream_git_blob": "02cedd55931f3f7f3ca93af7b052c1e6a7b0c717",
+      "status": "adapted_from_upstream",
+      "adaptation": "Set executable permissions on copied launcher; explicit UTF-8 note reads."
+    },
+    {
+      "path": "robots/behavior_1k/agents/baseline/icl.py",
+      "content_sha256": "0aa6dd07441aed0ddc5ea458ecdfd46f46c2cb46e0cd5a74a9f4fc79bedb0798",
+      "upstream_path": "robots/behavior_1k/agents/baseline/icl.py",
+      "upstream_git_blob": "cca463a8257428dca3e649b50c4e424514f19702",
+      "status": "adapted_from_upstream",
+      "adaptation": "Close Agent before sealing; reject nested material/case/output paths; explicit UTF-8 I/O."
+    },
+    {
+      "path": "robots/behavior_1k/agents/baseline/icl.yaml",
+      "content_sha256": "8986b4d3c7248b7b48d4f87ce66cbc35b8329f94311e0f3c33fc5925555e5d56",
+      "upstream_path": "robots/behavior_1k/agents/baseline/icl.yaml",
+      "upstream_git_blob": "7ee58f0042dfecc6d8a24f8584c734cf478c0d2d",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/behavior_1k/agents/baseline/icl_prompt.md",
+      "content_sha256": "a3aed7dce9e051ab5963d1c3b5978d8ad15587e6066a7d2785d4ef312292a2e5",
+      "upstream_path": "robots/behavior_1k/agents/baseline/icl_prompt.md",
+      "upstream_git_blob": "4a6fc915ce26ff2a5bf3732c4aeb043b4d9a1cf4",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/behavior_1k/agents/baseline/prompt.md",
+      "content_sha256": "0cf3851fe3e51ca782b4a5a13401c121330d3d5e17ab0f2d7a70e08a2aaf1dab",
+      "upstream_path": "robots/behavior_1k/agents/baseline/prompt.md",
+      "upstream_git_blob": "7718823ed9ea43ab984061e2e5ddf170aa262687",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/behavior_1k/agents/baseline/tools/frames.py",
+      "content_sha256": "dcba63c842f57ed77ce388a8a282fcd029752994315237959d5fb53a05b6891b",
+      "upstream_path": "robots/behavior_1k/agents/baseline/tools/frames.py",
+      "upstream_git_blob": "273c7fa3cd844e5914e357f041a1a66a41a1671c",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/behavior_1k/agents/baseline/tools/records.py",
+      "content_sha256": "036736735a16e3de31916cd113021e8694ef60ec1007694101d009c77fc5cb7d",
+      "upstream_path": "robots/behavior_1k/agents/baseline/tools/records.py",
+      "upstream_git_blob": "059c251eb768f9ba433bc019dac5d28a7f6c0235",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/behavior_1k/agents/baseline/workspace/README.md",
+      "content_sha256": "1325ef62bc370ee803290a7b1c9be110b431fcea93de2b5c27d519ec6cd69425",
+      "upstream_path": "robots/behavior_1k/agents/baseline/workspace/README.md",
+      "upstream_git_blob": "20e1ac0e07413e10862fc776deb3966e1b6e2dd0",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/behavior_1k/agents/baseline/workspace/codex_mcp.py",
+      "content_sha256": "df855af04a5859a5d8fd2f115e0c321cfd917ef6c7fb7ad4971e869837419b15",
+      "upstream_path": "robots/behavior_1k/agents/baseline/workspace/codex_mcp.py",
+      "upstream_git_blob": "3a18e2d1b49f7ac9573dc936ef3388ec60acfb6b",
+      "status": "adapted_from_upstream",
+      "adaptation": "Handle planner-supported global flags before exec; preserve scoped tool approvals."
+    },
+    {
+      "path": "robots/behavior_1k/catalog.py",
+      "content_sha256": "c4b9bbd8b05f26f0a201ab9aa37a7b318754cd98a667891fe099db790c28419d",
+      "upstream_path": "robots/behavior_1k/catalog.py",
+      "upstream_git_blob": "6ebd43310d6b7b27df09ab72980aa84cf628685a",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/behavior_1k/official.py",
+      "content_sha256": "0d9c62ae4165ba29f8f645443cde312c44483042271e58b396d2801b57456722",
+      "upstream_path": "robots/behavior_1k/official.py",
+      "upstream_git_blob": "4186dc79cc5feb93f5e49775485877608c21e0d8",
+      "status": "adapted_from_upstream",
+      "adaptation": "Restore only offline FK layout/quaternion helpers; retain current 21D-only evaluation validation."
+    },
+    {
+      "path": "robots/bench2dex/agent.yaml",
+      "content_sha256": "01a9f31e5d3230c00a3dc5c50b126880dd713b53b83838eaf60f64ba83665979",
+      "upstream_path": "robots/bench2dex/agent.yaml",
+      "upstream_git_blob": "e14c042782727143cda3cec24bf76533f09fe7b8",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/bench2dex/agents/__init__.py",
+      "content_sha256": "c181c0d24bd4cd4cf078c5e1f08d6e34ed039e07f637a2c41d4db9f608a97d44",
+      "upstream_path": "robots/bench2dex/agents/__init__.py",
+      "upstream_git_blob": "8aa21faf2155f0745a02b978794f57aceace0f2a",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/bench2dex/agents/baseline/__init__.py",
+      "content_sha256": "c181c0d24bd4cd4cf078c5e1f08d6e34ed039e07f637a2c41d4db9f608a97d44",
+      "upstream_path": "robots/bench2dex/agents/baseline/__init__.py",
+      "upstream_git_blob": "8aa21faf2155f0745a02b978794f57aceace0f2a",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/bench2dex/agents/baseline/agent.yaml",
+      "content_sha256": "3ae3b97c68c289a16ea67e482ba9707d3496de4e2c65112eacdd167ef637d9c3",
+      "upstream_path": "robots/bench2dex/agents/baseline/agent.yaml",
+      "upstream_git_blob": "98aa596b3fb4a59b54c4118b395c9937b6cd48ee",
+      "status": "adapted_from_upstream",
+      "adaptation": "Declare separated ICL helper modules in code inputs."
+    },
+    {
+      "path": "robots/bench2dex/agents/baseline/cli_episode.py",
+      "content_sha256": "35fec33e980a034522c61bb625aba55a9b7b18452bafb83fe6cef852809dd810",
+      "upstream_path": "robots/bench2dex/agents/baseline/cli_episode.py",
+      "upstream_git_blob": "55f4841defdf5864fe2294b3f2ecab98821dbcde",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/bench2dex/agents/baseline/factory.py",
+      "content_sha256": "5beef61d354ad4788c884a32df48b7072b2f4dddf7dd2d1be573a61bdd3d3785",
+      "upstream_path": "robots/bench2dex/agents/baseline/factory.py",
+      "upstream_git_blob": "5d07007fb7cb3fcdaab213ab302d4d1af12b5fbc",
+      "status": "adapted_from_upstream",
+      "adaptation": "Update ICL helper/protocol imports and validate camera paths against the current case-scoped MediaRef; preserve original pixel/hash checks and policy algorithm; declare both protocol resources for independent exports."
+    },
+    {
+      "path": "robots/bench2dex/agents/baseline/prompts/policy.md",
+      "content_sha256": "2f25595f2e4db8af9d03c8a65d4de9dbce3dd1b9829afd4617f058c7bb680d6c",
+      "upstream_path": "robots/bench2dex/agents/baseline/prompts/policy.md",
+      "upstream_git_blob": "47efa9b98f7292a3b272fbf73906e4dbfab73922",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/bench2dex/agents/baseline/step_helper.py",
+      "content_sha256": "07e527ed763bc3634539ff5571bb0afc30c9871aae108fd15c4ace4e7f955a2e",
+      "upstream_path": "robots/bench2dex/agents/baseline/step_helper.py",
+      "upstream_git_blob": "cde1645cb630c76c2c38029877b644f34a6cef44",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/bench2dex/compat_agent.py",
+      "content_sha256": "b05b8332bc3c33fc0b237d8efd552060c1e341d17867e234d8c3f18744009763",
+      "upstream_path": "robots/bench2dex/compat_agent.py",
+      "upstream_git_blob": "b9a07e30c86dfbc8e5fdffbc5f8a65477077a573",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/bench2dex/frozen_reference.py",
+      "content_sha256": "22b6743b5315adef19f672a91cd7522ac545104d1348030a3295c50981fa4ef4",
+      "upstream_path": "robots/bench2dex/frozen_reference.py",
+      "upstream_git_blob": "b4220682e17acab6c44f57a3227f8c6150dcf279",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/bench2dex/icl.py",
+      "content_sha256": "ed4e33eedc57d3b5699b0725bb9dbba8496165dece2f42d8078edb99886c9e8a",
+      "upstream_path": "robots/bench2dex/contracts.py",
+      "upstream_git_blob": "664ea35b8acc8ed0c6e3ad40cf12a36056c12cf4",
+      "status": "adapted_from_upstream",
+      "upstream_symbols": [
+        "package_entry",
+        "verify_package",
+        "extract_verified"
+      ],
+      "selected_function_ast_identical": true,
+      "adaptation": "Move the original ICL-only functions/constants into an Agent-only module; native contracts are unchanged."
+    },
+    {
+      "path": "robots/bench2dex/icl_catalog.json",
+      "content_sha256": "47be936154707907286297bc46d633e7033fe37a34c2463b536c051297ffd94f",
+      "upstream_path": "robots/bench2dex/icl_catalog.json",
+      "upstream_git_blob": "ff1bf4634a5c04d1f25f86fb595ecf484a46eb05",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/bench2dex/icl_inventory.py",
+      "content_sha256": "f92e7cef42e9cb327d8b1ba5c4c6eae28a2c044d1904c5a3306bc602532bb690",
+      "upstream_path": "robots/bench2dex/reference/throughput.py",
+      "upstream_git_blob": "97b4064e095e4c9807a770773b80f63712abb137",
+      "status": "adapted_from_upstream",
+      "upstream_symbols": [
+        "content_hashes"
+      ],
+      "selected_function_ast_identical": true,
+      "adaptation": "Copy the original inventory function unchanged into an Agent-only module; keep native RGB encoding unchanged."
+    },
+    {
+      "path": "robots/bench2dex/icl_protocol.json",
+      "content_sha256": "3e36555d3c7c562a9c05301e15219ef247d20abd5f736c21779ce5c08ecaf857",
+      "upstream_path": "robots/bench2dex/protocol.json",
+      "upstream_git_blob": "f1316bc2eea32a4d4990ce50b61f38b822ac14b8",
+      "status": "adapted_from_upstream",
+      "adaptation": "Preserve the original full ICL/model protocol unchanged at an Agent-only path; native protocol stays unchanged."
+    },
+    {
+      "path": "robots/bench2dex/package_required/README.md",
+      "content_sha256": "391d41d170413f5b0be39b10ab37106975060bf2b250150fae6ba81b90bcbd85",
+      "upstream_path": "robots/bench2dex/package_required/README.md",
+      "upstream_git_blob": "91e616691e7b68351ae1b4848c404c1ff34a0e54",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/bench2dex/prompts/calibrated_deployment.md",
+      "content_sha256": "09202cfc6addd8e626a40d65d9c18d50f4ea0db58e7cbc1d6ec75c7098db03d3",
+      "upstream_path": "robots/bench2dex/prompts/calibrated_deployment.md",
+      "upstream_git_blob": "627f9719785f65e589eb1b493e08a2bcf07ce2a6",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/bench2dex/prompts/policy_icl.md",
+      "content_sha256": "6db66abe97f46647c3c2f5df7b50685ce5688721a63e2c1ba22cba9ff67f1cc6",
+      "upstream_path": "robots/bench2dex/prompts/policy_icl.md",
+      "upstream_git_blob": "8b3e1d70a560bee95ac49df57dfa08091f5d7fe9",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/bench2dex/reference/SOURCES.json",
+      "content_sha256": "afee4be17e3addc9a285567db3108ad11821645165d54c5b7518573c01f5dd68",
+      "upstream_path": "robots/bench2dex/reference/SOURCES.json",
+      "upstream_git_blob": "26f2998ae8b2a911a712ee56a8308353e4e56a9e",
+      "status": "adapted_from_upstream",
+      "adaptation": "Retain current native source provenance and record restored original ICL helpers."
+    },
+    {
+      "path": "robots/bench2dex/reference/isolation.py",
+      "content_sha256": "a5bc027990c59cbdf7f2ceedf3f2b933e2c438f1e288e3034da8f7bfa9e29896",
+      "upstream_path": "robots/bench2dex/reference/isolation.py",
+      "upstream_git_blob": "3ccc2886411ba96f0d47acb365c663e1ad7b8c8f",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/bench2dex/reference/knowledge.py",
+      "content_sha256": "b4a9bdc2e6fa5766ba437c0059340193c52fd6ac62e1ca721fe6a24e3f1f2753",
+      "upstream_path": "robots/bench2dex/reference/knowledge.py",
+      "upstream_git_blob": "a6f81fda6a4a1fe4656f2a97be2c7a8227c3f4b5",
+      "status": "adapted_from_upstream",
+      "adaptation": "Update MODEL and inventory imports to the separated ICL modules; original function bodies are unchanged."
+    },
+    {
+      "path": "robots/dexjoco/agent.yaml",
+      "content_sha256": "01a9f31e5d3230c00a3dc5c50b126880dd713b53b83838eaf60f64ba83665979",
+      "upstream_path": "robots/dexjoco/agent.yaml",
+      "upstream_git_blob": "e14c042782727143cda3cec24bf76533f09fe7b8",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/dexjoco/agents/baseline/agent.yaml",
+      "content_sha256": "92809d71e589a7e963569d31aa369c002bbba4b60ed2cfefbb3e5d553e9aea17",
+      "upstream_path": "robots/dexjoco/agents/baseline/agent.yaml",
+      "upstream_git_blob": "804e84e03b89cdf738f08b88229527133974865f",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/dexjoco/agents/baseline/factory.py",
+      "content_sha256": "c5c5da288df9782f6e96e6f72f68ff5e262ba8aac405f0423f10646b966194be",
+      "upstream_path": "robots/dexjoco/agents/baseline/factory.py",
+      "upstream_git_blob": "90101df465124ea98437185cdcc33a85de03e8b8",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/dexjoco/agents/baseline/policy.py",
+      "content_sha256": "3878e154b15b9c69e93f2a89e8b32536f42d76faa150e2feb7b84cf9aec0f18b",
+      "upstream_path": "robots/dexjoco/agents/baseline/policy.py",
+      "upstream_git_blob": "ed03c67a77a6f5b02af14b2448c9f6cc44938819",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/dexjoco/agents/baseline/prompts/continuation.md",
+      "content_sha256": "743d11d1608b6f2f82537d20952d1b38827abef0c346238baee02eb689448da7",
+      "upstream_path": "robots/dexjoco/agents/baseline/prompts/continuation.md",
+      "upstream_git_blob": "60f2d19a808d0a191a3100907f312b9a80c475c2",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/dexjoco/agents/baseline/prompts/initial.md",
+      "content_sha256": "aeddb3ccce02d63cce2e9fd65a1c8a95377e8a35d727110b79147795a4b9882b",
+      "upstream_path": "robots/dexjoco/agents/baseline/prompts/initial.md",
+      "upstream_git_blob": "fe500bccf0695257539eaa43cc2090b5fa36887e",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/dexjoco/agents/baseline/prompts/policy.md",
+      "content_sha256": "a754e301f952a5dd2dddfbbc0ddd29dec6f2d9950fb050842bea3b89d02df8cd",
+      "upstream_path": "robots/dexjoco/agents/baseline/prompts/policy.md",
+      "upstream_git_blob": "acaa6f54b115873fa666d76c791601fb33ab2425",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/dexjoco/agents/baseline/resources/LICENSE.reference",
+      "content_sha256": "101a2b0afd49b0373fc4283afcb1e90d4a6d51aac4d335b954bed24e52222661",
+      "upstream_path": "robots/dexjoco/agents/baseline/resources/LICENSE.reference",
+      "upstream_git_blob": "394ea6076b333d62d999a48b6dd70318036cc94b",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/dexjoco/agents/baseline/resources/reference-code.zip",
+      "content_sha256": "e883be2bf8f22674b24e56758721f754cce6353a45044f32025e26be7e870674",
+      "upstream_path": "robots/dexjoco/agents/baseline/resources/reference-code.zip",
+      "upstream_git_blob": "80da414cb6615beee3fdb37ba6780d02c6f1e663",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/dexjoco/agents/baseline/session.py",
+      "content_sha256": "e5e0219d882667dfada80cd5e46f022c0cf90776b559bc083ffcab41c680532b",
+      "upstream_path": "robots/dexjoco/agents/baseline/session.py",
+      "upstream_git_blob": "8cfaf167833f95291f951f49823440dae2af3e93",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/dexjoco/reference.py",
+      "content_sha256": "fd2a68d61b4e8d215f7541c4a0c452223ec04324e7ec454e7af43d2c52a13a80",
+      "upstream_path": "robots/dexjoco/reference.py",
+      "upstream_git_blob": "d29c73c8bd791490de0ef1fd40113876f53ccd20",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/libero/flash/generate.py",
+      "content_sha256": "437735e24066005a00fb1c935b302df2a21c4e30bcf768ea77ea146a42b42d06",
+      "upstream_path": "robots/libero/flash/generate.py",
+      "upstream_git_blob": "e90668ded9d58aa4db353ca9dc5d74805f8b7f36",
+      "status": "original_content"
+    },
+    {
+      "path": "robots/libero/flash/relations.py",
+      "content_sha256": "456b9c28d737bac0cf1cc2065d88bd30aca326d36c0992d648ec92a2d5423760",
+      "upstream_path": "robots/libero/flash/relations.py",
+      "upstream_git_blob": "d33c8efc2436e0591b2f14d8d7fc6081daac35bd",
+      "status": "original_content"
+    },
+    {
+      "path": "scripts/libero_three/prepare_context.py",
+      "content_sha256": "15b203921ea074efc87ae8802729284336e0a41f2d2c7e330db73d4d07815a47",
+      "upstream_path": "scripts/libero_three/prepare_context.py",
+      "upstream_git_blob": "5f9c385920ce2367dbffdf7dbfc7e1d7d808e860",
+      "status": "original_content"
+    },
+    {
+      "path": "tests/README.md",
+      "content_sha256": "4681ed178883707ed27ad107261e148cbae4141d5e023cb1d18f2dd50365a23a",
+      "upstream_path": "tests/README.md",
+      "upstream_git_blob": "e74e9384af88d1d68e90cd3597de45efff73e276",
+      "status": "adapted_from_upstream",
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+    },
+    {
+      "path": "tests/unit_tests/roborsi/cli/test_icl.py",
+      "content_sha256": "497754f78d2c33148d8e9c02bc6c055a91a0cccf86aaaa8fe0c85f27f4742f11",
+      "upstream_path": "tests/unit_tests/roborsi/cli/test_icl.py",
+      "upstream_git_blob": "9f17a3a8a46fb40bebcda5f34bbabc72a48d574f",
+      "status": "original_content"
+    },
+    {
+      "path": "tests/unit_tests/roborsi/components/icl/conftest.py",
+      "content_sha256": "d8777e73f1431d8b8349dbe37f1871e740a5bd7eb11e883bcc0a48d0b208c4e3",
+      "upstream_path": "tests/unit_tests/roborsi/components/icl/conftest.py",
+      "upstream_git_blob": "47380e76f70635f56926275105d32dbebb90cbb9",
+      "status": "adapted_from_upstream",
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+    },
+    {
+      "path": "tests/unit_tests/roborsi/components/icl/test_adapters_contracts.py",
+      "content_sha256": "32b087df3d7d22bbe1c5d884014afa5645a7b1bb968f4a9a19e9ea542c3e51a0",
+      "upstream_path": "tests/unit_tests/roborsi/components/icl/test_adapters_contracts.py",
+      "upstream_git_blob": "054294514be32868845919077be5d040b180ea08",
+      "status": "adapted_from_upstream",
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+    },
+    {
+      "path": "tests/unit_tests/roborsi/components/icl/test_build_contracts.py",
+      "content_sha256": "3ff4b33b22959d119f5f3a78edb748959e1e895b3d1160bd5e82a27c9c700877",
+      "upstream_path": "tests/unit_tests/roborsi/components/icl/test_build_contracts.py",
+      "upstream_git_blob": "9de0e7a3fe9229862b9dd430736db2fbf6d01bf4",
+      "status": "original_content"
+    },
+    {
+      "path": "tests/unit_tests/roborsi/components/icl/test_importers_contracts.py",
+      "content_sha256": "e694a7890182aaef06782b5f582c34932753b76344e5a9d301fbe1c924a63be5",
+      "upstream_path": "tests/unit_tests/roborsi/components/icl/test_importers_contracts.py",
+      "upstream_git_blob": "ec68cf69bbee342746672811e2461b6fabf7650e",
+      "status": "adapted_from_upstream",
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+    },
+    {
+      "path": "tests/unit_tests/roborsi/components/icl/test_package_contracts.py",
+      "content_sha256": "df69402ea1c3a2d82e6598ae3fb6fc6f8d666614330bf503f7b24d34f524ecc4",
+      "upstream_path": "tests/unit_tests/roborsi/components/icl/test_package_contracts.py",
+      "upstream_git_blob": "47d092c0943fcde58a0cb2a3d15da3c78ae6f1e6",
+      "status": "original_content"
+    },
+    {
+      "path": "tests/unit_tests/roborsi/components/icl/test_sources_contracts.py",
+      "content_sha256": "c7809a095b15bd458ab2f439622be3cbb18e68bbf114390d7bd045c041671e62",
+      "upstream_path": "tests/unit_tests/roborsi/components/icl/test_sources_contracts.py",
+      "upstream_git_blob": "418faaaa319c13dab4486ec10d68a4e8c31f8dcd",
+      "status": "original_content"
+    },
+    {
+      "path": "tests/unit_tests/roborsi/components/icl/test_workspace_lifecycle.py",
+      "content_sha256": "3e5a01ec04b289e1b5a5f4e380f9f84eb8f38f037afbea042d839a84eab8fa0c",
+      "upstream_path": "tests/unit_tests/roborsi/components/icl/test_workspace_lifecycle.py",
+      "upstream_git_blob": "7ced42d14496b5fc6d4cb7939b4d71516f23c356",
+      "status": "original_content"
+    },
+    {
+      "path": "tests/unit_tests/roborsi/test_embodied_external_session.py",
+      "content_sha256": "03e96c95d2f478475d01e06b33016b1d00c51d849ab511d244ca6200f5367e66",
+      "upstream_path": "tests/unit_tests/roborsi/test_embodied_external_session.py",
+      "upstream_git_blob": "a7791f1cf54b502ed1d9e779f4025a9240b74ad8",
+      "status": "original_content"
+    },
+    {
+      "path": "tests/unit_tests/robots/behavior_1k/test_codex_launcher.py",
+      "content_sha256": "0ac96626f7565a7bd066b380ef9757282a7f198b4acf41a116aa385c83c73671",
+      "upstream_path": "tests/unit_tests/robots/behavior_1k/test_codex_launcher.py",
+      "upstream_git_blob": "8580c7fc18f6616e518e627531bc119e7b1f9c13",
+      "status": "adapted_from_upstream",
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+    },
+    {
+      "path": "tests/unit_tests/robots/behavior_1k/test_icl.py",
+      "content_sha256": "b76ffdc5fdd186f1cc878a06792c7100f9959d2fa20c0b7c21e35da454516391",
+      "upstream_path": "tests/unit_tests/robots/behavior_1k/test_contracts.py",
+      "upstream_git_blob": "07fa2c9873c96c2be2a3569048910be0393385b6",
+      "status": "adapted_from_upstream",
+      "adaptation": "Select upstream ICL tests and add cleanup/path/launcher regression tests for integration fixes."
+    },
+    {
+      "path": "tests/unit_tests/robots/behavior_1k/test_icl_download.py",
+      "content_sha256": "f51ac8da1ec42477908662c2b4e3c274a956892e93333efc8075f130e840d45b",
+      "upstream_path": "tests/unit_tests/robots/behavior_1k/test_icl_download.py",
+      "upstream_git_blob": "988e2746ef83fc74f289d521fe346c86b68b23fd",
+      "status": "original_content"
+    },
+    {
+      "path": "tests/unit_tests/robots/bench2dex/conftest.py",
+      "content_sha256": "79a70cfa7cdbde8bd0c1b56a2a585a56d0730b329a6392481e46cc30810b5477",
+      "upstream_path": "tests/unit_tests/robots/bench2dex/conftest.py",
+      "upstream_git_blob": "ac498522eb5fca3167e319756da62bf9c07799b5",
+      "status": "adapted_from_upstream",
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+    },
+    {
+      "path": "tests/unit_tests/robots/bench2dex/test_action_transport_recovery.py",
+      "content_sha256": "5a9163721cc86a0b35b4a3c92f3cd95ebbbcb9c1486051b4d8d34125d9144a29",
+      "upstream_path": "tests/unit_tests/robots/bench2dex/test_action_transport_recovery.py",
+      "upstream_git_blob": "d1a60619e5719b69831641c07ffd9f430f509b1c",
+      "status": "original_content"
+    },
+    {
+      "path": "tests/unit_tests/robots/bench2dex/test_compat_lifecycle.py",
+      "content_sha256": "c79b34d8cac92499b57a4a7e7c15d337399d46222034e8eaa2b220cd9fd592bf",
+      "upstream_path": "tests/unit_tests/robots/bench2dex/test_compat_lifecycle.py",
+      "upstream_git_blob": "1126e842e88f813dfb9c7051b705c60d1e1fb238",
+      "status": "adapted_from_upstream",
+      "adaptation": "Update moved ICL/protocol imports and add a mismatched camera-path regression case for the current public media transport."
+    },
+    {
+      "path": "tests/unit_tests/robots/bench2dex/test_icl_suite.py",
+      "content_sha256": "fc88237bb5835120aae05c87f7f7510c382decc8c75057597a4ecb35f4beaea4",
+      "upstream_path": "tests/unit_tests/robots/bench2dex/test_protocol_contracts.py",
+      "upstream_git_blob": "d1a87cdc5ead546609f0f107b7c0938253d7b04a",
+      "status": "adapted_from_upstream",
+      "adaptation": "Select original package/suite tests and update their ICL-only import location."
+    },
+    {
+      "path": "tests/unit_tests/robots/bench2dex/test_shared_cli.py",
+      "content_sha256": "2f88af7f0c68c7d76197f54b18b99a7c05ba05310c0da00f70ce6a0dea816b2c",
+      "upstream_path": "tests/unit_tests/robots/bench2dex/test_shared_cli.py",
+      "upstream_git_blob": "d080a3f09fc84a0f3e4b2a65aa4adfc50a184a62",
+      "status": "adapted_from_upstream",
+      "adaptation": "Retain original CLI tests and add independent exported-source import regression coverage for protocol resource closure."
+    },
+    {
+      "path": "tests/unit_tests/robots/dexjoco/test_policy_configuration.py",
+      "content_sha256": "d9fb1ee8cdb2ca446b643cebf9535a47cc10c5f2199e14b094754005b5348d33",
+      "upstream_path": "tests/unit_tests/robots/dexjoco/test_policy_configuration.py",
+      "upstream_git_blob": "5929657eceea503860e309b93d62e350b742b904",
+      "status": "original_content"
+    },
+    {
+      "path": "tests/unit_tests/robots/dexjoco/test_policy_lifecycle.py",
+      "content_sha256": "391642225b40d59f3e89c0ec3d95b8d23f0462489c6c7c0e32a98f0ae050e50d",
+      "upstream_path": "tests/unit_tests/robots/dexjoco/test_policy_lifecycle.py",
+      "upstream_git_blob": "06f72bd91834c0519db3f02d2b6a15f09377eeac",
+      "status": "original_content"
+    },
+    {
+      "path": "tests/unit_tests/robots/dexjoco/test_policy_process_lifetime.py",
+      "content_sha256": "9dcbe4e7c1616f58889cf2d0d8cfb019f52b474f2e274d6f0ef5c603e21026d0",
+      "upstream_path": "tests/unit_tests/robots/dexjoco/test_policy_process_lifetime.py",
+      "upstream_git_blob": "60f99c4f4ba4eb9c5c868abef06231bb0f4df44d",
+      "status": "original_content"
+    },
+    {
+      "path": "tests/unit_tests/robots/libero/test_icl_materials.py",
+      "content_sha256": "82ac0fe4318a8fd03c9606c4b7568ae6151158280f02b2bd9b5f2963bce90162",
+      "upstream_path": "tests/unit_tests/roborsi/benchmarks/test_source_runtime_config.py",
+      "upstream_git_blob": "d3d588758bbddd4458a0c105eadbdb1a55e21371",
+      "status": "adapted_from_upstream",
+      "upstream_symbols": [
+        "test_pro_context_export_uses_a_public_stable_alias"
+      ],
+      "selected_function_ast_identical": true,
+      "adaptation": "Copy the original narrow alias test without importing the retired source runner."
+    }
+  ],
+  "source_archives": [
+    {
+      "path": "agents/bench2dex_compat/reference-code.zip",
+      "sha256": "cfe38f4cdf051df401dc85f4eb33d79c77ce87bcd618e9ed2121f8bb679b7371",
+      "original_learning_entries": [
+        {
+          "member": "bench2dex-eval/src/gpt6_eval/icl.py",
+          "sha256": "f966d9aa1cd9f9607de3063e45547f79a323c83c5e28430b9875fcaa688d2c8b"
+        },
+        {
+          "member": "bench2dex-eval/src/gpt6_eval/icl_workflow.py",
+          "sha256": "6dd71f1a2c05817a6e4fee7b5944bc333dfc36140764e3235c9929348b3614d6"
+        },
+        {
+          "member": "bench2dex-eval/src/gpt6_eval/demo_reader.py",
+          "sha256": "c3ce845f00015c13bde2660bac74162b112663b995650093dbc2f3b49f14a0d5"
+        },
+        {
+          "member": "bench2dex-eval/prompts/preparation.md",
+          "sha256": "5be04af83137e3d2cb1d199dc58d1467621d0c423850bd70d2640896a190da44"
+        },
+        {
+          "member": "bench2dex-eval/prompts/preparation_reader.md",
+          "sha256": "7a15351f08935afec5c99442429b7ea48d8888498fb0a594da9130eec6cc77c2"
+        }
+      ]
+    },
+    {
+      "path": "robots/dexjoco/agents/baseline/resources/reference-code.zip",
+      "sha256": "e883be2bf8f22674b24e56758721f754cce6353a45044f32025e26be7e870674",
+      "original_learning_entries": [
+        {
+          "member": "dexjoco-eval/src/gpt6_eval/dexjoco_icl.py",
+          "sha256": "5d19f0eefed3b9688943ea898328dcc518c9f8cd86ffae337105e6573c7b1668"
+        },
+        {
+          "member": "dexjoco-eval/src/gpt6_eval/dexjoco_reader.py",
+          "sha256": "578d98d0d1359099ac06fc542a4495e1cde65bc2755f694a27d15f1a577d31aa"
+        },
+        {
+          "member": "dexjoco-eval/scripts/download_dexjoco_demos.py",
+          "sha256": "1272709c7bd392be3e3402491db56718277b53493d267a166665eb31790dd14d"
+        },
+        {
+          "member": "dexjoco-eval/prompts/dexjoco_preparation.md",
+          "sha256": "fa2ba7af34cf53b0667ae9449685ddd6e76828a169baa33eb645146c29a6e671"
+        }
+      ]
+    }
+  ],
+  "already_present_source_samples": [
+    {
+      "path": "robots/vln_shared/exploration.py",
+      "upstream_git_blob": "c132b28d224c43540191381cdc8001e32f0e88a0",
+      "original_content": true
+    },
+    {
+      "path": "robots/vln_shared/campaign.py",
+      "upstream_git_blob": "428d13183a6b11a3a68f84fdfdb3869a12c2f389",
+      "original_content": true
+    },
+    {
+      "path": "robots/vln_shared/storage.py",
+      "upstream_git_blob": "68a22acebb02606ca9367dce29cec652d95bb236",
+      "original_content": true
+    },
+    {
+      "path": "robots/vln_shared/execution.py",
+      "upstream_git_blob": "34e2d2c9d2f8e17229de547fd18ade7ad3f183a8",
+      "original_content": true
+    },
+    {
+      "path": "robots/vln_shared/prepare.py",
+      "upstream_git_blob": "7e6561671cada8dcbe6e6f4034a451e327ed851e",
+      "original_content": true
+    },
+    {
+      "path": "robots/vln_shared/cli.py",
+      "upstream_git_blob": "add285dd604d3afb6fae280bd180868b502baba7",
+      "original_content": true
+    },
+    {
+      "path": "robots/vln_shared/agents/baseline/factory.py",
+      "upstream_git_blob": "bdd6368657e77419b7f635ecada0d4c7648a0190",
+      "original_content": true
+    },
+    {
+      "path": "robots/vln_shared/agents/baseline/prompt.md",
+      "upstream_git_blob": "c633cfbc47fbd98fa3edbbd4bce16acd0661beb0",
+      "original_content": true
+    },
+    {
+      "path": "robots/robolab/agents/baseline/agent.yaml",
+      "upstream_git_blob": "f5f13d7d720cd3176bd829ae41392d05af4560fe",
+      "original_content": true
+    },
+    {
+      "path": "robots/robolab/agents/baseline/prompt.md",
+      "upstream_git_blob": "3b438b5997ccb021763aa2ce217bcfb224acc04f",
+      "original_content": true
+    }
+  ],
+  "coverage_guide": "docs/icl-coverage.md"
+}
