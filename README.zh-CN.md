@@ -25,6 +25,8 @@
 
 ## News
 
+- **2026-11-15** — 新增 **ICL 材料包构建与校验工具**，并补充 **BEHAVIOR-1K**、**Bench2Dex** 和 **DexJoCo** 的演示学习及冻结包评测指南。[ICL 指南](docs/icl.zh-CN.md) · [源码覆盖说明](docs/icl-coverage.zh-CN.md)。
+
 - **2026-11-03** — 已提供 [**LHPR-VLN**](benchmarks/lhpr_vln/README.zh-CN.md) 和 [**VLN-CE（R2R / RxR）**](benchmarks/vlnce/README.zh-CN.md) 的首批代码与使用指南。
 
 - **2026-10-30** — 已提供 [**RoboLab**](benchmarks/robolab/README.zh-CN.md) 的首批代码与使用指南。
@@ -33,10 +35,10 @@
 
 - **2026-10-26** — SenseNova-RoboRSI 现已位列 [RoboLab 官方榜单](https://research.nvidia.com/labs/srl/projects/robolab/leaderboard.html) **第 1 名**。
 
-- **2026-10-22** — **SenseNova-RoboRSI-27B-Preview** 已在包括真机与仿真在内的不同环境中运行！[🤗 模型权重](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview)与[使用指南](docs/sensenova-roborsi-27b-preview.zh-CN.md)现已发布，技术报告即将发布。
-
 <details>
 <summary>历史动态</summary>
+
+- **2026-10-22** — **SenseNova-RoboRSI-27B-Preview** 已在包括真机与仿真在内的不同环境中运行！[🤗 模型权重](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview)与[使用指南](docs/sensenova-roborsi-27b-preview.zh-CN.md)现已发布，技术报告即将发布。
 
 - **2026-10-22** — 已提供 [**RoboCasa365 Target50**](benchmarks/robocasa365/README.zh-CN.md) 的首批代码与使用指南。
 

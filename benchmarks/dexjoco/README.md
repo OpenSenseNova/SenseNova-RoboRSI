@@ -57,7 +57,9 @@ tool-calling model. Use the shared Agent configuration with the DexJoCo
 benchmark name and task IDs shown below.
 The service exposes the native action schema and scoring rules. The fixed-action
 LIBERO example in [Getting started](../../docs/getting-started.md) only supports
-LIBERO. Benchmark-specific Agent policies and historical ICL packages are not
+LIBERO. The original ICL construction sources, frozen-package preparation and
+two-session task Agent are described in [the ICL guide](ICL.md).
+Historical ICL packages are not
 included; the generic configuration does not reproduce historical scores or
 claim task success.
 

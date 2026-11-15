@@ -11,6 +11,7 @@ from pathlib import Path
 from roborsi.evaluation.messages import Task
 
 NATIVE_COMMIT = "b1979916ec1549b10a4e65e630bc6504a9af1b00"
+DATA_REVISION = "4f50b44796641a4d526a19d9aeadc8aa51e2f2c2"
 ACTION_SCHEMA = {
     "type": "object",
     "properties": {

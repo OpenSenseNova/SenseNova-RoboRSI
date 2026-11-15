@@ -1,0 +1,19 @@
+{
+  "schema_version": 2,
+  "deployment_profile": "calibrated_deployment_v2",
+  "model": "gpt-6-astra",
+  "codex_version": "codex-cli 0.154.0",
+  "reasoning_effort": "max",
+  "observation_profile": "baseline_4cam",
+  "generalization_profile": "inv_cov",
+  "generalization_config": "configs/scene/generalization.yaml",
+  "generalization_split": "unseen",
+  "seed": 100000000,
+  "inv_cov_seed": 200000000,
+  "warmup_steps": 60,
+  "start_episode": 5,
+  "num_episodes": 1,
+  "decision_timeout_s": null,
+  "upstream_commit": "f96a8b2b4eb475483af66e9e03916b35bc43f1be",
+  "isaaclab_commit": "37ddf626871758333d6ed89cf64ad702aef127d0"
+}
