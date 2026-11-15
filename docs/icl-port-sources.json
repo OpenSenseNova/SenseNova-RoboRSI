@@ -331,10 +331,11 @@
     },
     {
       "path": "roborsi/agents/context_package.py",
-      "content_sha256": "de1eef930ee9b43268e8fe8d8329b4df8e0774919615d384d4cf4bac14ebd16b",
+      "content_sha256": "927f1d6797fc085d91e691308bbe4038a8affc7cecac2fabb16d5b28bd61ff9d",
       "upstream_path": "roborsi/agents/context_package.py",
       "upstream_git_blob": "a8a8d9f2f5bfefaac183c55f4269331265608b79",
-      "status": "original_content"
+      "status": "adapted_from_upstream",
+      "adaptation": "Use the RoboRSI copyright header."
     },
     {
       "path": "roborsi/cli/icl.py",
@@ -410,11 +411,11 @@
     },
     {
       "path": "roborsi/embodied_agent.py",
-      "content_sha256": "bb73a002efe16d9636b73fe5c85b4e30a645d6c309987b2d19638d3437d3c2fc",
+      "content_sha256": "730dd034796da4e95509e13517a573cda55e2de777800dde2d77478a90b22e95",
       "upstream_path": "roborsi/embodied_agent.py",
       "upstream_git_blob": "60a232bd3cfc18e905191305804f0d7cc1ea3075",
       "status": "adapted_from_upstream",
-      "adaptation": "Restore the original external CLI session/cancellation support; retain current invalid_action_retries field and forwarding."
+      "adaptation": "Restore the original external CLI session/cancellation support; retain current invalid_action_retries field and forwarding. Use the RoboRSI copyright header."
     },
     {
       "path": "robots/behavior_1k/agent.yaml",
@@ -531,18 +532,19 @@
     },
     {
       "path": "robots/behavior_1k/catalog.py",
-      "content_sha256": "c4b9bbd8b05f26f0a201ab9aa37a7b318754cd98a667891fe099db790c28419d",
+      "content_sha256": "f2f0add8201561b02278d60ff21125839c0aff772e76af022231add0e5ae3954",
       "upstream_path": "robots/behavior_1k/catalog.py",
       "upstream_git_blob": "6ebd43310d6b7b27df09ab72980aa84cf628685a",
-      "status": "original_content"
+      "status": "adapted_from_upstream",
+      "adaptation": "Use the RoboRSI copyright header."
     },
     {
       "path": "robots/behavior_1k/official.py",
-      "content_sha256": "0d9c62ae4165ba29f8f645443cde312c44483042271e58b396d2801b57456722",
+      "content_sha256": "4eb739d9ec58174687718ef01355bc19a1e754ce9d5ec577c12566167f477e3a",
       "upstream_path": "robots/behavior_1k/official.py",
       "upstream_git_blob": "4186dc79cc5feb93f5e49775485877608c21e0d8",
       "status": "adapted_from_upstream",
-      "adaptation": "Restore only offline FK layout/quaternion helpers; retain current 21D-only evaluation validation."
+      "adaptation": "Restore only offline FK layout/quaternion helpers; retain current 21D-only evaluation validation. Use the RoboRSI copyright header."
     },
     {
       "path": "robots/bench2dex/agent.yaml",
@@ -1040,37 +1042,44 @@
     {
       "path": "robots/vln_shared/exploration.py",
       "upstream_git_blob": "c132b28d224c43540191381cdc8001e32f0e88a0",
-      "original_content": true
+      "original_content": false,
+      "adaptation": "Use the RoboRSI copyright header."
     },
     {
       "path": "robots/vln_shared/campaign.py",
       "upstream_git_blob": "428d13183a6b11a3a68f84fdfdb3869a12c2f389",
-      "original_content": true
+      "original_content": false,
+      "adaptation": "Use the RoboRSI copyright header."
     },
     {
       "path": "robots/vln_shared/storage.py",
       "upstream_git_blob": "68a22acebb02606ca9367dce29cec652d95bb236",
-      "original_content": true
+      "original_content": false,
+      "adaptation": "Use the RoboRSI copyright header."
     },
     {
       "path": "robots/vln_shared/execution.py",
       "upstream_git_blob": "34e2d2c9d2f8e17229de547fd18ade7ad3f183a8",
-      "original_content": true
+      "original_content": false,
+      "adaptation": "Use the RoboRSI copyright header."
     },
     {
       "path": "robots/vln_shared/prepare.py",
       "upstream_git_blob": "7e6561671cada8dcbe6e6f4034a451e327ed851e",
-      "original_content": true
+      "original_content": false,
+      "adaptation": "Use the RoboRSI copyright header."
     },
     {
       "path": "robots/vln_shared/cli.py",
       "upstream_git_blob": "add285dd604d3afb6fae280bd180868b502baba7",
-      "original_content": true
+      "original_content": false,
+      "adaptation": "Use the RoboRSI copyright header."
     },
     {
       "path": "robots/vln_shared/agents/baseline/factory.py",
       "upstream_git_blob": "bdd6368657e77419b7f635ecada0d4c7648a0190",
-      "original_content": true
+      "original_content": false,
+      "adaptation": "Use the RoboRSI copyright header."
     },
     {
       "path": "robots/vln_shared/agents/baseline/prompt.md",

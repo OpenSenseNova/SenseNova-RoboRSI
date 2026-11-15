@@ -1,4 +1,4 @@
-# Copyright 2026 The HEART Authors.
+# Copyright 2026 The RoboRSI Authors.
 # Licensed under the Apache License, Version 2.0 (the "License");
 """PRO camera/state bridge for the image's read-only tools.
 Image functions produce physical actions; ThreeBenchmarkAdapter owns score and step limits.
