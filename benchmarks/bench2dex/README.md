@@ -109,9 +109,11 @@ bench eval --registry-root work/bench2dex/registry \
   --timeout-s 900 --case-timeout-s 86400 --max-concurrent 1
 ```
 
-The preset is a generic interface example, not a reproduction policy.
-Benchmark-specific Agent policies and historical ICL packages are not included,
-and this configuration does not reproduce historical scores. The fixed-action
+The preset is a generic interface example and does not reproduce historical
+scores. The original task ICL Agent, package staging and construction sources
+are available separately: see [frozen ICL](ICL.md) and
+[learning from demonstrations](../../docs/bench2dex-icl.md). These retain their
+original model, CLI and package contracts. The fixed-action
 LIBERO example in [Getting started](../../docs/getting-started.md) applies only
 to LIBERO. Set the model, context and decision budgets for your run.
 

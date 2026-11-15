@@ -46,6 +46,7 @@ dependencies = [
 bench = "roborsi.evaluation.cli:main"
 roborsi-bench = "roborsi.evaluation.cli:main"
 roborsi-trajectory = "roborsi.cli.trajectory:main"
+roborsi-icl = "roborsi.cli.icl:main"
 
 [project.urls]
 Homepage = "https://github.com/OpenSenseNova/SenseNova-RoboRSI"

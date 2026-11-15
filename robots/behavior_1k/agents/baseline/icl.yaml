@@ -1,0 +1,22 @@
+schema_version: 1
+extends: agent.yaml
+code:
+  - factory.py
+  - icl.py
+  - download.py
+  - ../../catalog.py
+  - ../../official.py
+  - ../../contracts.py
+  - ../../../../benchmarks/behavior_1k/official_demonstrations.py
+  - ../../../../benchmarks/behavior_1k/official_materials.py
+agent:
+  planner_timeout_s: 960
+  codex_cli:
+    config_overrides:
+      web_search: live
+resources:
+  icl_prompt: icl_prompt.md
+  icl_tools: tools
+dependencies:
+  - imageio-ffmpeg==0.6.0
+  - pyarrow==25.0.1

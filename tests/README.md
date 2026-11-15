@@ -29,6 +29,7 @@ pytest tests/unit_tests/robots/bench2dex -q
 pytest tests/unit_tests/robots/dexjoco -q
 pytest tests/unit_tests/roborsi/runtime tests/unit_tests/roborsi/planner -q
 pytest tests/unit_tests/robots/behavior_1k -q
+pytest tests/unit_tests/roborsi/components/icl tests/unit_tests/roborsi/cli/test_icl.py -q
 pytest tests/unit_tests/robots/robocasa tests/unit_tests/roborsi/benchmarks/test_robocasa365_registration.py -q
 ```
 
@@ -72,6 +73,11 @@ recipes.
 
 Offline tests cover the 21D action contract, RGB-D conversion, task catalogs,
 native metric handling, isolated worker cleanup and exported build inputs.
+ICL checks cover deterministic package construction, pinned retrieval, writable
+copies and snapshots, read-only context tools, CLI receipts, learned-only export,
+task binding and learning cleanup. BEHAVIOR tests additionally check actual
+training instance selection, offline FK layout, RGB time bounds and video hash
+rejection. The [ICL guide](../docs/icl.md) includes a synthetic offline example.
 Follow the [benchmark guide](../benchmarks/behavior_1k/README.md) to build an
 image and prepare licensed assets. Catalog generation performs a native reset
 for each selected task and records its instruction and step limit. Native
@@ -80,6 +86,11 @@ Record the actual image digest and native score alongside the run artifacts.
 
 ## Bench2Dex
 
+Restored upstream ICL tests cover package mutation, suite receipts, exported
+Agent inputs and the original action-file protocol. The external-session tests
+also exercise a real offline CLI subprocess on Linux, including cancellation
+and process cleanup. See the [source audit](../docs/icl-coverage.md).
+
 The focused unit command above checks this adapter offline. Native execution
 requires the separate runtime and asset preparation described in
 [Bench2Dex](../benchmarks/bench2dex/README.md). Passing unit tests, building a source
@@ -87,6 +98,9 @@ bundle or collecting tests does not establish a successful Docker build, GPU
 run or native task result.
 
 ## DexJoCo
+
+Restored upstream checks cover frozen policy configuration, two-session
+lifecycle and persistent CLI process ownership across request threads.
 
 The focused unit command above checks this adapter offline. Native execution
 requires the separate runtime and asset preparation described in
