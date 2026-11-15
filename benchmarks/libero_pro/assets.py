@@ -1,4 +1,4 @@
-# Copyright 2026 The RoboRSI Authors.
+# Copyright 2026 The SenseNova-RoboRSI Authors.
 # Licensed under the Apache License, Version 2.0 (the "License");
 
 """Seal and stage the LIBERO-PRO evaluation assets for an image build."""

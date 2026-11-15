@@ -1,4 +1,4 @@
-# Copyright 2026 The RoboRSI Authors.
+# Copyright 2026 The SenseNova-RoboRSI Authors.
 # Licensed under the Apache License, Version 2.0 (the "License");
 
 """Run one real-model three-LIBERO case in a combined deployment image."""

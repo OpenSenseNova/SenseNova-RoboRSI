@@ -1,4 +1,4 @@
-# Copyright 2026 The RoboRSI Authors.
+# Copyright 2026 The SenseNova-RoboRSI Authors.
 # Licensed under the Apache License, Version 2.0 (the "License");
 
 """Agent factory that binds sealed ICL packages and optional VLA/SAM3 MCP tools."""
