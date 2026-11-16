@@ -22,6 +22,8 @@
 
 ## News
 
+- **2026-11-16** — **SenseNova-RoboRSI** 现已登上 [**RoboDojo 官方 Agent 榜单**](https://robodojo-benchmark.com/leaderboard#agent)，在 **Avg.（w/o Open）** 口径下取得 **57.10 的平均得分**和 **49.17% 的成功率**。评测口径与官方标注见 [Harness 结果](#harness-results)。
+
 - **2026-11-15** — 新增 **ICL 材料包构建与校验工具**，并补充 **BEHAVIOR-1K**、**Bench2Dex** 和 **DexJoCo** 的演示学习及冻结包评测指南。[ICL 指南](docs/icl.zh-CN.md) · [源码覆盖说明](docs/icl-coverage.zh-CN.md)。
 
 - **2026-11-03** — 已提供 [**LHPR-VLN**](benchmarks/lhpr_vln/README.zh-CN.md) 和 [**VLN-CE（R2R / RxR）**](benchmarks/vlnce/README.zh-CN.md) 的首批代码与使用指南。
@@ -30,10 +32,10 @@
 
 - **2026-10-27** — 我们的 LIBERO-PRO 结果（**98.25% 成功率**）现已正式位列 [Papers With Code 榜单](https://paperswithcode.co/benchmark/libero-pro) **第 1 名**。
 
-- **2026-10-26** — SenseNova-RoboRSI 现已位列 [RoboLab 官方榜单](https://research.nvidia.com/labs/srl/projects/robolab/leaderboard.html) **第 1 名**。
-
 <details>
 <summary>历史动态</summary>
+
+- **2026-10-26** — SenseNova-RoboRSI 现已位列 [RoboLab 官方榜单](https://research.nvidia.com/labs/srl/projects/robolab/leaderboard.html) **第 1 名**。
 
 - **2026-10-22** — **SenseNova-RoboRSI-27B-Preview** 已在包括真机与仿真在内的不同环境中运行！[🤗 模型权重](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview)与[使用指南](docs/sensenova-roborsi-27b-preview.zh-CN.md)现已发布，技术报告即将发布。
 
@@ -47,7 +49,7 @@
 
 - **2026-10-16** — SenseNova-RoboRSI 作为实验框架支持了实证研究 [**Has GPT-6 Achieved Embodied Intelligence?**](https://www.sensenova.ai/has-gpt-6-astra-achieved-embodied-intelligence)。
 
-- **2026-10-09** — SenseNova-RoboRSI 在 RoboDojo 上取得 **60.08 的平均得分**和 **54.17% 的成功率**，平均得分较 GPT-6 Astra 基线（**28.97**）提升 **+31.11 分**。结果正在提交至 RoboDojo 官方榜单。更多评测对比见 [Harness 结果](#harness-results)。
+- **2026-10-09** — SenseNova-RoboRSI 在 RoboDojo 原始评测中取得 **60.08 的平均得分**和 **54.17% 的成功率**，平均得分较 GPT-6 Astra 基线（**28.97**）提升 **+31.11 分**。原始对比及后续公布的官方 Agent 榜单结果见 [Harness 结果](#harness-results)。
 
 </details>
 
@@ -153,10 +155,13 @@ ICL 经验包统一托管在
 
 ### [RoboDojo](https://robodojo-benchmark.com/)
 
-SenseNova-RoboRSI 在 RoboDojo-Sim 上取得 **60.08 的平均得分**和 **54.17% 的成功率**。
-相比 **GPT-6-Astra** 基线，平均得分提升 **31.11 分**，成功率提升 **31.69 个百分点**。
+**官方 Agent 榜单：** [SenseNova-RoboRSI](https://robodojo-benchmark.com/leaderboard#agent) 在 **Avg.（w/o Open）** 口径下取得 **57.10 的平均得分**和 **49.17% 的成功率**。该指标是 Generalization、Precision、Long-Horizon、Memory 四个维度的等权平均（访问于 **2026-11-16**）。
 
-**榜单提交：** 我们的结果正在提交至 RoboDojo 官方榜单。官方结果可能略有差异；待官方结果公布后，我们将更新此处的结果。
+官方条目带有 `*` 标注，表示与最新 Agent Track Rules 存在规则差异。榜单同时说明，带星号条目的评测完成于这些规则发布之前。
+
+**原始评测：** SenseNova-RoboRSI 在 RoboDojo-Sim 上取得 **60.08 的平均得分**和 **54.17% 的成功率**。
+相比 **GPT-6-Astra** 基线，平均得分提升 **31.11 分**，成功率提升 **31.69 个百分点**。
+下表保留这组原始评测及当时的参考结果。
 
 | 方法 | 平均得分 ↑ | 成功率 ↑ |
 | --- | ---: | ---: |
@@ -168,7 +173,7 @@ SenseNova-RoboRSI 在 RoboDojo-Sim 上取得 **60.08 的平均得分**和 **54.1
 | Simate-beta | 33.95 | 27.96% |
 | GPT-6-Astra（基线） | 28.97 | 22.48% |
 
-参考结果：[RoboDojo 仿真榜单](https://robodojo-benchmark.com/leaderboard)
+原始评测的参考结果：[RoboDojo 仿真榜单](https://robodojo-benchmark.com/leaderboard)
 （更新于 **2026-10-14**，访问于 **2026-10-15**）。
 
 ### [LIBERO-PRO](https://zxy-mllab.github.io/LIBERO-PRO-Webpage/)

@@ -22,6 +22,8 @@
 
 ## News
 
+- **2026-11-16** — **SenseNova-RoboRSI** is now listed on the [**official RoboDojo Agent leaderboard**](https://robodojo-benchmark.com/leaderboard#agent), with an **average score of 57.10** and a **success rate of 49.17%** under **Avg. (w/o Open)**. See [Harness Results](#harness-results) for the evaluation setting and official annotation.
+
 - **2026-11-15** — Added **ICL package construction and verification tools**, plus demonstration-learning and frozen-package evaluation guides for **BEHAVIOR-1K**, **Bench2Dex** and **DexJoCo**. [ICL guide](docs/icl.md) · [Source coverage](docs/icl-coverage.md).
 
 - **2026-11-03** — Initial code and usage guides for [**LHPR-VLN**](benchmarks/lhpr_vln/README.md) and [**VLN-CE (R2R / RxR)**](benchmarks/vlnce/README.md) are available.
@@ -30,10 +32,10 @@
 
 - **2026-10-27** — Our LIBERO-PRO result (**98.25% success rate**) is now officially ranked **No. 1** on the [Papers With Code leaderboard](https://paperswithcode.co/benchmark/libero-pro).
 
-- **2026-10-26** — SenseNova-RoboRSI is now ranked **No. 1** on the [RoboLab leaderboard](https://research.nvidia.com/labs/srl/projects/robolab/leaderboard.html).
-
 <details>
 <summary>Earlier updates</summary>
+
+- **2026-10-26** — SenseNova-RoboRSI is now ranked **No. 1** on the [RoboLab leaderboard](https://research.nvidia.com/labs/srl/projects/robolab/leaderboard.html).
 
 - **2026-10-22** — **SenseNova-RoboRSI-27B-Preview** now runs across different environments, including on real robots and in simulation! [🤗 Model weights](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview) and [usage guides](docs/sensenova-roborsi-27b-preview.md) are now available. The technical report is coming soon.
 
@@ -47,7 +49,7 @@
 
 - **2026-10-16** — SenseNova-RoboRSI has been used in the empirical report [**Has GPT-6 Achieved Embodied Intelligence?**](https://www.sensenova.ai/has-gpt-6-astra-achieved-embodied-intelligence).
 
-- **2026-10-09** — SenseNova-RoboRSI achieves an **average score of 60.08** and a **success rate of 54.17%** on RoboDojo, a gain of **+31.11 points** over the GPT-6 Astra baseline (**28.97**). Results are being submitted to the official RoboDojo leaderboard. See [Harness Results](#harness-results) for benchmark comparisons.
+- **2026-10-09** — SenseNova-RoboRSI achieves an **average score of 60.08** and a **success rate of 54.17%** on RoboDojo, a gain of **+31.11 points** over the GPT-6 Astra baseline (**28.97**) in our original evaluation. See [Harness Results](#harness-results) for the original comparison and the subsequently published official Agent-track results.
 
 </details>
 
@@ -168,11 +170,14 @@ Each table shows SenseNova-RoboRSI alongside selected reference results. Higher 
 
 ### [RoboDojo](https://robodojo-benchmark.com/)
 
-On RoboDojo-Sim, SenseNova-RoboRSI achieves an **average score of 60.08** and a
+**Official Agent leaderboard:** [SenseNova-RoboRSI](https://robodojo-benchmark.com/leaderboard#agent) is listed with an **average score of 57.10** and a **success rate of 49.17%** under **Avg. (w/o Open)**, the equal-weight mean of Generalization, Precision, Long-Horizon and Memory (accessed **2026-11-16**).
+
+The official entry carries a `*` annotation for deviations from the latest Agent Track Rules. The organizers note that the starred entries were evaluated before those rules were released.
+
+**Original evaluation:** On RoboDojo-Sim, SenseNova-RoboRSI achieves an **average score of 60.08** and a
 **success rate of 54.17%**. Compared with the **GPT-6-Astra** baseline, this is a
 gain of **31.11 score points** and **31.69 percentage points** in success rate.
-
-**Leaderboard submission:** Our results are being submitted to the official RoboDojo leaderboard. The official results may vary slightly; we will update the results here once they are available.
+The table below preserves that original evaluation and its reference results.
 
 | Method | Average score ↑ | Success rate ↑ |
 | --- | ---: | ---: |
@@ -184,7 +189,7 @@ gain of **31.11 score points** and **31.69 percentage points** in success rate.
 | Simate-beta | 33.95 | 27.96% |
 | GPT-6-Astra (baseline) | 28.97 | 22.48% |
 
-Reference results: [RoboDojo simulation leaderboard](https://robodojo-benchmark.com/leaderboard)
+Reference results for the original evaluation: [RoboDojo simulation leaderboard](https://robodojo-benchmark.com/leaderboard)
 (updated **2026-10-14**, accessed **2026-10-15**).
 
 ### [LIBERO-PRO](https://zxy-mllab.github.io/LIBERO-PRO-Webpage/)
