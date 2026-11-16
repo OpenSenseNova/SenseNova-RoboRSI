@@ -15,12 +15,9 @@
 
 <p align="center">
   <strong>English</strong> · <a href="README.zh-CN.md">简体中文</a> ·
-  <a href="#quick-start">Quick Start</a> · <a href="docs/README.md">Docs</a> ·
+  <a href="#quick-start">Quick Start</a> ·
   <a href="https://www.sensenova.ai/has-gpt-6-astra-achieved-embodied-intelligence">Report</a> ·
-  <a href="#benchzoo">BenchZoo</a> ·
-  <a href="#harness-results">Harness Results</a> ·
-  <a href="#sensenova-roborsi-27b-preview">RoboRSI-27B-Preview</a> ·
-  <a href="#release-plan--roadmap">Release plan</a>
+  <a href="#sensenova-roborsi-27b-preview">RoboRSI-27B-Preview</a>
 </p>
 
 ## News
