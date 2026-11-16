@@ -1,4 +1,4 @@
-# Copyright 2026 The HEART Authors.
+# Copyright 2026 The SenseNova-RoboRSI Authors.
 # Licensed under the Apache License, Version 2.0 (the "License");
 """Opt-in 27B Agent policy; the original LIBERO Agent remains unchanged."""
 

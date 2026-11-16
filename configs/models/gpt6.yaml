@@ -1,0 +1,10 @@
+# Dedicated connection for evaluate_gpt6.py; deployed-model settings stay separate.
+schema_version: 1
+provider: openai
+base_url: https://api.openai.com/v1
+base_url_env: GPT6_BASE_URL
+model_name: gpt-6-astra
+model_name_env: GPT6_MODEL_NAME
+api_key_env: OPENAI_API_KEY
+# Preserve each Agent's existing Chat Completions / Responses choice.
+openai_format: null

@@ -15,15 +15,14 @@
 
 <p align="center">
   <a href="README.md">English</a> · <strong>简体中文</strong> ·
-  <a href="#quick-start">快速开始</a> · <a href="docs/README.md">使用文档</a> ·
+  <a href="#quick-start">快速开始</a> ·
   <a href="https://www.sensenova.ai/has-gpt-6-astra-achieved-embodied-intelligence">研究报告</a> ·
-  <a href="#benchzoo">BenchZoo</a> ·
-  <a href="#harness-results">Harness 结果</a> ·
-  <a href="#sensenova-roborsi-27b-preview">RoboRSI-27B-Preview</a> ·
-  <a href="#release-plan--roadmap">发布计划</a>
+  <a href="#sensenova-roborsi-27b-preview">RoboRSI-27B-Preview</a>
 </p>
 
 ## News
+
+- **2026-11-16** — **SenseNova-RoboRSI** 现已登上 [**RoboDojo 官方 Agent 榜单**](https://robodojo-benchmark.com/leaderboard#agent)，在 **Avg.（w/o Open）** 口径下取得 **57.10 的平均得分**和 **49.17% 的成功率**。
 
 - **2026-11-15** — 新增 **ICL 材料包构建与校验工具**，并补充 **BEHAVIOR-1K**、**Bench2Dex** 和 **DexJoCo** 的演示学习及冻结包评测指南。[ICL 指南](docs/icl.zh-CN.md) · [源码覆盖说明](docs/icl-coverage.zh-CN.md)。
 
@@ -33,10 +32,10 @@
 
 - **2026-10-27** — 我们的 LIBERO-PRO 结果（**98.25% 成功率**）现已正式位列 [Papers With Code 榜单](https://paperswithcode.co/benchmark/libero-pro) **第 1 名**。
 
-- **2026-10-26** — SenseNova-RoboRSI 现已位列 [RoboLab 官方榜单](https://research.nvidia.com/labs/srl/projects/robolab/leaderboard.html) **第 1 名**。
-
 <details>
 <summary>历史动态</summary>
+
+- **2026-10-26** — SenseNova-RoboRSI 现已位列 [RoboLab 官方榜单](https://research.nvidia.com/labs/srl/projects/robolab/leaderboard.html) **第 1 名**。
 
 - **2026-10-22** — **SenseNova-RoboRSI-27B-Preview** 已在包括真机与仿真在内的不同环境中运行！[🤗 模型权重](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview)与[使用指南](docs/sensenova-roborsi-27b-preview.zh-CN.md)现已发布，技术报告即将发布。
 
@@ -50,7 +49,7 @@
 
 - **2026-10-16** — SenseNova-RoboRSI 作为实验框架支持了实证研究 [**Has GPT-6 Achieved Embodied Intelligence?**](https://www.sensenova.ai/has-gpt-6-astra-achieved-embodied-intelligence)。
 
-- **2026-10-09** — SenseNova-RoboRSI 在 RoboDojo 上取得 **60.08 的平均得分**和 **54.17% 的成功率**，平均得分较 GPT-6 Astra 基线（**28.97**）提升 **+31.11 分**。结果正在提交至 RoboDojo 官方榜单。更多评测对比见 [Harness 结果](#harness-results)。
+- **2026-10-09** — SenseNova-RoboRSI 在 RoboDojo 原始评测中取得 **60.08 的平均得分**和 **54.17% 的成功率**，平均得分较 GPT-6 Astra 基线（**28.97**）提升 **+31.11 分**。原始对比及后续公布的官方 Agent 榜单结果见 [Harness 结果](#harness-results)。
 
 </details>
 
@@ -85,107 +84,44 @@
 
 ## Quick Start
 
-Agent 和评测器使用 Python 3.10–3.12。在仓库根目录执行：
+使用 Linux/WSL、Python 3.10–3.12 和 Docker，按 benchmark 要求准备 GPU 支持。
+在仓库根目录安装：
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install -e '.[runtime,test]'
-bench --help
+python -m pip install -e '.[runtime]'
 ```
 
-Windows 使用 `.venv\Scripts\Activate.ps1` 激活环境。
+安装与环境要求见[快速开始指南](docs/getting-started.zh-CN.md)。
 
-按照[安装与首次评测指南](docs/getting-started.zh-CN.md)准备 benchmark，运行固定动作
-或模型 Agent。原生 benchmark 镜像面向 Linux；连接已有 HTTP benchmark 服务时，
-无需在本机安装模拟器。
+### GPT-6 Astra：一键评测全部已发布 benchmark
 
-- **Benchmark 配置：** [LIBERO](benchmarks/libero/README.md)、
-  [LIBERO-PRO](benchmarks/libero_pro/README.md)、
-  [LIBERO-Long++ / LIBERO-Ultra-Long](benchmarks/libero_lilo/README.md)、
-  [Bench2Dex](benchmarks/bench2dex/README.zh-CN.md)、
-  [DexJoCo](benchmarks/dexjoco/README.zh-CN.md)、
-  [BEHAVIOR-1K](benchmarks/behavior_1k/README.zh-CN.md)、
-  [RoboCasa365](benchmarks/robocasa365/README.zh-CN.md)、
-  [RoboLab](benchmarks/robolab/README.zh-CN.md)、
-  [LHPR-VLN](benchmarks/lhpr_vln/README.zh-CN.md) 和
-  [VLN-CE（R2R / RxR）](benchmarks/vlnce/README.zh-CN.md)。
-- **Agent 配置：** [模型、提示词、上下文与预算](docs/agents.zh-CN.md)。
-- **评测：** [批量执行、结果查看与中断恢复](docs/evaluation.zh-CN.md)。
+先按[评测指南](docs/gpt6-evaluation.zh-CN.md)一次性准备环境和 Agent，
+在[统一配置](configs/evaluations/gpt6.yaml)中填写路径及服务地址，然后启动：
 
-SenseNova-RoboRSI-27B-Preview 的部署方法见
-[模型部署说明](docs/sensenova-roborsi-27b-preview.zh-CN.md#1-部署模型)。
+```bash
+export OPENAI_API_KEY='YOUR_API_KEY'
+python scripts/evaluation/evaluate_gpt6.py
+```
 
-### 一键评测已部署模型
+脚本顺序运行各 benchmark 现有 Agent，分别保存原生评分。
+覆盖范围、冻结 ICL、离线计划及结果查看方式见评测指南。
 
-完成框架安装后，即可接入支持图像输入与工具调用的已部署模型 API。
-请使用已启动 Docker 的 Linux/WSL；增强 LIBERO 和 RoboCasa365 还需要 Docker GPU 支持。
-先运行一个 RoboCasa 任务，检查下载、环境准备与评测的完整流程：
+### SenseNova-RoboRSI-27B-Preview：沿用现有一键入口
+
+先[部署模型](docs/sensenova-roborsi-27b-preview.zh-CN.md#1-部署模型)，
+继续使用当前的已部署模型评测脚本：
 
 ```bash
 export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
-export OPENAI_API_KEY='YOUR_API_KEY'
-export MODEL_NAME='YOUR_SERVED_MODEL'
-python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
-  --task robocasa365:OpenDrawer --seed 1 --run-id robocasa-smoke-001
+export OPENAI_API_KEY='EMPTY'
+export MODEL_NAME='sensenova-roborsi-27b-preview'
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365
 ```
 
-必须显式传入 `--benchmark`，可选 `libero`、`libero_pro`、`libero_long_plus_plus`、
-`libero_ultra_long`、`robocasa365`，需要多项时重复传入。脚本自动下载/构建对应环境，
-并准备可用的 ICL 包。增强 LIBERO 使用已发布的 `migration_subset` catalog。
-
-配置统一放在 [`configs/`](configs/README.md)：每个 `configs/benchmarks/<name>.yaml`
-选择环境、模型和 Agent。主模型连接和 `vla` 模型统一修改 [`configs/models/default.yaml`](configs/models/default.yaml)，
-Agent 策略修改 `configs/agents/` 中的预设。上面的环境变量仍会覆盖模型 YAML，密钥保留在环境变量中。
-
-可选 `--benchmark-config`、`--agent-config`、`--model-config` 直接指定配置地址；
-同时选择多个 benchmark 时使用 `NAME=PATH`。benchmark 配置支持任务、种子列表及
-[用户 Python 筛选器](configs/benchmarks/examples/select_first.py)。LIBERO Agent 设置
-`parameters.enable_vla: true` 后会[自动下载、部署 π0.5 VLA](docs/libero-vla.zh-CN.md)，
-仍可保持只传 `--benchmark NAME` 的入口。
-benchmark YAML 的 `endpoint: http://host:18800` 可连接已有镜像的 HTTP 服务，
-默认 `endpoint: null` 自动准备环境。HTTP 模式仍会准备 Agent 所需的 ICL、tokenizer 和 VLA。
-benchmark 的 `token_env` 配置 HTTP 鉴权变量名；模型的 `vla.endpoint` 可连接已有 VLA 服务。
-
-正式运行会先检查主模型图像/工具接口和已有 HTTP 服务，再下载资源。
-任务、seed、完成数量和耗时实时显示，运行日志与脱敏配置会保存到结果目录。
-可先离线查看计划，或在中断后用新的运行 ID 续跑：
-
-```bash
-python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --dry-run
-python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
-  --run-id robocasa-retry --resume-from robocasa-001
-```
-
-结果概览见 `<results-root>/<run-id>/summary.json`；完整用法见[评测指南](docs/model-evaluation.zh-CN.md)。
-
-单任务检查通过后，去掉任务和种子过滤，运行 RoboCasa 全部 340 个 cell：
-
-```bash
-ROBORSI_ROBOCASA_CELLS=all python scripts/evaluation/evaluate_model.py \
-  --benchmark robocasa365 --run-id robocasa-001
-```
-
-通过环境变量选择标准 LIBERO suite，或 RoboCasa 的 50-cell seed-1 catalog：
-
-```bash
-ROBORSI_LIBERO_SUITE=libero_90 python scripts/evaluation/evaluate_model.py --benchmark libero
-ROBORSI_ROBOCASA_CELLS=seed1 python scripts/evaluation/evaluate_model.py --benchmark robocasa365
-```
-
-默认 catalog 在 benchmark YAML 中配置：LIBERO 为 `libero_spatial`，RoboCasa 为 `all`；
-`ROBORSI_LIBERO_SUITE`、`ROBORSI_ROBOCASA_CELLS` 可覆盖这些默认值。
-结果保存在 `work/model_eval/results/`，每次运行请使用新的 `--run-id`。
-只下载/构建环境与 ICL、不执行评测：
-
-```bash
-python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --prepare-only
-```
-
-GPU/Docker 要求、镜像访问权限、任务范围、
-已有服务接入与结果查看见[模型一键评测指南](docs/model-evaluation.zh-CN.md)。
-需要先部署时，将已验证的命令填入预留的[模型部署入口](scripts/deploy/README.md)，
-启动 API 服务后再评测。
+LIBERO-Pro 直接控制、VLA/SAM3 的现有命令见[模型指南](docs/sensenova-roborsi-27b-preview.zh-CN.md)。
+其他模型与高级参数见[已部署模型评测指南](docs/model-evaluation.zh-CN.md)。
 
 ## BenchZoo
 
@@ -219,10 +155,13 @@ ICL 经验包统一托管在
 
 ### [RoboDojo](https://robodojo-benchmark.com/)
 
-SenseNova-RoboRSI 在 RoboDojo-Sim 上取得 **60.08 的平均得分**和 **54.17% 的成功率**。
-相比 **GPT-6-Astra** 基线，平均得分提升 **31.11 分**，成功率提升 **31.69 个百分点**。
+**官方 Agent 榜单：** [SenseNova-RoboRSI](https://robodojo-benchmark.com/leaderboard#agent) 在 **Avg.（w/o Open）** 口径下取得 **57.10 的平均得分**和 **49.17% 的成功率**。该指标是 Generalization、Precision、Long-Horizon、Memory 四个维度的等权平均（访问于 **2026-11-16**）。
 
-**榜单提交：** 我们的结果正在提交至 RoboDojo 官方榜单。官方结果可能略有差异；待官方结果公布后，我们将更新此处的结果。
+官方条目带有 `*` 标注，表示与最新 Agent Track Rules 存在规则差异。榜单同时说明，带星号条目的评测完成于这些规则发布之前。
+
+**原始评测：** SenseNova-RoboRSI 在 RoboDojo-Sim 上取得 **60.08 的平均得分**和 **54.17% 的成功率**。
+相比 **GPT-6-Astra** 基线，平均得分提升 **31.11 分**，成功率提升 **31.69 个百分点**。
+下表保留这组原始评测及当时的参考结果。
 
 | 方法 | 平均得分 ↑ | 成功率 ↑ |
 | --- | ---: | ---: |
@@ -234,7 +173,7 @@ SenseNova-RoboRSI 在 RoboDojo-Sim 上取得 **60.08 的平均得分**和 **54.1
 | Simate-beta | 33.95 | 27.96% |
 | GPT-6-Astra（基线） | 28.97 | 22.48% |
 
-参考结果：[RoboDojo 仿真榜单](https://robodojo-benchmark.com/leaderboard)
+原始评测的参考结果：[RoboDojo 仿真榜单](https://robodojo-benchmark.com/leaderboard)
 （更新于 **2026-10-14**，访问于 **2026-10-15**）。
 
 ### [LIBERO-PRO](https://zxy-mllab.github.io/LIBERO-PRO-Webpage/)

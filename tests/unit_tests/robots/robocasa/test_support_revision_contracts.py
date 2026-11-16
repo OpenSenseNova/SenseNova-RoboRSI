@@ -1,4 +1,4 @@
-# Copyright 2026 The HEART Authors.
+# Copyright 2026 The SenseNova-RoboRSI Authors.
 # SPDX-License-Identifier: Apache-2.0
 
 """The RoboCasa setup snapshot is selected without an extra user option."""

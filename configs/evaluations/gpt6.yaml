@@ -1,0 +1,69 @@
+# Paths are relative to this YAML. Configure prepared environments once.
+# python: null uses the interpreter running evaluate_gpt6.py; use an isolated
+# Runner/Agent Python where the benchmark guide requires its own dependencies.
+# codex: null uses the benchmark's existing environment/PATH resolution. Set
+# separate executable paths for the pinned versions; do not replace one global CLI.
+schema_version: 1
+model_config: ../models/gpt6.yaml
+work_dir: ../../work/gpt6
+benchmarks:
+  libero:
+    agent_config: ../agents/libero/standard.yaml
+    case_timeout_s: 4500
+  libero_pro:
+    agent_config: ../agents/libero/pro.yaml
+    case_timeout_s: 43200
+  libero_long_plus_plus:
+    agent_config: ../agents/libero/long_plus_plus.yaml
+    case_timeout_s: 43200
+  libero_ultra_long:
+    agent_config: ../agents/libero/ultra_long.yaml
+    case_timeout_s: 43200
+  robocasa365:
+    agent_config: ../agents/robocasa365/icl.yaml
+    case_timeout_s: 4500
+  robolab:
+    endpoint: http://127.0.0.1:18806
+    agent_config: ../../robots/robolab/agent.yaml
+    codex: null
+    python: null
+    timeout_s: 900
+    case_timeout_s: 1200
+  bench2dex:
+    endpoint: http://127.0.0.1:18807
+    icl_source: ../../work/roborsi-packages/bench2dex/v1.0.0
+    plan: ../../benchmarks/bench2dex/plan-78.json
+    codex: null
+    python: null
+  dexjoco:
+    registry_root: ../../work/gpt6/registries/dexjoco
+    agent_config: ../../robots/dexjoco/agent.yaml
+    codex: null
+    python: null
+    case_timeout_s: 86400
+  behavior_1k:
+    registry_root: ../../work/gpt6/registries/behavior_1k
+    agent_config: ../../work/gpt6/behavior-agent/robots/behavior_1k/agent.yaml
+    tasks: [sorting_vegetables]
+    seeds: [0]
+    codex: null
+    python: null
+    case_timeout_s: 7200
+  lhpr_vln:
+    registry_root: ../../work/gpt6/registries/lhpr_vln
+    agent_config: ../../robots/lhpr_vln/agent.yaml
+    codex: null
+    python: null
+    seeds: [42]
+  vlnce_r2r:
+    registry_root: ../../work/gpt6/registries/vlnce_r2r
+    agent_config: ../../robots/vlnce/agent.yaml
+    codex: null
+    python: null
+    seeds: [0]
+  vlnce_rxr:
+    registry_root: ../../work/gpt6/registries/vlnce_rxr
+    agent_config: ../../robots/vlnce/agent.yaml
+    codex: null
+    python: null
+    seeds: [0]

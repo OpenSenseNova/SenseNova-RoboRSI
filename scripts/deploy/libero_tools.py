@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2026 The HEART Authors.
+# Copyright 2026 The SenseNova-RoboRSI Authors.
 # Licensed under the Apache License, Version 2.0 (the "License");
 """Prepare public Pi0.5/SAM3 weights and own their service lifecycle."""
 

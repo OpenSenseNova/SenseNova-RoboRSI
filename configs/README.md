@@ -124,6 +124,15 @@ remains a separate step in [`scripts/deploy/`](../scripts/deploy/README.md).
 See [model evaluation](../docs/model-evaluation.md) /
 [模型一键评测](../docs/model-evaluation.zh-CN.md) for commands and task coverage.
 
+## GPT-6 Astra
+
+[`evaluations/gpt6.yaml`](evaluations/gpt6.yaml) selects all released benchmark
+cohorts and their existing Agents for `scripts/evaluation/evaluate_gpt6.py`.
+Configure prepared registries/services, Agent interpreters and each pinned Codex
+executable here. [`models/gpt6.yaml`](models/gpt6.yaml) separates the GPT-6 API
+connection from deployed-model settings. See the [suite guide](../docs/gpt6-evaluation.md)
+/ [全 benchmark 指南](../docs/gpt6-evaluation.zh-CN.md) for prerequisites and coverage.
+
 ## SenseNova-RoboRSI-27B
 
 | Configuration / 配置 | File / 文件 |

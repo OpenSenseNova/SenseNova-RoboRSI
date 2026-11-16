@@ -9,6 +9,7 @@ Benchmark task definitions and scoring belong to each native runtime.
 | Guide | English | 简体中文 |
 | --- | --- | --- |
 | Installation and first evaluation | [Getting started](getting-started.md) | [快速开始](getting-started.zh-CN.md) |
+| GPT-6 Astra across all released benchmarks | [GPT-6 evaluation](gpt6-evaluation.md) | [GPT-6 全 benchmark 评测](gpt6-evaluation.zh-CN.md) |
 | One-command evaluation of a deployed model | [Model evaluation](model-evaluation.md) | [模型一键评测](model-evaluation.zh-CN.md) |
 | LIBERO VLA download and deployment | [OpenPI VLA](libero-vla.md) | [VLA 自动部署](libero-vla.zh-CN.md) |
 | Model, prompt, context and budgets | [Agents](agents.md) | [Agent 配置](agents.zh-CN.md) |
