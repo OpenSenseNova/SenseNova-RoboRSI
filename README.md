@@ -22,7 +22,7 @@
 
 ## News
 
-- **2026-11-16** — **SenseNova-RoboRSI** is now listed on the [**official RoboDojo Agent leaderboard**](https://robodojo-benchmark.com/leaderboard#agent), with an **average score of 57.10** and a **success rate of 49.17%** under **Avg. (w/o Open)**. See [Harness Results](#harness-results) for the evaluation setting and official annotation.
+- **2026-11-16** — **SenseNova-RoboRSI** is now listed on the [**official RoboDojo Agent leaderboard**](https://robodojo-benchmark.com/leaderboard#agent), with an **average score of 57.10** and a **success rate of 49.17%** under **Avg. (w/o Open)**.
 
 - **2026-11-15** — Added **ICL package construction and verification tools**, plus demonstration-learning and frozen-package evaluation guides for **BEHAVIOR-1K**, **Bench2Dex** and **DexJoCo**. [ICL guide](docs/icl.md) · [Source coverage](docs/icl-coverage.md).
 
