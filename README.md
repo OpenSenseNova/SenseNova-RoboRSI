@@ -95,116 +95,46 @@ and Harness improvement through shared experience and joint retesting.
 
 ## Quick Start
 
-Use Python 3.10–3.12 for the Agent and evaluator. From the repository root:
+Use Linux/WSL, Python 3.10–3.12 and Docker; prepare GPU support where required.
+From the repository root:
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install -e '.[runtime,test]'
-bench --help
+python -m pip install -e '.[runtime]'
 ```
 
-On Windows, activate with `.venv\Scripts\Activate.ps1`.
+Installation and environment prerequisites: [getting started](docs/getting-started.md).
 
-Follow the [installation and first evaluation guide](docs/getting-started.md)
-to prepare a benchmark and run a fixed-action or model Agent. Native benchmark
-images target Linux; connecting to an existing HTTP benchmark requires no local
-simulator installation.
+### GPT-6 Astra: evaluate all released benchmarks
 
-- **Benchmark setup:** [LIBERO](benchmarks/libero/README.md),
-  [LIBERO-PRO](benchmarks/libero_pro/README.md),
-  [LIBERO-Long++ / LIBERO-Ultra-Long](benchmarks/libero_lilo/README.md),
-  [Bench2Dex](benchmarks/bench2dex/README.md),
-  [DexJoCo](benchmarks/dexjoco/README.md),
-  [BEHAVIOR-1K](benchmarks/behavior_1k/README.md),
-  [RoboCasa365](benchmarks/robocasa365/README.md),
-  [RoboLab](benchmarks/robolab/README.md),
-  [LHPR-VLN](benchmarks/lhpr_vln/README.md), and
-  [VLN-CE (R2R / RxR)](benchmarks/vlnce/README.md).
-- **Agent configuration:** [Models, prompts, context and budgets](docs/agents.md).
-- **Evaluation:** [Batch execution, results and resume](docs/evaluation.md).
+Prepare the environments and Agents once using the [suite guide](docs/gpt6-evaluation.md),
+and set their paths/services in [the suite configuration](configs/evaluations/gpt6.yaml).
+Then start all released benchmark cohorts with:
 
-To deploy SenseNova-RoboRSI-27B-Preview, follow the
-[model deployment instructions](docs/sensenova-roborsi-27b-preview.md#1-deploy-the-model).
+```bash
+export OPENAI_API_KEY='YOUR_API_KEY'
+python scripts/evaluation/evaluate_gpt6.py
+```
 
-### Evaluate a deployed model with one command
+The script runs each benchmark's existing Agent and reports its native scores
+separately. See the guide for coverage, frozen ICL, offline plans and results.
 
-After installing the framework, connect a deployed model API that supports images
-and tool calling. Use Linux/WSL with Docker ready; enhanced LIBERO and RoboCasa365
-also require NVIDIA GPU support in Docker. Start with one RoboCasa task to check
-the complete download, setup and evaluation workflow:
+### SenseNova-RoboRSI-27B-Preview: use the existing evaluation entry
+
+[Deploy the model](docs/sensenova-roborsi-27b-preview.md#1-deploy-the-model), then
+use the existing deployed-model evaluator:
 
 ```bash
 export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
-export OPENAI_API_KEY='YOUR_API_KEY'
-export MODEL_NAME='YOUR_SERVED_MODEL'
-python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
-  --task robocasa365:OpenDrawer --seed 1 --run-id robocasa-smoke-001
+export OPENAI_API_KEY='EMPTY'
+export MODEL_NAME='sensenova-roborsi-27b-preview'
+python scripts/evaluation/evaluate_model.py --benchmark robocasa365
 ```
 
-`--benchmark` is required: choose `libero`, `libero_pro`, `libero_long_plus_plus`,
-`libero_ultra_long` or `robocasa365`; repeat it to select several. The script
-downloads/builds the selected environment and prepares available ICL automatically.
-Enhanced LIBERO uses the released `migration_subset` catalogs.
-
-Configuration is centralized under [`configs/`](configs/README.md): each
-`configs/benchmarks/<name>.yaml` selects its environment, model and Agent.
-Edit [`configs/models/default.yaml`](configs/models/default.yaml) for the shared
-model connection and optional `vla` model settings, and `configs/agents/` for Agent policies. The environment
-variables above still override the model YAML; API keys stay in the environment.
-
-Optional `--benchmark-config`, `--agent-config` and `--model-config` accept paths
-(or `NAME=PATH` when selecting several benchmarks). Benchmark configs support
-task/seed lists and [user Python selectors](configs/benchmarks/examples/select_first.py).
-LIBERO Agents can opt into [automatic pi05 VLA download and deployment](docs/libero-vla.md)
-with `parameters.enable_vla: true`; the simple `--benchmark NAME` entry remains.
-Set `endpoint: http://host:18800` in a benchmark YAML to connect an existing
-image's HTTP service; `endpoint: null` keeps automatic environment setup.
-HTTP still prepares the selected Agent's ICL/tokenizer/VLA. Set benchmark
-`token_env` for HTTP authentication and model `vla.endpoint` for an existing VLA.
-
-Execution checks the main image/tool API and existing services before downloading.
-Task/seed progress streams live; logs and a redacted configuration snapshot are
-saved under the invocation's result directory. Plan offline or resume with a new ID:
-
-```bash
-python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --dry-run
-python scripts/evaluation/evaluate_model.py --benchmark robocasa365 \
-  --run-id robocasa-retry --resume-from robocasa-001
-```
-
-The overview is `<results-root>/<run-id>/summary.json`; see the
-[evaluation guide](docs/model-evaluation.md) for details.
-
-After the smoke check, run all 340 RoboCasa cells without task/seed filters:
-
-```bash
-ROBORSI_ROBOCASA_CELLS=all python scripts/evaluation/evaluate_model.py \
-  --benchmark robocasa365 --run-id robocasa-001
-```
-
-Select a standard LIBERO suite or the 50-cell RoboCasa seed-1 catalog through
-environment variables:
-
-```bash
-ROBORSI_LIBERO_SUITE=libero_90 python scripts/evaluation/evaluate_model.py --benchmark libero
-ROBORSI_ROBOCASA_CELLS=seed1 python scripts/evaluation/evaluate_model.py --benchmark robocasa365
-```
-
-Catalog defaults are configured in the benchmark YAML: `libero_spatial` for
-`ROBORSI_LIBERO_SUITE`, `all` for `ROBORSI_ROBOCASA_CELLS`. Environment variables
-override these defaults. Results are saved under `work/model_eval/results/`; use a new
-`--run-id` for each run. To download/build without evaluation:
-
-```bash
-python scripts/evaluation/evaluate_model.py --benchmark robocasa365 --prepare-only
-```
-
-GPU/Docker requirements,
-image access, task coverage, existing services and results are explained in the
-[model evaluation guide](docs/model-evaluation.md). To deploy first, fill in the
-reserved [model deployment entry point](scripts/deploy/README.md), then start the
-API service before evaluation.
+LIBERO-Pro direct control and VLA/SAM3 commands remain in the
+[model guide](docs/sensenova-roborsi-27b-preview.md).
+Other models and advanced options: [model evaluation](docs/model-evaluation.md).
 
 ## BenchZoo
 

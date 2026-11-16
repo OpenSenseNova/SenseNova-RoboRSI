@@ -255,11 +255,11 @@
     },
     {
       "path": "docs/README.md",
-      "content_sha256": "0a1aa259880e9b4f69d7b8e7710e677a6d84d612c26e0e23c6342ad4252369dc",
+      "content_sha256": "4f9abe9d690c88e73dd356dd6a962da8b2ab53920c60f79533b48f7ab24fee76",
       "upstream_path": "docs/README.md",
       "upstream_git_blob": "5b63d3dece7ae0d107961521b296ac682db9173d",
       "status": "adapted_from_upstream",
-      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff."
+      "adaptation": "Current documentation, integration imports, formatting or regression coverage; see Git diff. Add the GPT-6 suite guide to the documentation index."
     },
     {
       "path": "docs/bench2dex-icl.md",
