@@ -22,9 +22,9 @@
 
 ## News
 
-- **2026-11-18** — 已发布包含 **336 条 Harness 消融实验轨迹记录**的[数据集](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Log)，覆盖 **42 个任务**和 **8 种方法**。
+- **2026-11-19** — 已提供 [**SIMPLE**](benchmarks/simple/README.zh-CN.md) 的首批代码与使用指南。
 
-- **2026-11-18** — 已提供 [**SIMPLE**](benchmarks/simple/README.zh-CN.md) 的首批代码与使用指南。
+- **2026-11-18** — 已发布包含 **336 条 Harness 消融实验轨迹记录**的[数据集](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Log)，覆盖 **42 个任务**和 **8 种方法**。
 
 - **2026-11-16** — **SenseNova-RoboRSI** 现已登上 [**RoboDojo 官方 Agent 榜单**](https://robodojo-benchmark.com/leaderboard#agent)，在 **Avg.（w/o Open）** 口径下取得 **57.10 的平均得分**和 **49.17% 的成功率**。
 
