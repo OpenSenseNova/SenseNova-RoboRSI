@@ -22,6 +22,8 @@
 
 ## News
 
+- **2026-11-18** — 已发布包含 **336 条 Harness 消融实验轨迹记录**的[数据集](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Log)，覆盖 **42 个任务**和 **8 种方法**。
+
 - **2026-11-18** — 已提供 [**SIMPLE**](benchmarks/simple/README.zh-CN.md) 的首批代码与使用指南。
 
 - **2026-11-16** — **SenseNova-RoboRSI** 现已登上 [**RoboDojo 官方 Agent 榜单**](https://robodojo-benchmark.com/leaderboard#agent)，在 **Avg.（w/o Open）** 口径下取得 **57.10 的平均得分**和 **49.17% 的成功率**。
@@ -30,12 +32,12 @@
 
 - **2026-11-03** — 已提供 [**LHPR-VLN**](benchmarks/lhpr_vln/README.zh-CN.md) 和 [**VLN-CE（R2R / RxR）**](benchmarks/vlnce/README.zh-CN.md) 的首批代码与使用指南。
 
+<details>
+<summary>历史动态</summary>
+
 - **2026-10-30** — 已提供 [**RoboLab**](benchmarks/robolab/README.zh-CN.md) 的首批代码与使用指南。
 
 - **2026-10-27** — 我们的 LIBERO-PRO 结果（**98.25% 成功率**）现已正式位列 [Papers With Code 榜单](https://paperswithcode.co/benchmark/libero-pro) **第 1 名**。
-
-<details>
-<summary>历史动态</summary>
 
 - **2026-10-26** — SenseNova-RoboRSI 现已位列 [RoboLab 官方榜单](https://research.nvidia.com/labs/srl/projects/robolab/leaderboard.html) **第 1 名**。
 

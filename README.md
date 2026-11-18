@@ -32,12 +32,12 @@
 
 - **2026-11-03** — Initial code and usage guides for [**LHPR-VLN**](benchmarks/lhpr_vln/README.md) and [**VLN-CE (R2R / RxR)**](benchmarks/vlnce/README.md) are available.
 
+<details>
+<summary>Earlier updates</summary>
+
 - **2026-10-30** — Initial code and usage guides for [**RoboLab**](benchmarks/robolab/README.md) are available.
 
 - **2026-10-27** — Our LIBERO-PRO result (**98.25% success rate**) is now officially ranked **No. 1** on the [Papers With Code leaderboard](https://paperswithcode.co/benchmark/libero-pro).
-
-<details>
-<summary>Earlier updates</summary>
 
 - **2026-10-26** — SenseNova-RoboRSI is now ranked **No. 1** on the [RoboLab leaderboard](https://research.nvidia.com/labs/srl/projects/robolab/leaderboard.html).
 
