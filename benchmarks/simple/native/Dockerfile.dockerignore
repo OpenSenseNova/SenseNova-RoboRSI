@@ -1,0 +1,7 @@
+**
+!Dockerfile
+!Dockerfile.dockerignore
+!constraints.txt
+!requirements.txt
+!fetch_sources.sh
+!audit_runtime.py

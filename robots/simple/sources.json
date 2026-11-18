@@ -1,0 +1,79 @@
+{
+  "simple_revision": "6d10628794d9c7de4596b4f2afb2c054a637c2bc",
+  "dataset_repo": "USC-PSI-Lab/psi-data",
+  "dataset_revision": "e78fb93cc28912a3031a10b8656d32d7f0a2b867",
+  "compatibility": {
+    "xmove_bendpick": {
+      "revision": "c0a01cea95780a7eb56141686b7f25d38713e19a",
+      "path": "src/simple/tasks/g1_wholebody_xmove_bend_pick_teleop.py",
+      "sha256": "51931cdd096ccd9953138cd52f4f1fe7cded70ea20990c827bf4339e948ae9d3",
+      "license_path": "license.md",
+      "license_sha256": "2b927c57332a27929622ed79efeb7fee868a7f7606e962c13c033a24d92bdac0",
+      "class_name": "G1WholebodyXMoveBendPickTaskTeleop",
+      "entry_point": "simple.envs.sonic_loco_manip:SonicLocoManipEnv",
+      "task_uid": "g1_wholebody_xmove_bend_pick_teleop"
+    }
+  },
+  "tasks": {
+    "xmove": {
+      "env_id": "G1WholebodyXMovePickTeleop-v0",
+      "official_steps": 800,
+      "controller": "decoupled_wbc",
+      "test_archive": {
+        "path": "simple-eval/G1WholebodyXMovePickTeleop-v0.zip",
+        "bytes": 377733,
+        "sha256": "af6f1048d1cb8070a03b33fa5ca9c4eb8f903b0a5f863eab4e9fbe21c389eb79"
+      }
+    },
+    "bendpick": {
+      "env_id": "G1WholebodyBendPickMP-v0",
+      "official_steps": 400,
+      "controller": "amo",
+      "test_archive": {
+        "path": "simple-eval/G1WholebodyBendPickMP-v0.zip",
+        "bytes": 1630050,
+        "sha256": "6bcdb9ddfa1d3f851144f585bda19507ad9efb53e71514dad98836fcefadc5e2"
+      }
+    },
+    "handover": {
+      "env_id": "G1WholebodyHandoverTeleop-v0",
+      "official_steps": 800,
+      "controller": "decoupled_wbc",
+      "test_archive": {
+        "path": "simple-eval/G1WholebodyHandoverTeleop-v0.zip",
+        "bytes": 424467,
+        "sha256": "a581a19f29eb4727d43922cd3f624d3f03b6fe4b4a70c561351a85d1cc7ff78c"
+      }
+    },
+    "tabletop": {
+      "env_id": "G1WholebodyTabletopGraspMP-v0",
+      "official_steps": 800,
+      "controller": "amo",
+      "test_archive": {
+        "path": "simple-eval/G1WholebodyTabletopGraspMP-v0.zip",
+        "bytes": 2956344,
+        "sha256": "ae58eca76e892b45d32d9fd9ef5ba372a7fd1fd7af3cb8e14c218813adb5e995"
+      }
+    },
+    "mobile_pick": {
+      "env_id": "G1WholebodyLocomotionPickBetweenTablesTeleop-v0",
+      "official_steps": 1200,
+      "controller": "decoupled_wbc",
+      "test_archive": {
+        "path": "simple-eval/G1WholebodyLocomotionPickBetweenTablesTeleop-v0.zip",
+        "bytes": 480532,
+        "sha256": "8a4b0ff7d068967dac8baec2c4a4deca4f644215a1ee15e921739f3dfe90e7e0"
+      }
+    },
+    "xmove_bendpick": {
+      "env_id": "G1WholebodyXMoveBendPickTeleop-v0",
+      "official_steps": 800,
+      "controller": "decoupled_wbc",
+      "test_archive": {
+        "path": "simple-eval/G1WholebodyXMoveBendPickTeleop-v0.zip",
+        "bytes": 558600,
+        "sha256": "a0c597efa3c5bfbe2e7b75af7ba23c0e94236834f2c474d4d40181eefcdd20bc"
+      }
+    }
+  }
+}

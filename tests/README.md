@@ -117,6 +117,22 @@ episode RPC cleanup, shared RLDX service ownership and benchmark exports. The
 assets and RLDX checkpoint requirements. Native evaluation needs the pinned
 environment and an NVIDIA GPU. Offline tests do not establish native task success.
 
+## SIMPLE checks
+
+Run `pytest tests/unit_tests/robots/simple -q` for offline catalog, action,
+scoring, HTTP artifact and worker cleanup checks. Process and permission checks
+target Linux, matching the SIMPLE/Isaac native environment. The source bundle is
+covered by `tests/unit_tests/roborsi/benchmarks/test_runtime_package.py`; export it
+with `python -m benchmarks.package --benchmark simple --output /data/new-simple-context`.
+
+The opt-in native smoke is
+`tests/integration_tests/robots/simple/test_native.py`. It requires
+`ROBORSI_RUN_SIMPLE_NATIVE=1`, a new `ROBORSI_SIMPLE_EVIDENCE_DIR`, and the native
+runtime/catalog variables in the [SIMPLE guide](../benchmarks/simple/README.md).
+Offline checks do not establish GPU task success. Imported image and native
+validation records apply to the original checkout, as explained in the
+[validation guide](../benchmarks/simple/VALIDATION.md).
+
 ## Adding tests
 
 Use existing fixtures and test user-visible behavior. Keep required tests

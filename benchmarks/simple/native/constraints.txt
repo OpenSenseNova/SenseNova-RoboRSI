@@ -1,0 +1,11 @@
+# Conditions matching the previously tested native host stack.
+numpy==1.26.4
+scipy==1.15.3
+torch==2.7.0+cu128
+torchvision==0.22.0+cu128
+mujoco==3.3.6
+warp-lang==1.7.0
+opencv-python==4.11.0.86
+pin==2.7.0
+setuptools==80.9.0
+setuptools-scm==8.3.1

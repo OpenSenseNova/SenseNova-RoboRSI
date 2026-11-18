@@ -38,7 +38,7 @@ sys.meta_path.insert(0, Guard())
 
 
 @pytest.mark.parametrize(
-    "benchmark", ["libero", "bench2dex", "dexjoco", "behavior_1k", "robolab"]
+    "benchmark", ["libero", "bench2dex", "dexjoco", "behavior_1k", "robolab", "simple"]
 )
 def test_bundle_imports_and_service_help_without_agent_code(tmp_path, benchmark):
     context = prepare_context(benchmark, tmp_path / "context", source_root=ROOT)
