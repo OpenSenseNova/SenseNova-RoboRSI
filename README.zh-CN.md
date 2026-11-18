@@ -22,6 +22,8 @@
 
 ## News
 
+- **2026-11-18** — 新增 [**SIMPLE 集成候选版**](benchmarks/simple/README.zh-CN.md)，包含 benchmark 与 Agent 代码、构建配置，以及资源下载和 HTTP 服务部署指南。已完成的检查及待验证项见[验证范围](benchmarks/simple/VALIDATION.md)。
+
 - **2026-11-16** — **SenseNova-RoboRSI** 现已登上 [**RoboDojo 官方 Agent 榜单**](https://robodojo-benchmark.com/leaderboard#agent)，在 **Avg.（w/o Open）** 口径下取得 **57.10 的平均得分**和 **49.17% 的成功率**。
 
 - **2026-11-15** — 新增 **ICL 材料包构建与校验工具**，并补充 **BEHAVIOR-1K**、**Bench2Dex** 和 **DexJoCo** 的演示学习及冻结包评测指南。[ICL 指南](docs/icl.zh-CN.md) · [源码覆盖说明](docs/icl-coverage.zh-CN.md)。

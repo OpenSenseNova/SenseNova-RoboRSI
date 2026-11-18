@@ -24,6 +24,8 @@
 
 - **2026-11-18** — A [collection](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Log) of **336 harness ablation trajectory records**, covering **42 tasks** and **8 methods**, has been released.
 
+- **2026-11-18** — Added the [**SIMPLE integration candidate**](benchmarks/simple/README.md), including benchmark and Agent code, build recipes, and guides for asset downloads and HTTP service setup. See the [validation scope](benchmarks/simple/VALIDATION.md) for completed checks and remaining validation.
+
 - **2026-11-16** — **SenseNova-RoboRSI** is now listed on the [**official RoboDojo Agent leaderboard**](https://robodojo-benchmark.com/leaderboard#agent), with an **average score of 57.10** and a **success rate of 49.17%** under **Avg. (w/o Open)**.
 
 - **2026-11-15** — Added **ICL package construction and verification tools**, plus demonstration-learning and frozen-package evaluation guides for **BEHAVIOR-1K**, **Bench2Dex** and **DexJoCo**. [ICL guide](docs/icl.md) · [Source coverage](docs/icl-coverage.md).
