@@ -113,7 +113,7 @@ python scripts/evaluation/evaluate_gpt6.py
 
 ### SenseNova-RoboRSI-27B：部署与评测
 
-[正式版指南](docs/sensenova-roborsi-27b.zh-CN.md)汇总评测设置、演示和复现材料。已有推理服务的接入方式见[已部署模型评测指南](docs/model-evaluation.zh-CN.md)。
+按照[模型部署指南](docs/sensenova-roborsi-27b.zh-CN.md#快速开始)使用 vLLM 启动正式版模型并验证接口。已有推理服务的接入方式见[已部署模型评测指南](docs/model-evaluation.zh-CN.md)。
 
 ## BenchZoo
 
