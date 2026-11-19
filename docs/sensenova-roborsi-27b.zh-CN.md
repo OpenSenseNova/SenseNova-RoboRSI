@@ -62,13 +62,77 @@ Piper 的两段实测轨迹展示了 Agent 如何根据相机画面确定抓取�
 
 ## 快速开始
 
-使用 Hugging Face CLI 下载模型。发布文件包含模型权重、分词器、视觉处理器和对话模板。[🤗 模型权重](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B/tree/52ac9fdd07cbad42fab74217e595db12b4f1a000)
+### 安装 vLLM
+
+以下示例在 Linux x86_64 上使用四张支持 BF16 的 NVIDIA GPU。请在推理环境中安装 vLLM 0.21.0 的 CUDA 12.9 版本，并确保驱动与该版本兼容。其他 CUDA 版本见 [vLLM 安装指南](https://docs.vllm.ai/en/v0.21.0/getting_started/installation/gpu/)。
 
 ```bash
-hf download sensenova/SenseNova-RoboRSI-27B --local-dir ./SenseNova-RoboRSI-27B
+python -m pip install 'vllm==0.21.0+cu129' huggingface_hub \
+  --extra-index-url https://wheels.vllm.ai/0.21.0/cu129 \
+  --extra-index-url https://download.pytorch.org/whl/cu129
 ```
 
-要将已部署的模型服务接入 Harness 并运行评测，请参阅[已部署模型评测指南](./model-evaluation.zh-CN.md)。
+### 下载模型
+
+下载正式版的权重、分词器、视觉处理器和对话模板。访问私有仓库时，先用有权限的账号运行 `hf auth login`。如果已有完整的本地模型，可将 `MODEL_DIR` 设为其绝对路径，直接启动服务。[🤗 模型权重](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B/tree/52ac9fdd07cbad42fab74217e595db12b4f1a000)
+
+```bash
+export MODEL_DIR="$PWD/SenseNova-RoboRSI-27B"
+hf download sensenova/SenseNova-RoboRSI-27B \
+  --local-dir "$MODEL_DIR" --exclude 'assets/*'
+```
+
+### 启动服务
+
+在四张 GPU 上以张量并行方式启动模型。服务使用模型自带的对话模板，并启用推理和工具调用解析。
+
+```bash
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+
+vllm serve "$MODEL_DIR" \
+  --served-model-name sensenova-roborsi-27b \
+  --host 0.0.0.0 \
+  --port 8000 \
+  --dtype bfloat16 \
+  --tensor-parallel-size 4 \
+  --max-model-len 262144 \
+  --generation-config auto \
+  --chat-template "$MODEL_DIR/chat_template.jinja" \
+  --reasoning-parser qwen3 \
+  --enable-auto-tool-choice \
+  --tool-call-parser qwen3_coder \
+  --structured-outputs-config '{"backend":"xgrammar","disable_any_whitespace":true}' \
+  --enable-prefix-caching \
+  --mamba-cache-mode align
+```
+
+### 验证接口
+
+在同一台机器上打开另一个终端，检查服务状态，再发送一条机器人规划请求。服务就绪后，健康检查会返回 HTTP 200，模型回复位于 `choices[0].message`。
+
+```bash
+curl --fail http://127.0.0.1:8000/health
+curl --fail http://127.0.0.1:8000/v1/chat/completions \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "sensenova-roborsi-27b",
+    "messages": [{
+      "role": "user",
+      "content": "A robot needs to place a mug on a coaster. Give a short plan and explain how to verify that the mug is stable before releasing it."
+    }],
+    "max_tokens": 8192,
+    "chat_template_kwargs": {"reasoning_effort": "medium"},
+    "stream": false
+  }'
+```
+
+在运行 Harness 的终端中设置以下环境变量，然后按照[已部署模型评测指南](./model-evaluation.zh-CN.md)运行评测。
+
+```bash
+export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
+export OPENAI_API_KEY='EMPTY'
+export MODEL_NAME='sensenova-roborsi-27b'
+```
 
 **RoboDojo 复现脚本**将在我们向 RoboDojo 排行榜提交评测结果后发布。
 

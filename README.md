@@ -126,7 +126,7 @@ separately. See the guide for coverage, frozen ICL, offline plans and results.
 
 ### SenseNova-RoboRSI-27B: deployment and evaluation
 
-The [release guide](docs/sensenova-roborsi-27b.md) covers the evaluation settings, demos and reproduction status. For an existing model endpoint, see the [deployed-model evaluation guide](docs/model-evaluation.md).
+Follow the [model deployment quickstart](docs/sensenova-roborsi-27b.md#quickstart) to serve the checkpoint with vLLM and test the endpoint. For an existing model endpoint, see the [deployed-model evaluation guide](docs/model-evaluation.md).
 
 ## BenchZoo
 

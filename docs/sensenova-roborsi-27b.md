@@ -62,13 +62,77 @@ Two Piper trials show how the agent uses camera feedback to decide where to gras
 
 ## Quickstart
 
-Download the checkpoint with the Hugging Face CLI. The release includes the model weights, tokenizer, visual processor and chat template. [🤗 Model Weights](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B/tree/52ac9fdd07cbad42fab74217e595db12b4f1a000)
+### Install vLLM
+
+This example uses four NVIDIA GPUs with BF16 support on x86-64 Linux. In your inference environment, install the CUDA 12.9 build of vLLM 0.21.0 with a compatible NVIDIA driver. For other CUDA builds, see the [vLLM installation guide](https://docs.vllm.ai/en/v0.21.0/getting_started/installation/gpu/).
 
 ```bash
-hf download sensenova/SenseNova-RoboRSI-27B --local-dir ./SenseNova-RoboRSI-27B
+python -m pip install 'vllm==0.21.0+cu129' huggingface_hub \
+  --extra-index-url https://wheels.vllm.ai/0.21.0/cu129 \
+  --extra-index-url https://download.pytorch.org/whl/cu129
 ```
 
-To connect your model endpoint to the Harness and run benchmarks, follow the [evaluation guide for deployed models](./model-evaluation.md).
+### Download the model
+
+Download the release weights, tokenizer, visual processor and chat template. For a private repository, first run `hf auth login` with an account that has access. If you already have the complete checkpoint, set `MODEL_DIR` to its absolute path and continue to the next step. [🤗 Model Weights](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B/tree/52ac9fdd07cbad42fab74217e595db12b4f1a000)
+
+```bash
+export MODEL_DIR="$PWD/SenseNova-RoboRSI-27B"
+hf download sensenova/SenseNova-RoboRSI-27B \
+  --local-dir "$MODEL_DIR" --exclude 'assets/*'
+```
+
+### Start the service
+
+Serve the model across four GPUs using tensor parallelism. The server uses the checkpoint’s chat template and enables reasoning and tool-call parsing.
+
+```bash
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+
+vllm serve "$MODEL_DIR" \
+  --served-model-name sensenova-roborsi-27b \
+  --host 0.0.0.0 \
+  --port 8000 \
+  --dtype bfloat16 \
+  --tensor-parallel-size 4 \
+  --max-model-len 262144 \
+  --generation-config auto \
+  --chat-template "$MODEL_DIR/chat_template.jinja" \
+  --reasoning-parser qwen3 \
+  --enable-auto-tool-choice \
+  --tool-call-parser qwen3_coder \
+  --structured-outputs-config '{"backend":"xgrammar","disable_any_whitespace":true}' \
+  --enable-prefix-caching \
+  --mamba-cache-mode align
+```
+
+### Check the endpoint
+
+In a second terminal on the same machine, check the service health and send a short robot-planning request. A ready server returns HTTP 200 for the health check and a reply in `choices[0].message` for the chat request.
+
+```bash
+curl --fail http://127.0.0.1:8000/health
+curl --fail http://127.0.0.1:8000/v1/chat/completions \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "sensenova-roborsi-27b",
+    "messages": [{
+      "role": "user",
+      "content": "A robot needs to place a mug on a coaster. Give a short plan and explain how to verify that the mug is stable before releasing it."
+    }],
+    "max_tokens": 8192,
+    "chat_template_kwargs": {"reasoning_effort": "medium"},
+    "stream": false
+  }'
+```
+
+To run benchmarks, set these variables in the Harness terminal and follow the [evaluation guide for deployed models](./model-evaluation.md).
+
+```bash
+export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
+export OPENAI_API_KEY='EMPTY'
+export MODEL_NAME='sensenova-roborsi-27b'
+```
 
 **RoboDojo reproduction.** We will release the reproduction script after we submit our results to the RoboDojo leaderboard.
 
