@@ -22,7 +22,7 @@
 
 ## News
 
-- **2026-11-19** — 🎉 [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) is now available. It combines VLA skills with Code as Policy and scores **34.7 on RoboDojo**. Using the same weights as in simulation, it achieved **60%** success on object pick-and-place with Piper and **90%** on block stacking with Piper X.
+- **2026-11-19** — 🎉 [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) is now available. It scores **34.7 on RoboDojo** and achieves **60%** success on Piper pick-and-place and **90%** on Piper X block stacking.
 
 - **2026-11-19** — Initial code and usage guides for [**SIMPLE**](benchmarks/simple/README.md) are available.
 
