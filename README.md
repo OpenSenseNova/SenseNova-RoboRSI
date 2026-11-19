@@ -22,7 +22,11 @@
 
 ## News
 
+- **2026-11-19** — Initial code and usage guides for [**SIMPLE**](benchmarks/simple/README.md) are available.
+
 - **2026-11-18** — 🎉 [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) is now available. It combines VLA skills with Code as Policy and scores **34.7 on RoboDojo** (seed 0, layout 0). With the same weights used in simulation, it picks and places objects on Piper and stacks blocks on Piper X. [**Results & Demos**](docs/sensenova-roborsi-27b.md#results--demos).
+
+- **2026-11-18** — A [collection](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Log) of **336 harness ablation trajectory records**, covering **42 tasks** and **8 methods**, has been released.
 
 - **2026-11-16** — **SenseNova-RoboRSI** is now listed on the [**official RoboDojo Agent leaderboard**](https://robodojo-benchmark.com/leaderboard#agent), with an **average score of 57.10** and a **success rate of 49.17%** under **Avg. (w/o Open)**.
 
@@ -30,12 +34,12 @@
 
 - **2026-11-03** — Initial code and usage guides for [**LHPR-VLN**](benchmarks/lhpr_vln/README.md) and [**VLN-CE (R2R / RxR)**](benchmarks/vlnce/README.md) are available.
 
+<details>
+<summary>Earlier updates</summary>
+
 - **2026-10-30** — Initial code and usage guides for [**RoboLab**](benchmarks/robolab/README.md) are available.
 
 - **2026-10-27** — Our LIBERO-PRO result (**98.25% success rate**) is now officially ranked **No. 1** on the [Papers With Code leaderboard](https://paperswithcode.co/benchmark/libero-pro).
-
-<details>
-<summary>Earlier updates</summary>
 
 - **2026-10-26** — SenseNova-RoboRSI is now ranked **No. 1** on the [RoboLab leaderboard](https://research.nvidia.com/labs/srl/projects/robolab/leaderboard.html).
 
@@ -150,7 +154,7 @@ corresponding image reference from the table.
 | [DexJoCo](benchmarks/dexjoco/) | Released | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/main/dexjoco/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-dexjoco@sha256:19fa30540e3956ae460efa0a4b473586637cb330d863ea65ba0fd6318c376d4d` |
 | [LHPR-VLN](benchmarks/lhpr_vln/README.md) | Released | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/495b4e2a9a3652726f52dd6363f7e2c5a77c2b34/lhvln/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-lhvln@sha256:7d72dd910d5c9048ca6ec40ad158214497c3a9ac276641df1429314f2d7a3695` |
 | [VLN-CE (R2R / RxR)](benchmarks/vlnce/README.md) | Released | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/495b4e2a9a3652726f52dd6363f7e2c5a77c2b34/vln-ce/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-vln-ce@sha256:f54607562ca465101d6e1091f97d776755c2b00517f1852643bd8e0161c0e787` |
-| SIMPLE | Coming soon | — | — |
+| [SIMPLE](benchmarks/simple/) | Released | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/main/simple/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-simple@sha256:4b6f9eb28fa87aebba7a3d46fcf0498753d81a47719dadf30a78c22d1f208213` |
 | [BEHAVIOR-1K](benchmarks/behavior_1k/) | Released | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/main/behavior/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-behavior-1k:v1.0.0-cu128` |
 
 ## Harness Results

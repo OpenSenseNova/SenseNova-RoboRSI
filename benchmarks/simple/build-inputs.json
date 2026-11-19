@@ -1,0 +1,4 @@
+{
+  "schema_version": 1,
+  "inputs": ["requirements-http.txt", "requirements-http.lock", "install_compat.py", "BUILD.md", "VALIDATION.md"]
+}

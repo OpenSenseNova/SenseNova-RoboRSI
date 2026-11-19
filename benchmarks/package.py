@@ -104,6 +104,7 @@ def main() -> None:
             "libero_lilo",
             "bench2dex",
             "dexjoco",
+            "simple",
             "behavior_1k",
             "robocasa365",
             "lhpr_vln",

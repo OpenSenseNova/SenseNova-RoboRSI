@@ -36,6 +36,12 @@ VLN-CE ([English](../benchmarks/vlnce/README.md) /
 [简体中文](../benchmarks/vlnce/README.zh-CN.md)).
 See [the test guide](../tests/README.md) for offline and native checks.
 
+The SIMPLE integration candidate includes benchmark code, export support and
+build recipes ([English](../benchmarks/simple/README.md) /
+[简体中文](../benchmarks/simple/README.zh-CN.md)). Its imported image and native
+validation records describe the original source checkout; see the
+[migration validation](../benchmarks/simple/VALIDATION.md) before deployment.
+
 Generic EmbodiedAgent presets can connect to the supported services.
 
 DexJoCo's derived horizon code retains its

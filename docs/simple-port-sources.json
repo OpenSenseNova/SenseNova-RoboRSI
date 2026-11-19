@@ -1,0 +1,462 @@
+{
+  "source_repository": "https://github.com/SenseTime-FVG/RoboRSI.git",
+  "source_checkout": "NewRPent",
+  "source_head": "8d9a0af66422e1faad7696281a76819cd165eb44",
+  "target_base": "9e7e7ad17b8957a5b8a530b8f4a0bbc11bb00555",
+  "primary_commits": [
+    "2d06bcf1417f779f68611ab3671cd0e13ee63056",
+    "237484ebf1d9863fdcb9694e4f4e329876d3730a"
+  ],
+  "related_commits": [
+    {
+      "commit": "02dafd7954c2d2fd1d1f1dd80f1e26e1dfe4ca60",
+      "subject": "docs(simple): record published cleanup repair image",
+      "files": [
+        "benchmarks/simple/DELIVERY.md",
+        "benchmarks/simple/README.md",
+        "benchmarks/simple/README.zh-CN.md",
+        "benchmarks/simple/VALIDATION.md"
+      ]
+    },
+    {
+      "commit": "7e94c248bf3679888fb0adb8dd75692e0a2f71c5",
+      "subject": "fix(simple): retry incomplete worker and Kit cleanup",
+      "files": [
+        "benchmarks/simple/BUILD.md",
+        "benchmarks/simple/DELIVERY.md",
+        "benchmarks/simple/FRAMEWORK_REQUEST.md",
+        "benchmarks/simple/README.md",
+        "benchmarks/simple/README.zh-CN.md",
+        "benchmarks/simple/VALIDATION.md",
+        "robots/simple/roborsi_adapter.py",
+        "tests/unit_tests/robots/simple/test_simple.py"
+      ]
+    },
+    {
+      "commit": "1b29cde00dfe7f2980cae93b5b95aed067886554",
+      "subject": "test(simple): verify native budget termination and finish scoring",
+      "files": [
+        "benchmarks/simple/DELIVERY.md",
+        "benchmarks/simple/README.md",
+        "benchmarks/simple/README.zh-CN.md",
+        "benchmarks/simple/VALIDATION.md",
+        "benchmarks/simple/check_terminal.py",
+        "tests/unit_tests/robots/simple/test_simple.py"
+      ]
+    },
+    {
+      "commit": "04d98783bfa650ef3e8171b2f0b2db60fd7c7f83",
+      "subject": "docs(simple): record published service candidate and registry checks",
+      "files": [
+        "benchmarks/simple/BUILD.md",
+        "benchmarks/simple/DELIVERY.md",
+        "benchmarks/simple/FRAMEWORK_REQUEST.md",
+        "benchmarks/simple/README.md",
+        "benchmarks/simple/README.zh-CN.md",
+        "benchmarks/simple/VALIDATION.md"
+      ]
+    },
+    {
+      "commit": "1211a4a6ebff97c1def4cd41a4f002815cd59668",
+      "subject": "feat(simple): restore sixth task and prepare registry delivery",
+      "files": [
+        "benchmarks/simple/ASSETS.md",
+        "benchmarks/simple/BUILD.md",
+        "benchmarks/simple/DELIVERY.md",
+        "benchmarks/simple/Dockerfile",
+        "benchmarks/simple/README.md",
+        "benchmarks/simple/README.zh-CN.md",
+        "benchmarks/simple/assets.sha256",
+        "benchmarks/simple/build-inputs.json",
+        "benchmarks/simple/install_compat.py",
+        "benchmarks/simple/manifest.py",
+        "benchmarks/simple/prepare.py",
+        "benchmarks/simple/serve.py",
+        "benchmarks/simple/smoke_http.py",
+        "robots/simple/benchmark_service.py",
+        "robots/simple/native.py",
+        "robots/simple/runtime_setup.py",
+        "robots/simple/sources.json",
+        "tests/unit_tests/robots/simple/test_compatibility.py",
+        "tests/unit_tests/robots/simple/test_manifest.py"
+      ]
+    },
+    {
+      "commit": "6d56eadb3b9fee2b2440dd4e98d2b80ab89f7bc5",
+      "subject": "test(simple): isolate Git ownership fixture from host config",
+      "files": [
+        "tests/unit_tests/robots/simple/test_simple.py"
+      ]
+    },
+    {
+      "commit": "8792e0078d43b69a9af7e7381a6c886d11110029",
+      "subject": "fix(simple): validate registered HTTP service lifecycle",
+      "files": [
+        "benchmarks/simple/BUILD.md",
+        "benchmarks/simple/Dockerfile",
+        "benchmarks/simple/Dockerfile.dockerignore",
+        "benchmarks/simple/FRAMEWORK_REQUEST.md",
+        "benchmarks/simple/README.md",
+        "benchmarks/simple/README.zh-CN.md",
+        "benchmarks/simple/VALIDATION.md",
+        "benchmarks/simple/build-inputs.json",
+        "benchmarks/simple/requirements-http.lock",
+        "benchmarks/simple/smoke_http.py",
+        "robots/simple/native.py",
+        "robots/simple/roborsi_adapter.py",
+        "robots/simple/runtime_setup.py",
+        "tests/unit_tests/robots/simple/fakes.py",
+        "tests/unit_tests/robots/simple/test_simple.py"
+      ]
+    },
+    {
+      "commit": "aa61911b22babc9e59e3caf5ae996e8aa0b7541d",
+      "subject": "build(simple): validate native container and reset instructions",
+      "files": [
+        "benchmarks/simple/BUILD.md",
+        "benchmarks/simple/README.md",
+        "benchmarks/simple/README.zh-CN.md",
+        "benchmarks/simple/VALIDATION.md",
+        "benchmarks/simple/native/Dockerfile",
+        "benchmarks/simple/native/Dockerfile.dockerignore",
+        "benchmarks/simple/native/README.md",
+        "benchmarks/simple/native/audit_runtime.py",
+        "benchmarks/simple/native/constraints.txt",
+        "benchmarks/simple/native/fetch_sources.sh",
+        "benchmarks/simple/native/requirements.txt",
+        "robots/simple/contracts.py",
+        "robots/simple/native.py",
+        "tests/unit_tests/robots/simple/test_simple.py"
+      ]
+    },
+    {
+      "commit": "8107e5fe858909ac021a0c0d2c96163be9b3a02a",
+      "subject": "docs(simple): document team GHCR publication workflow",
+      "files": [
+        "benchmarks/simple/BUILD.md",
+        "benchmarks/simple/README.md",
+        "benchmarks/simple/README.zh-CN.md"
+      ]
+    },
+    {
+      "commit": "237484ebf1d9863fdcb9694e4f4e329876d3730a",
+      "subject": "feat(simple): add native benchmark evaluation adapter",
+      "files": [
+        "benchmarks/README.md",
+        "benchmarks/simple/BUILD.md",
+        "benchmarks/simple/Dockerfile",
+        "benchmarks/simple/Dockerfile.dockerignore",
+        "benchmarks/simple/FRAMEWORK_REQUEST.md",
+        "benchmarks/simple/README.md",
+        "benchmarks/simple/README.zh-CN.md",
+        "benchmarks/simple/VALIDATION.md",
+        "benchmarks/simple/__init__.py",
+        "benchmarks/simple/build-inputs.json",
+        "benchmarks/simple/prepare.py",
+        "benchmarks/simple/requirements-http.txt",
+        "robots/simple/agent.yaml",
+        "robots/simple/agents/baseline/agent.yaml",
+        "robots/simple/agents/baseline/prompt.md",
+        "robots/simple/benchmark_service.py",
+        "robots/simple/catalog.py",
+        "robots/simple/contracts.py",
+        "robots/simple/episode.py",
+        "robots/simple/native.py",
+        "robots/simple/roborsi_adapter.py",
+        "robots/simple/runtime_setup.py",
+        "robots/simple/sources.json",
+        "robots/simple/worker.py",
+        "tests/integration_tests/robots/simple/test_native.py",
+        "tests/unit_tests/robots/simple/fakes.py",
+        "tests/unit_tests/robots/simple/test_simple.py"
+      ]
+    },
+    {
+      "commit": "2d06bcf1417f779f68611ab3671cd0e13ee63056",
+      "subject": "feat(benchmarks): register SIMPLE server source bundle",
+      "files": [
+        "roborsi/benchmarks/runtime_source.py"
+      ]
+    }
+  ],
+  "file_count": 46,
+  "simple_runtime_file_count": 11,
+  "files": [
+    {
+      "path": "benchmarks/README.md",
+      "source_sha256": "ef1700e642b5a0367b5d0aff4ade01f667ec56b56ea5552141a849bfd69a7132",
+      "identical_to_source": false,
+      "adaptation": "Guide layout/provenance updated for this repository"
+    },
+    {
+      "path": "benchmarks/simple/ASSETS.md",
+      "source_sha256": "cc44498ebcdbd05b3c4cdbdbc89979095fa5984a7644ed2046ae5c8c807da332",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/BUILD.md",
+      "source_sha256": "b63df7330d8e6fe2aa2c367de4d81d2feae9aaafdeeef33a254fb6533c157bc6",
+      "identical_to_source": false,
+      "adaptation": "Guide layout/provenance updated for this repository"
+    },
+    {
+      "path": "benchmarks/simple/DELIVERY.md",
+      "source_sha256": "6e0e7b96879fd4a24579c4d86faaedb215dd5770bc856e2340e701b424fff735",
+      "identical_to_source": false,
+      "adaptation": "Guide layout/provenance updated for this repository"
+    },
+    {
+      "path": "benchmarks/simple/Dockerfile",
+      "source_sha256": "cc0622153edcc11d06e0d6ebc1134097594ece3ffeff7b641242de038e266b05",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/Dockerfile.dockerignore",
+      "source_sha256": "f08e07bd9b4ad221be60268a5618209d32f6e2c8502a8abd7ed231e188e11e97",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/FRAMEWORK_REQUEST.md",
+      "source_sha256": "c7aab89b55896ac990db5ff9ade449fc014e91eed2fb50c601b5b168b25b200f",
+      "identical_to_source": false,
+      "adaptation": "Guide layout/provenance updated for this repository"
+    },
+    {
+      "path": "benchmarks/simple/README.md",
+      "source_sha256": "fc862891ff96b8d1a1a35aa7d54bad6ccd9685e937898535d5dd4195217ea8a1",
+      "identical_to_source": false,
+      "adaptation": "Guide layout/provenance updated for this repository"
+    },
+    {
+      "path": "benchmarks/simple/README.zh-CN.md",
+      "source_sha256": "92328e7d2a0dfd1d3381e8ebd14a1bb5381af817ce3e2a76a851c1913d7c9745",
+      "identical_to_source": false,
+      "adaptation": "Guide layout/provenance updated for this repository"
+    },
+    {
+      "path": "benchmarks/simple/VALIDATION.md",
+      "source_sha256": "243936099bb45123214eab2ce3b1d8fd6d7c12b311cdae3192efb387fccdf6cf",
+      "identical_to_source": false,
+      "adaptation": "Guide layout/provenance updated for this repository"
+    },
+    {
+      "path": "benchmarks/simple/__init__.py",
+      "source_sha256": "deeea4d41e68a8a186f7bdf1535f640542da5d44cb0f8334b138ed92d8cf8a54",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/assets.sha256",
+      "source_sha256": "b2e0b16e9b3bca4bbef33db5a96f4278b0f25e57853b8a2b651e030f88046e64",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/build-inputs.json",
+      "source_sha256": "26d0d92e44431aa194cb4f1b47ea158593a474ae08a7dc0632d9932672487216",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/check_terminal.py",
+      "source_sha256": "b14a7d378417b4ea16de5d54ac773fd04f077f9192924a3a2bf7793ece2b810c",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/install_compat.py",
+      "source_sha256": "d83435652d9adf8885fb114cd945af9d8e8fcd514b00fb8bb7032fe9e56f56c1",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/manifest.py",
+      "source_sha256": "6fb2ec125f4675ac25e85bab3d4e363b442a894609c9ace92a02880c46453e90",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/native/Dockerfile",
+      "source_sha256": "1fcc300c41a728dc8fa54cd3f79a4ea42ac0a61c0b579b4d082dc6652dd7c4b8",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/native/Dockerfile.dockerignore",
+      "source_sha256": "cb6462a042ab57f6f6865493f2df7c54b6632dfa1eac97e6e9a8eb8468839ab7",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/native/README.md",
+      "source_sha256": "0be6aaff839dcd10340396381611f84d0997964f48da801732c1ae50dbcdb8f8",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/native/audit_runtime.py",
+      "source_sha256": "218a56b6a182e166abcbf46c65bfabf3cafc9b8a2ee38bd2ba512bf3954d65d4",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/native/constraints.txt",
+      "source_sha256": "aab270236f64edf75fee8d79f3000bec1748bb4c67406b49bd5e70e8f12a30d9",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/native/fetch_sources.sh",
+      "source_sha256": "07904bf77955d418c19423983cf11ac2a82b8e1f5eb3df930c4b5433699d7836",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/native/requirements.txt",
+      "source_sha256": "0ae22550e7b05796403abd887d14b746111fe59fb02321b7557af9642158c1e4",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/prepare.py",
+      "source_sha256": "05b68c50595b709fff0f344b1dccf50d1c66c2ad9a14bf606c2f11bc6151b904",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/requirements-http.lock",
+      "source_sha256": "92c69e71797c1690aca7728717b8cc034f017078878499379c371b56adceb0f4",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/requirements-http.txt",
+      "source_sha256": "68615a52330a7ccf858cff0cc47a269d5416ec7e93f3e5fb5c5157db51efef82",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/serve.py",
+      "source_sha256": "198000517e683cae421a14949b9b4c94823b41820b27c9fd2e8a66edfc248764",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "benchmarks/simple/smoke_http.py",
+      "source_sha256": "431088cb3917439a7f09b2f3d0ac87d28264d0992fbee7477bd9fa2fc1667474",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "roborsi/benchmarks/runtime_source.py",
+      "source_sha256": "f0db67fe89f030e2d4b98e0dc64bc14bb487a5fa6f1f1c1333c5138a7bea242e",
+      "identical_to_source": false,
+      "adaptation": "SIMPLE registration merged into this framework"
+    },
+    {
+      "path": "robots/simple/agent.yaml",
+      "source_sha256": "a3241474b2db56f0f5946b77a7d198b846ed3160802fcbb1527df945aeae4b11",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "robots/simple/agents/baseline/agent.yaml",
+      "source_sha256": "57264626e0325f3d9335187d2e2cc7972a709201bb5d8ae808b6b078d9f8b062",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "robots/simple/agents/baseline/prompt.md",
+      "source_sha256": "e35c53f88c6b2677b3d074df0f7355165ce9d3fa32e1708ce19a4cd284fa6948",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "robots/simple/benchmark_service.py",
+      "source_sha256": "36d1b4beda3ecae844f793fdef5b2d7bebab56c7cc5ed5da254dba1bca5159cf",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "robots/simple/catalog.py",
+      "source_sha256": "ac7b0fb349914c96dae235626b946ec754f1f9a0efd1218401215794539d70f4",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "robots/simple/contracts.py",
+      "source_sha256": "953ff15fb9c93c0aa46b99f200b3988db9eda959d412e9087cc2c3c3158efc6b",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "robots/simple/episode.py",
+      "source_sha256": "88ebe25cd61d3063415a16221d6caa382df4f97c27c7a368a2db2da0cb8540ba",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "robots/simple/native.py",
+      "source_sha256": "d0497beb2cd8efe3ced3dbee832cdff8cadfa2e517c16d560d2e3d9bacbc706c",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "robots/simple/roborsi_adapter.py",
+      "source_sha256": "8be5e0a3f89b39ac2fac08dce8aaaeb17ebf256d83ed2db3b0cfd7f190e40184",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "robots/simple/runtime_setup.py",
+      "source_sha256": "0d12f3755e4a477a491cc1e4135e21d16d896665fa9879d6db5001f6a6eb837c",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "robots/simple/sources.json",
+      "source_sha256": "a416d05981ed91edcb97acacb5b7f75951255926a5f0f0eb9a89f4e5cee5a343",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "robots/simple/worker.py",
+      "source_sha256": "2623f54e773902918bc6c0fcd75b334db031172c376588b6385e1e3eebced05a",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "tests/integration_tests/robots/simple/test_native.py",
+      "source_sha256": "9e13ae7db72074955a69cb81acfdc6a6ed7e0f49d96a96f915d1e6ef70df41ff",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "tests/unit_tests/robots/simple/fakes.py",
+      "source_sha256": "3c6380725af1de396aa07c542e0e17dae1f2d3ead6626f910374c01bc480143f",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "tests/unit_tests/robots/simple/test_compatibility.py",
+      "source_sha256": "4e40f0e95671dbbe15e7b72a570fb65f322d42bbc0e775a03c1f2409af53519b",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "tests/unit_tests/robots/simple/test_manifest.py",
+      "source_sha256": "51dc781c807eb7aa933fde7301a9de698178004c8853086a4cc65269b4f0afdb",
+      "identical_to_source": true,
+      "adaptation": null
+    },
+    {
+      "path": "tests/unit_tests/robots/simple/test_simple.py",
+      "source_sha256": "253543ed4f95a0e01ed0871ec293611d0b3df9d7d443813a4b88152f77e15c9d",
+      "identical_to_source": true,
+      "adaptation": null
+    }
+  ]
+}
