@@ -22,9 +22,9 @@
 
 ## News
 
-- **2026-11-19** — Initial code and usage guides for [**SIMPLE**](benchmarks/simple/README.md) are available.
+- **2026-11-19** — 🎉 [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) is now available. It combines VLA skills with Code as Policy and scores **34.7 on RoboDojo**. Using the same weights as in simulation, it achieved **60%** success on object pick-and-place with Piper and **90%** on block stacking with Piper X.
 
-- **2026-11-18** — 🎉 [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) is now available. It combines VLA skills with Code as Policy and scores **34.7 on RoboDojo** (seed 0, layout 0). With the same weights used in simulation, it picks and places objects on Piper and stacks blocks on Piper X. [**Results & Demos**](docs/sensenova-roborsi-27b.md#results--demos).
+- **2026-11-19** — Initial code and usage guides for [**SIMPLE**](benchmarks/simple/README.md) are available.
 
 - **2026-11-18** — A [collection](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Log) of **336 harness ablation trajectory records**, covering **42 tasks** and **8 methods**, has been released.
 
@@ -70,11 +70,13 @@ traces and task feedback to improve the agent system. During Harness optimizatio
 model parameters remain fixed; candidate changes are retested, and validated
 improvements are carried into the next agent version.
 
-[SenseNova-RoboRSI-27B](#sensenova-roborsi-27b) uses this runtime to collect and select interaction traces for supervised fine-tuning.
-
 <p align="center">
   <img src="assets/sensenova-roborsi-overview-en.webp" alt="SenseNova-RoboRSI agent interfaces, execution loop, benchmark integration, and RSI workflow" width="75%" />
 </p>
+
+[SenseNova-RoboRSI-27B](docs/sensenova-roborsi-27b.md) is the project’s vision-language model for robot manipulation, refined alongside the RoboRSI Harness over multiple rounds of RSI. It uses the Harness to review trajectories proposed by a VLA policy and to control the gripper by writing code that computes target poses. SenseNova-RoboRSI-27B learns to use VLA and Code as Policy in simulation and uses the same weights to control physical robots.
+
+![RoboDojo average score of 34.7, model comparison and three rounds of RSI, with real-robot results on Piper and Piper X](assets/roborsi-27b/homepage-teaser.png)
 
 ### Core capabilities
 
@@ -86,6 +88,12 @@ improvements are carried into the next agent version.
   end-effector tools across benchmarks with native feedback and scoring.
 - **Experiment records and training data.** Record full traces, export training
   episodes, and run batch evaluations with concurrency and recovery.
+
+#### SenseNova-RoboRSI-27B
+
+- **VLA × Code as Policy.** The agent can use a VLA skill to grasp a bowl, then switch to code to correct its position before release.
+- **More accurate gripper targets.** VLA2Agent turns open VLA demonstrations into training examples for the agent. With this supervision, the share of end-effector predictions within 50 mm of the target rose from 24.9% to 49.2%.
+- **Sim-to-real transfer.** After simulation-only embodied post-training, the same weights handled pick-and-place on Piper using code alone and block stacking on Piper X using VLA and code.
 
 #### RSI: Model–Harness co-evolution
 
@@ -209,20 +217,32 @@ The reference scores above, including GPT-6 Astra's 92.63%, are reported by [RPe
 
 Reference results: [official RoboCasa leaderboard](https://robocasa.ai/leaderboard.html). SenseNova-RoboRSI uses the Target50 setting; the official entries use pretraining kitchens. These results provide context across different evaluation settings and do not establish a ranking under the same protocol.
 
-## SenseNova-RoboRSI-27B
+## Model Results
 
-[🤗 Hugging Face](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) · [Results & Demos](docs/sensenova-roborsi-27b.md#results--demos) · [Quickstart](docs/sensenova-roborsi-27b.md#quickstart)
+### RoboDojo simulation
 
-SenseNova-RoboRSI-27B learns to use VLA and Code as Policy in simulation and uses the same weights to control physical robots.
+| Model | Average score ↑ |
+| --- | ---: |
+| SenseNova-RoboRSI-27B | **34.7** |
+| GPT-6 Astra (RoboDojo Team) | 27.6 |
+| Qwen4-Max | 18.9 |
+| DeepSeek-V4.1-Flash | 11.8 |
+| SenseNova-RoboRSI-27B-Preview | 10.0 |
+| Qwen3.8-27B | 9.1 |
 
-![Model training, action control and physical robot results](assets/roborsi-27b-teaser.png)
+The GPT-6 Astra score comes from the [official RoboDojo Agent leaderboard](https://robodojo-benchmark.com/leaderboard#agent). We evaluated the other five models at seed 0, layout 0 using the same general-purpose Harness without task-specific skills.
 
-This release makes four main contributions, from agent training to real-world manipulation.
+### Physical robots: Piper and Piper X
 
-1. **Multi-round RSI.** Across three rounds, we refined the Harness using execution feedback and fine-tuned the 27B agent on teacher trajectories selected by rejection sampling.
-2. **VLA × Code as Policy.** The agent can use a VLA skill to grasp a bowl, then switch to code to correct its position before release.
-3. **More accurate gripper targets.** VLA2Agent turns open VLA demonstrations into training examples for the agent. With this supervision, the share of end-effector predictions within 50 mm of the target rose from 24.9% to 49.2%.
-4. **Sim-to-real transfer.** After simulation-only embodied post-training, the same weights handled pick-and-place on Piper using code alone and block stacking on Piper X using VLA and code.
+Success rates are based on 10 trials per model per task.
+
+| Model | Piper pick-and-place ↑ | Piper X block stacking ↑ |
+| --- | ---: | ---: |
+| SenseNova-RoboRSI-27B | **60%** | **90%** |
+| SenseNova-RoboRSI-27B-Preview | 20% | 30% |
+| Qwen3.8-27B | 0% | 0% |
+
+For more simulation and real-robot videos, see [Results & Demos](docs/sensenova-roborsi-27b.md#results--demos).
 
 ## Release Plan & Roadmap
 
