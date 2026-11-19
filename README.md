@@ -10,19 +10,21 @@
 
 <p align="center">
   <a href="https://www.sensenova.ai/has-gpt-6-astra-achieved-embodied-intelligence"><img src="assets/badges/report.svg" alt="Report: Has GPT-6 Achieved Embodied Intelligence?" /></a>
-  <a href="https://huggingface.co/sensenova/sensenova-roborsi-27b-preview"><img src="assets/badges/model.svg" alt="Model: SenseNova-RoboRSI-27B-Preview" /></a>
+  <a href="https://huggingface.co/sensenova/SenseNova-RoboRSI-27B"><img src="assets/badges/model.svg" alt="Model: SenseNova-RoboRSI-27B" /></a>
 </p>
 
 <p align="center">
   <strong>English</strong> · <a href="README.zh-CN.md">简体中文</a> ·
   <a href="#quick-start">Quick Start</a> ·
   <a href="https://www.sensenova.ai/has-gpt-6-astra-achieved-embodied-intelligence">Report</a> ·
-  <a href="#sensenova-roborsi-27b-preview">RoboRSI-27B-Preview</a>
+  <a href="docs/sensenova-roborsi-27b.md">RoboRSI-27B</a>
 </p>
 
 ## News
 
 - **2026-11-19** — Initial code and usage guides for [**SIMPLE**](benchmarks/simple/README.md) are available.
+
+- **2026-11-18** — 🎉 [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) is now available. It combines VLA skills with Code as Policy and scores **34.7 on RoboDojo** (seed 0, layout 0). With the same weights used in simulation, it picks and places objects on Piper and stacks blocks on Piper X. [**Results & Demos**](docs/sensenova-roborsi-27b.md#results--demos).
 
 - **2026-11-18** — A [collection](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Log) of **336 harness ablation trajectory records**, covering **42 tasks** and **8 methods**, has been released.
 
@@ -64,15 +66,11 @@ prompts and context, and evaluate policies in environments that retain their
 native execution and scoring logic.
 
 On top of this runtime, **recursive self-improvement (RSI)** uses execution
-traces and task feedback to improve the Harness while keeping model parameters
-fixed. Candidate changes are retested, and validated improvements are carried
-into the next agent version, connecting task execution with continuous improvement.
+traces and task feedback to improve the agent system. During Harness optimization,
+model parameters remain fixed; candidate changes are retested, and validated
+improvements are carried into the next agent version.
 
-🎉 **[SenseNova-RoboRSI-27B-Preview](#sensenova-roborsi-27b-preview)** extends this work to model training. Validated
-interaction experience becomes multimodal supervision for goal understanding,
-action decisions, and feedback-based correction. Updated models return to the
-same runtime for evaluation and further exploration, connecting model training
-and Harness improvement through shared experience and joint retesting.
+[SenseNova-RoboRSI-27B](#sensenova-roborsi-27b) uses this runtime to collect and select interaction traces for supervised fine-tuning.
 
 <p align="center">
   <img src="assets/sensenova-roborsi-overview.webp" alt="SenseNova-RoboRSI agent interfaces, execution loop, benchmark integration, and RSI workflow" width="75%" />
@@ -89,12 +87,15 @@ and Harness improvement through shared experience and joint retesting.
 - **Experiment records and training data.** Record full traces, export training
   episodes, and run batch evaluations with concurrency and recovery.
 
-#### RSI: Continuous Harness improvement
+#### RSI: Model–Harness co-evolution
 
-- **Learn from execution feedback.** Refine action prediction, planning,
-  feedback, and memory organization while keeping model parameters fixed.
-- **Retest and retain improvements.** Track agent versions, evaluate candidate
-  changes under the same task conditions, and carry validated improvements forward.
+- **Optimize the Harness.** Use execution feedback to refine action prediction,
+  planning, feedback, and memory organization while keeping model parameters fixed
+  during this stage.
+- **Train from validated experience.** Collect and filter interaction traces,
+  then fine-tune the embodied model to adapt to the updated Harness.
+- **Retest and iterate.** Track model and Harness versions, evaluate changes
+  under the same task conditions, and carry validated improvements into the next round.
 
 ## Quick Start
 
@@ -123,21 +124,9 @@ python scripts/evaluation/evaluate_gpt6.py
 The script runs each benchmark's existing Agent and reports its native scores
 separately. See the guide for coverage, frozen ICL, offline plans and results.
 
-### SenseNova-RoboRSI-27B-Preview: use the existing evaluation entry
+### SenseNova-RoboRSI-27B: deployment and evaluation
 
-[Deploy the model](docs/sensenova-roborsi-27b-preview.md#1-deploy-the-model), then
-use the existing deployed-model evaluator:
-
-```bash
-export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
-export OPENAI_API_KEY='EMPTY'
-export MODEL_NAME='sensenova-roborsi-27b-preview'
-python scripts/evaluation/evaluate_model.py --benchmark robocasa365
-```
-
-LIBERO-Pro direct control and VLA/SAM3 commands remain in the
-[model guide](docs/sensenova-roborsi-27b-preview.md).
-Other models and advanced options: [model evaluation](docs/model-evaluation.md).
+The [release guide](docs/sensenova-roborsi-27b.md) covers the evaluation settings, demos and reproduction status. For an existing model endpoint, see the [deployed-model evaluation guide](docs/model-evaluation.md).
 
 ## BenchZoo
 
@@ -220,23 +209,20 @@ The reference scores above, including GPT-6 Astra's 92.63%, are reported by [RPe
 
 Reference results: [official RoboCasa leaderboard](https://robocasa.ai/leaderboard.html). SenseNova-RoboRSI uses the Target50 setting; the official entries use pretraining kitchens. These results provide context across different evaluation settings and do not establish a ranking under the same protocol.
 
-## SenseNova-RoboRSI-27B-Preview
+## SenseNova-RoboRSI-27B
 
-**SenseNova-RoboRSI-27B-Preview** is an open-weight **27B embodied VLM** that
-extends RoboRSI from Harness improvement to model training. Through **joint
-model–Harness RSI**, it learns from validated interaction experience, bringing
-goal understanding, action decisions, and feedback-based correction into the
-model itself.
+[🤗 Hugging Face](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) · [Results & Demos](docs/sensenova-roborsi-27b.md#results--demos) · [Quickstart](docs/sensenova-roborsi-27b.md#quickstart)
 
-The model supports **VLA-assisted execution and direct VLM control**, with
-evaluations on RoboDojo, LIBERO-Pro, and RoboCasa365, and demonstrations in
-simulation and on real robots. The open weights provide a starting point for
-community deployment, reproduction, and continued training.
+SenseNova-RoboRSI-27B learns to use VLA and Code as Policy in simulation and uses the same weights to control physical robots.
 
-![SenseNova-RoboRSI-27B-Preview results on RoboDojo, LIBERO-Pro, and RoboCasa365](assets/roborsi-27b-preview-benchmarks.webp)
+![Model training, action control and physical robot results](assets/roborsi-27b-teaser.png)
 
-Model weights are available on [🤗 Hugging Face](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview).
-See the [model guide](docs/sensenova-roborsi-27b-preview.md) for detailed results, demos, and usage instructions.
+This release makes four main contributions, from agent training to real-world manipulation.
+
+1. **Multi-round RSI.** Across three rounds, we refined the Harness using execution feedback and fine-tuned the 27B agent on teacher trajectories selected by rejection sampling.
+2. **VLA × Code as Policy.** The agent can use a VLA skill to grasp a bowl, then switch to code to correct its position before release.
+3. **More accurate gripper targets.** VLA2Agent turns open VLA demonstrations into training examples for the agent. With this supervision, the share of end-effector predictions within 50 mm of the target rose from 24.9% to 49.2%.
+4. **Sim-to-real transfer.** After simulation-only embodied post-training, the same weights handled pick-and-place on Piper using code alone and block stacking on Piper X using VLA and code.
 
 ## Release Plan & Roadmap
 
@@ -247,6 +233,7 @@ See the [model guide](docs/sensenova-roborsi-27b-preview.md) for detailed result
 - [x] Initial code release: Agent runtime and LIBERO-family evaluation
 - [x] [Usage documentation](docs/README.md)
 - [x] [SenseNova-RoboRSI-27B-Preview release](docs/sensenova-roborsi-27b-preview.md)
+- [x] [SenseNova-RoboRSI-27B release](docs/sensenova-roborsi-27b.md)
 - [ ] Harness demo
 - [ ] RoboRSI Technical Report
 

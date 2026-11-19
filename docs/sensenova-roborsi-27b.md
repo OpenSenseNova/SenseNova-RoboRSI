@@ -1,173 +1,77 @@
 # SenseNova-RoboRSI-27B
 
-**Learning Code as Policy through multi-round Agent–Harness co-evolution.**
+[简体中文](sensenova-roborsi-27b.zh-CN.md) · [🤗 Hugging Face](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) · [Results & Demos](#results--demos) · [Quickstart](#quickstart)
 
-[简体中文](sensenova-roborsi-27b.zh-CN.md) · [🤗 Hugging Face](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) · [Demos](#demonstrations) · [Results](#evaluation-results) · [Quickstart](#quickstart)
+SenseNova-RoboRSI-27B is a vision-language model for robot manipulation. It can request motion from a vision-language-action (VLA) policy, review a proposed trajectory, or write code to compute and execute a gripper target pose (Code as Policy). After each action, the agent uses new camera observations and robot state to decide what to do next.
 
-**Release draft · Model weights: TBD · Technical report: TBD**
+![Training workflow, control modes, evaluation results and start/end frames from two physical robots](../assets/roborsi-27b-teaser.png)
 
-SenseNova-RoboRSI-27B is a **27B vision-language model for embodied agents**. Building on RoboRSI Harness and RoboRSI-27B-Preview, it extends robot execution from invoking VLA skills to generating code that computes target poses and controls robot motion. The Agent brings VLA skills and code-driven control into a shared observation–action–feedback loop.
+*Figure 1. The same checkpoint runs in RoboDojo and on two physical robot platforms.*
 
-The model learns through **multi-round recursive self-improvement (RSI)**: improve the Harness, collect and select interaction experience, and train the Agent to adapt to the updated execution system. Long-horizon Agent trajectories are combined with local action supervision constructed from existing VLA training data. With no real-robot data used in embodied post-training, the same model weights have also been used for real-robot pick-and-place tasks.
+## Results & Demos
 
-> **Overview figure — TBD**<br>
-> Agent–Harness co-evolution, VLA × Code as Policy, and transfer from simulation to real robots.
+### RoboDojo simulation
 
-## Highlights
+The GPT-6 Astra result comes from the RoboDojo Team’s published leaderboard. The release scores 7.1 points higher. We evaluated the other five entries at **seed 0, layout 0**, using the same general-purpose Harness with no task-specific skills. [RoboDojo Agent leaderboard](https://robodojo-benchmark.com/leaderboard#agent)
 
-- **VLA × Code as Policy.** Learn to generate control code and organize VLA skills alongside explicit tool-center-point (TCP) control according to the task and execution state.
-- **Multi-round RSI.** Iterate the Harness, then use supervised fine-tuning and rejection-sampled interaction trajectories to adapt the Agent to its evolving tools and execution strategies.
-- **More accurate action targets.** Combine long-horizon decision-making with local TCP supervision constructed from existing robot trajectories, connecting visual observations and robot states to executable motion targets.
-- **Sim-to-Real with shared weights.** Transfer simulation-trained capabilities to real-robot manipulation using the same weights, with zero real-robot data in embodied post-training.
+![RoboDojo agent comparison and scores across three rounds of RSI](../assets/roborsi-27b/en/robodojo-results.png)
 
-## Demonstrations
+*Figure 2. Starting from a Preview score of 10.0, three rounds of updates reached 34.7 when both the model and Harness changed, 32.2 with model updates alone and 24.8 with Harness updates alone.*
 
-### Real robots
+We measured the distance in millimeters between the predicted and recorded gripper endpoint coordinates (x, y, z) on **374 local actions from 35 RoboDojo tasks**. Of these, 179 use one arm and 195 use both. A dual-arm prediction counts as a hit only when both arms meet the threshold. The median uses predictions with parseable coordinates.
 
-Pick up a toy duck and place it into a container, or retrieve it from the container. Additional tasks and comparisons with Preview will be added here.
+VLA2Agent supplies end-effector target poses from open VLA demonstrations.
 
-> **Real-robot demo — TBD**<br>
-> Robot setup, final checkpoint, task instructions, and trial results: TBD.
+| Training configuration | Within 5 mm ↑ | Within 20 mm ↑ | Within 50 mm ↑ | Median XYZ error ↓ |
+| --- | ---: | ---: | ---: | ---: |
+| Without VLA2Agent | 4.3% | 9.4% | 24.9% | 119.7 mm |
+| With VLA2Agent | **15.5%** | **29.7%** | **49.2%** | **51.6 mm** |
 
-### VLA × Code as Policy in simulation
+![Position accuracy at three distance thresholds and median position error](../assets/roborsi-27b/en/eef-accuracy.png)
 
-Follow an Agent through a complete task: observe the scene, select an execution method, generate control code or invoke a VLA skill, and use the resulting observations to decide the next action.
+*Figure 3. Open-loop end-effector predictions, with and without VLA2Agent supervision and across reference models.*
 
-> **RoboDojo demo — TBD**<br>
-> Representative code-control and VLA-use episodes, with selected decisions and tool calls.
+The open-loop test measures how accurately the agent predicts a gripper target. In the RoboDojo trial below, the bowl is slightly left of the stack. The agent keeps its grip and uses Code as Policy to shift the target 2 cm to the right before lowering the bowl.
 
-### Learning to grasp, place, and insert
+![Three camera views of the robot stacking bowls](../assets/roborsi-27b/en/bowl-stacking.webp)
 
-Compare local manipulation behavior with and without TCP supervision, including a grasp that lifts the target, stable placement, and insertion followed by gripper release.
+*Demo 1. Bowl stacking in simulation. Follow the three camera views and the control timeline as the agent chooses a VLA motion, checks the grasp and switches to code to correct a placement.*
 
-> **TCP-supervision comparison — TBD**<br>
-> Side-by-side grasping, placement, and insertion clips with matching task descriptions.
+![Camera views and control code from four RoboDojo manipulation tasks](../assets/roborsi-27b/en/code-as-policy.png)
 
-## Evaluation Results
+*Figure 4. Code as Policy in simulation. The agent uses object orientation to plan a grasp, nudges a T-block sideways, aligns both grippers with garment corners, and inserts a test tube in two steps.*
 
-### RoboDojo
+### Physical robots (Piper & Piper X)
 
-The release comparison will report average task score and task success rate under a shared evaluation protocol.
+With **no real-robot data in embodied post-training**, SenseNova-RoboRSI-27B used the same checkpoint from simulation to pick and place objects on Piper and stack blocks on Piper X. We adapted only the camera, state and control interfaces to each platform. Each model ran ten trials per task.
 
-| Model | Average score ↑ | Success rate ↑ |
-| :--- | ---: | ---: |
-| **SenseNova-RoboRSI-27B** | **TBD** | **TBD** |
-| SenseNova-RoboRSI-27B-Preview | TBD | TBD |
-| Qwen3.8-27B | TBD | TBD |
-| DeepSeek-V4.1-Flash-1017 | TBD | TBD |
-| PEAR-27B | TBD | TBD |
+| Platform | Task | Release execution mode | RoboRSI-27B | Preview | Qwen3.8-27B |
+| --- | --- | --- | ---: | ---: | ---: |
+| Piper | Object pick-and-place | Code as Policy only | **6/10 (60%)** | 2/10 | 0/10 |
+| Piper X | Block stacking | VLA × Code as Policy | **9/10 (90%)** | 3/10 | 0/10 |
 
-Task set, seeds/layouts, Harness version, execution backends, inference budgets, and aggregation: **TBD**.
+![Piper X stacking blocks on the left and Piper placing an object in a dish on the right](../assets/roborsi-27b/en/real-robots.webp)
 
-> **Benchmark figure — TBD**<br>
-> Final release results and completed comparisons under the same protocol.
+*Demo 2. Both robots use the same checkpoint. On the left, Piper X stacks blocks using VLA and Code as Policy. On the right, Piper places an object in a dish using Code as Policy alone.*
 
-### TCP target prediction
+Two Piper trials show how the agent uses camera feedback to decide where to grasp and when to try again after a missed placement.
 
-The current TCP-supervision study uses **374 local actions across 35 tasks**, including 179 single-arm and 195 dual-arm actions. A prediction is a hit when its TCP endpoint is within the positional-error threshold of the reference endpoint; for dual-arm actions, both arms must satisfy the threshold.
+![Right-wrist localization for a left-arm grasp and recovery from a missed placement](../assets/roborsi-27b/en/real-robot-recovery.png)
 
-| Training configuration | TCP hit rate at 5 mm ↑ |
-| :--- | ---: |
-| With local TCP supervision | **15.5%** |
-| Without local TCP supervision | 4.3% |
-
-The study reports a **3.6×** hit-rate improvement at 5 mm. Model revisions and the full threshold breakdown: **TBD**. Evaluation of the final release checkpoint: **TBD**.
-
-> **TCP diagnostic figure — TBD**<br>
-> Hit rates across positional-error thresholds, with training ablations and model comparisons.
-
-### Real-robot evaluation
-
-| Task | Successful trials / total | Execution setup |
-| :--- | :---: | :--- |
-| Pick up a duck and place it into a container | TBD | TBD |
-| Retrieve a duck from a container | TBD | TBD |
-| Additional tasks | TBD | TBD |
-
-Robot platform, camera and control interfaces, trial conditions, and final checkpoint: **TBD**.
-
-### Additional benchmarks
-
-LIBERO-Pro and RoboCasa365 results for the release checkpoint: **TBD**.
+*Figure 5. Two Piper trials. In the first, the right wrist camera locates the target for a left-arm grasp. In the second, the block lands in front of the dish. The agent locates it again, picks it up and places it inside.*
 
 ## Quickstart
 
-### 1. Download and deploy
-
-Model repository: [`sensenova/SenseNova-RoboRSI-27B`](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B).
-
-Weights and the validated deployment recipe are being prepared. The release will include the model configuration, tokenizer, visual processor, and chat template alongside the weights.
+Download the checkpoint with the Hugging Face CLI. The release includes the model weights, tokenizer, visual processor and chat template. [🤗 Model Weights](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B/tree/52ac9fdd07cbad42fab74217e595db12b4f1a000)
 
 ```bash
-# Model download command: TBD
-# Inference environment and service launch command: TBD
-# Vision and tool-call request example: TBD
+hf download sensenova/SenseNova-RoboRSI-27B --local-dir ./SenseNova-RoboRSI-27B
 ```
 
-Supported inference backend/version, hardware requirements, context length, generation settings, and recommended reasoning effort: **TBD**.
+To connect your model endpoint to the Harness and run benchmarks, follow the [evaluation guide for deployed models](./model-evaluation.md).
 
-### 2. Connect RoboRSI Harness and evaluate
-
-Use [RoboRSI Harness](https://github.com/OpenSenseNova/SenseNova-RoboRSI) to connect the model to benchmark environments and robot execution tools. Release-specific configurations and commands will be provided for the available execution modes.
-
-```bash
-# RoboDojo — VLA + Code as Policy: TBD
-# RoboDojo — direct code/TCP control: TBD
-# LIBERO-Pro: TBD
-# RoboCasa365: TBD
-```
-
-Real-robot integration example: **TBD**.
-
-## How It Learns
-
-### Multi-round Agent–Harness RSI
-
-Each round begins by improving the Harness: its tools, execution strategies, context, and feedback handling. Interaction with the updated Harness produces trajectories that are selected through rejection sampling and used for supervised fine-tuning. The updated Agent then returns to the Harness for further execution and evaluation.
-
-**Improve the Harness → collect and select trajectories → train the Agent → evaluate the joint version → repeat.**
-
-> **RSI learning curves — TBD**<br>
-> Round-by-round results, model and Harness versions, and controls that isolate their contributions.
-
-### Learning when and how to act
-
-VLA skills provide learned action execution, while Code as Policy lets the Agent generate code to compute target poses, organize motion, and call TCP control tools. Both receive feedback through the same interaction loop. We study how their use changes across tasks and manipulation stages, and how the learned behavior evolves from the base model and Preview to the release model.
-
-> **Execution analysis — TBD**<br>
-> VLA/TCP usage by task and stage, representative switching cases, and comparisons of combined execution with fixed execution modes.
-
-### Long-horizon trajectories and local action supervision
-
-Long-horizon Agent trajectories teach the model to connect observations, decisions, tool calls, and execution feedback. Local action examples teach it to predict the target of an individual movement.
-
-We construct local supervision from existing VLA training trajectories by identifying manipulation segments and pairing their instructions and initial observations with endpoint TCP targets. Each example uses three camera views, the dual-arm state, and a local instruction as input. Later frames help verify the segment annotation; they are excluded from the model input.
-
-The current data construction covers **35 tasks and 3,493 episodes**, producing **77,202 local examples**: 66,359 single-arm and 10,843 dual-arm examples. The final training subset, mixture, and data split will be specified with the release.
-
-> **Data construction figure — TBD**<br>
-> A real example of observations + robot state + local instruction → TCP target, and its relationship to long-horizon Agent training.
-
-### From simulation to real robots
-
-The same model weights are used in simulation and real-robot validation, with no real-robot data in embodied post-training. Visual reasoning and code-based control connect the learned task decisions to the robot's execution interface.
-
-Camera calibration, action-coordinate mapping, robot adapters, and complete execution examples: **TBD**.
-
-## Reproduction
-
-| Resource | Release reference |
-| :--- | :--- |
-| Model checkpoint / revision | TBD |
-| Matching Harness commit / tag | TBD |
-| Task manifests and evaluation configurations | TBD |
-| Per-task results and execution traces | TBD |
-| Technical report | TBD |
-
-The earlier release remains available at [SenseNova-RoboRSI-27B-Preview](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B-Preview).
-
-## Contributors
+**RoboDojo reproduction.** We will release the reproduction script after we submit our results to the RoboDojo leaderboard.
 
 ## License
 
-**Apache License 2.0.** The model is based on [Qwen3.8-27B](https://huggingface.co/Qwen/Qwen3.8-27B). The weight release will include the upstream license and attribution files. External models, simulators, and datasets retain their respective licenses.
+SenseNova-RoboRSI-27B is released under the Apache License 2.0.
