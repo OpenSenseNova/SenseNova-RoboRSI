@@ -22,9 +22,9 @@
 
 ## News
 
-- **2026-11-19** — 已提供 [**SIMPLE**](benchmarks/simple/README.zh-CN.md) 的首批代码与使用指南。
+- **2026-11-19** — 🎉 [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) 正式发布。模型结合 VLA 技能与 Code as Policy，在 RoboDojo 上取得 **34.7 分**。真机测试沿用仿真中的同一份权重，Piper 抓放物体的成功率为 **60%**，Piper X 堆叠积木的成功率为 **90%**。
 
-- **2026-11-18** — 🎉 [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) 正式发布。模型结合 VLA 技能与 Code as Policy，在 RoboDojo 上取得 **34.7 分**（seed 0、layout 0）。真机测试沿用仿真中的同一份权重，在 Piper 上抓放物体，在 Piper X 上堆叠积木。[**评测与演示**](docs/sensenova-roborsi-27b.zh-CN.md#评测与演示)
+- **2026-11-19** — 已提供 [**SIMPLE**](benchmarks/simple/README.zh-CN.md) 的首批代码与使用指南。
 
 - **2026-11-18** — 已发布包含 **336 条 Harness 消融实验轨迹记录**的[数据集](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Log)，覆盖 **42 个任务**和 **8 种方法**。
 
@@ -67,9 +67,11 @@
 在此基础上，**递归自我改进（RSI）** 利用执行轨迹与任务反馈改进 Agent 系统。
 在 Harness 优化阶段，模型参数保持不变；候选改进经过复测验证后，有效变化被继承到下一 Agent 版本。
 
-[SenseNova-RoboRSI-27B](#sensenova-roborsi-27b) 使用这一运行时采集并筛选交互轨迹，用于具身模型的监督微调。
-
 ![SenseNova-RoboRSI 用户接口、Agent 执行闭环、Benchmark 接入与 RSI 迭代流程](assets/sensenova-roborsi-overview-zh.webp)
+
+[SenseNova-RoboRSI-27B](docs/sensenova-roborsi-27b.zh-CN.md) 是本项目面向机器人操作的视觉语言模型，通过多轮 RSI 与 RoboRSI Harness 协同迭代。模型通过 Harness 审查 VLA 提出的候选轨迹，也可编写代码计算目标位姿、控制夹爪。SenseNova-RoboRSI-27B 在仿真中学会使用 VLA 和 Code as Policy，并用同一份权重驱动真实机械臂。
+
+![RoboDojo 平均得分 34.7 分、六个模型的对比与三轮 RSI 迭代，以及 Piper 和 Piper X 的真机结果](assets/roborsi-27b/homepage-teaser.zh-CN.png)
 
 ### 核心能力
 
@@ -78,6 +80,12 @@
 - **灵活的 Agent 接口**：接入模型、提示词、技能与工具/MCP，按任务配置上下文和缓存策略。
 - **统一执行与评测**：跨基准调用 VLA 技能、脚本动作或末端控制工具，保留原生反馈与评分。
 - **实验记录与训练数据**：记录完整轨迹、导出训练 episode，支持并发批量评测与中断恢复。
+
+#### SenseNova-RoboRSI-27B
+
+- **VLA × Code as Policy。** 同一次叠碗任务中，Agent 可以先调用 VLA 抓碗，再切换到代码控制，在松爪前修正碗的位置。
+- **更准的末端定位。** VLA2Agent 将开源 VLA 操作示范转为 Agent 的动作监督。加入这类数据后，末端位置预测误差在 50 mm 以内的比例从 24.9% 提升到 49.2%。
+- **从仿真到真机。** 具身后训练仅使用仿真数据。同一份权重在 Piper 上仅用代码完成物体抓放，在 Piper X 上结合 VLA 和代码完成积木堆叠。
 
 #### RSI：模型与 Harness 协同演进
 
@@ -192,20 +200,32 @@ ICL 经验包统一托管在
 
 参考结果：[RoboCasa 官方榜单](https://robocasa.ai/leaderboard.html)。SenseNova-RoboRSI 使用 Target50 设置，官方榜单条目在预训练厨房中评测。以上为不同评测设置下的结果参考，不构成同一协议下的排名。
 
-## SenseNova-RoboRSI-27B
+## Model Results
 
-[🤗 Hugging Face](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) · [评测与演示](docs/sensenova-roborsi-27b.zh-CN.md#评测与演示) · [快速开始](docs/sensenova-roborsi-27b.zh-CN.md#快速开始)
+### RoboDojo 仿真
 
-SenseNova-RoboRSI-27B 在仿真中学会使用 VLA 和 Code as Policy，并用同一份权重驱动真实机械臂。
+| 模型 | 平均得分 ↑ |
+| --- | ---: |
+| SenseNova-RoboRSI-27B | **34.7** |
+| GPT-6 Astra（RoboDojo Team） | 27.6 |
+| Qwen4-Max | 18.9 |
+| DeepSeek-V4.1-Flash | 11.8 |
+| SenseNova-RoboRSI-27B-Preview | 10.0 |
+| Qwen3.8-27B | 9.1 |
 
-![模型训练流程、动作控制与真机结果](assets/roborsi-27b-teaser.zh-CN.png)
+GPT-6 Astra 的成绩来自 [RoboDojo 官方 Agent 榜单](https://robodojo-benchmark.com/leaderboard#agent)。其余五个模型均在 seed 0、layout 0 下使用同一套通用 Harness 评测，未配置任务专属技能。
 
-从 Agent 训练到真机操作，本次发布的主要贡献有四项。
+### Piper 与 Piper X 真机
 
-1. **多轮 RSI。** 三轮迭代中，我们根据执行反馈改进 Harness，再用拒绝采样筛选出的教师轨迹微调 27B Agent，让它学会使用新工具。
-2. **VLA × Code as Policy。** 同一次叠碗任务中，Agent 可以先调用 VLA 抓碗，再切换到代码控制，在松爪前修正碗的位置。
-3. **更准的末端定位。** VLA2Agent 将开源 VLA 操作示范转为 Agent 的动作监督。加入这类数据后，末端位置预测误差在 50 mm 以内的比例从 24.9% 提升到 49.2%。
-4. **从仿真到真机。** 具身后训练仅使用仿真数据。同一份权重在 Piper 上仅用代码完成物体抓放，在 Piper X 上结合 VLA 和代码完成积木堆叠。
+每个模型在每项任务上测试 10 次，表中为成功率。
+
+| 模型 | Piper 物体抓放 ↑ | Piper X 积木堆叠 ↑ |
+| --- | ---: | ---: |
+| SenseNova-RoboRSI-27B | **60%** | **90%** |
+| SenseNova-RoboRSI-27B-Preview | 20% | 30% |
+| Qwen3.8-27B | 0% | 0% |
+
+更多仿真与真机演示视频见[评测与演示](docs/sensenova-roborsi-27b.zh-CN.md#评测与演示)。
 
 ## Release Plan & Roadmap
 
