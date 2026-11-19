@@ -69,7 +69,7 @@
 
 ![SenseNova-RoboRSI 用户接口、Agent 执行闭环、Benchmark 接入与 RSI 迭代流程](assets/sensenova-roborsi-overview-zh.webp)
 
-[SenseNova-RoboRSI-27B](docs/sensenova-roborsi-27b.zh-CN.md) 是本项目面向机器人操作的视觉语言模型，通过多轮 RSI 与 RoboRSI Harness 协同迭代。模型通过 Harness 审查 VLA 提出的候选轨迹，也可编写代码计算目标位姿、控制夹爪。SenseNova-RoboRSI-27B 在仿真中学会使用 VLA 和 Code as Policy，并用同一份权重驱动真实机械臂。
+[SenseNova-RoboRSI-27B](docs/sensenova-roborsi-27b.zh-CN.md) 是面向机器人操作的视觉语言模型，通过多轮 RSI 与 RoboRSI Harness 协同迭代。模型可以审查 VLA 提出的候选轨迹，也可以编写代码计算目标位姿、控制夹爪。SenseNova-RoboRSI-27B 在仿真中学会使用 VLA 和 Code as Policy，并用同一份权重驱动真实机械臂。
 
 ![RoboDojo 平均得分 34.7 分、六个模型的对比与三轮 RSI 迭代，以及 Piper 和 Piper X 的真机结果](assets/roborsi-27b/homepage-teaser.zh-CN.png)
 
