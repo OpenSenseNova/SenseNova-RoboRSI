@@ -74,7 +74,7 @@ improvements are carried into the next agent version.
   <img src="assets/sensenova-roborsi-overview-en.webp" alt="SenseNova-RoboRSI agent interfaces, execution loop, benchmark integration, and RSI workflow" width="75%" />
 </p>
 
-[SenseNova-RoboRSI-27B](docs/sensenova-roborsi-27b.md) is the project’s vision-language model for robot manipulation, refined alongside the RoboRSI Harness over multiple rounds of RSI. It uses the Harness to review trajectories proposed by a VLA policy and to control the gripper by writing code that computes target poses. SenseNova-RoboRSI-27B learns to use VLA and Code as Policy in simulation and uses the same weights to control physical robots.
+[SenseNova-RoboRSI-27B](docs/sensenova-roborsi-27b.md) is a vision-language model for robot manipulation, refined alongside the RoboRSI Harness over multiple rounds of RSI. It can review trajectories proposed by a VLA policy and write code to compute target poses and control the gripper. SenseNova-RoboRSI-27B learns to use VLA and Code as Policy in simulation and uses the same weights to control physical robots.
 
 ![RoboDojo average score of 34.7, model comparison and three rounds of RSI, with real-robot results on Piper and Piper X](assets/roborsi-27b/homepage-teaser.png)
 
