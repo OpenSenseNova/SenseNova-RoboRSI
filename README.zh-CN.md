@@ -10,17 +10,19 @@
 
 <p align="center">
   <a href="https://www.sensenova.ai/has-gpt-6-astra-achieved-embodied-intelligence"><img src="assets/badges/report.svg" alt="研究报告：Has GPT-6 Achieved Embodied Intelligence?" /></a>
-  <a href="https://huggingface.co/sensenova/sensenova-roborsi-27b-preview"><img src="assets/badges/model.svg" alt="Model：SenseNova-RoboRSI-27B-Preview" /></a>
+  <a href="https://huggingface.co/sensenova/SenseNova-RoboRSI-27B"><img src="assets/badges/model.svg" alt="Model：SenseNova-RoboRSI-27B" /></a>
 </p>
 
 <p align="center">
   <a href="README.md">English</a> · <strong>简体中文</strong> ·
   <a href="#quick-start">快速开始</a> ·
   <a href="https://www.sensenova.ai/has-gpt-6-astra-achieved-embodied-intelligence">研究报告</a> ·
-  <a href="#sensenova-roborsi-27b-preview">RoboRSI-27B-Preview</a>
+  <a href="docs/sensenova-roborsi-27b.zh-CN.md">RoboRSI-27B</a>
 </p>
 
 ## News
+
+- **2026-11-18** — 🎉 [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) 正式发布。模型结合 VLA 技能与 Code as Policy，在 RoboDojo 上取得 **34.7 分**（seed 0、layout 0）。真机测试沿用仿真中的同一份权重，在 Piper 上抓放物体，在 Piper X 上堆叠积木。[**评测与演示**](docs/sensenova-roborsi-27b.zh-CN.md#评测与演示)
 
 - **2026-11-16** — **SenseNova-RoboRSI** 现已登上 [**RoboDojo 官方 Agent 榜单**](https://robodojo-benchmark.com/leaderboard#agent)，在 **Avg.（w/o Open）** 口径下取得 **57.10 的平均得分**和 **49.17% 的成功率**。
 
@@ -58,14 +60,10 @@
 通过统一运行框架接入模型、技能与机器人工具，配置提示词和上下文，并在保留原生执行与
 评分逻辑的环境中评测策略。
 
-在此基础上，**递归自我改进（RSI）** 利用执行轨迹与任务反馈，在保持模型参数不变的前提下
-优化 Harness。候选改进经过复测验证后，有效变化被继承到下一 Agent 版本，
-将任务执行与持续改进连接起来。
+在此基础上，**递归自我改进（RSI）** 利用执行轨迹与任务反馈改进 Agent 系统。
+在 Harness 优化阶段，模型参数保持不变；候选改进经过复测验证后，有效变化被继承到下一 Agent 版本。
 
-🎉 **[SenseNova-RoboRSI-27B-Preview](#sensenova-roborsi-27b-preview)** 将这项工作进一步推进到模型训练。我们将经过验证的
-交互经验转化为多模态监督，让目标理解、动作决策与反馈纠错逐步沉淀到模型参数中。
-更新后的模型回到同一运行框架中复测并继续探索，让模型训练与 Harness 改进通过共享经验
-和联合验证形成持续演进的闭环。
+[SenseNova-RoboRSI-27B](#sensenova-roborsi-27b) 使用这一运行时采集并筛选交互轨迹，用于具身模型的监督微调。
 
 ![SenseNova-RoboRSI 用户接口、Agent 执行闭环、Benchmark 接入与 RSI 迭代流程](assets/sensenova-roborsi-overview-zh.webp)
 
@@ -77,10 +75,11 @@
 - **统一执行与评测**：跨基准调用 VLA 技能、脚本动作或末端控制工具，保留原生反馈与评分。
 - **实验记录与训练数据**：记录完整轨迹、导出训练 episode，支持并发批量评测与中断恢复。
 
-#### RSI：持续改进 Harness
+#### RSI：模型与 Harness 协同演进
 
-- **从执行反馈中改进**：保持模型参数不变，优化动作预测、任务规划、执行反馈与记忆组织。
-- **复测并保留有效变化**：记录 Agent 版本，在相同任务条件下评测候选改进，并将验证有效的变化继承到后续版本。
+- **优化 Harness**：利用执行反馈改进动作预测、任务规划、执行反馈与记忆组织，在这一阶段保持模型参数不变。
+- **从验证经验中训练**：采集并筛选交互轨迹，通过微调使具身模型适配更新后的 Harness。
+- **复测并持续迭代**：记录模型与 Harness 版本，在相同任务条件下评测变化，将验证有效的改进带入下一轮。
 
 ## Quick Start
 
@@ -108,20 +107,9 @@ python scripts/evaluation/evaluate_gpt6.py
 脚本顺序运行各 benchmark 现有 Agent，分别保存原生评分。
 覆盖范围、冻结 ICL、离线计划及结果查看方式见评测指南。
 
-### SenseNova-RoboRSI-27B-Preview：沿用现有一键入口
+### SenseNova-RoboRSI-27B：部署与评测
 
-先[部署模型](docs/sensenova-roborsi-27b-preview.zh-CN.md#1-部署模型)，
-继续使用当前的已部署模型评测脚本：
-
-```bash
-export OPENAI_BASE_URL='http://127.0.0.1:8000/v1'
-export OPENAI_API_KEY='EMPTY'
-export MODEL_NAME='sensenova-roborsi-27b-preview'
-python scripts/evaluation/evaluate_model.py --benchmark robocasa365
-```
-
-LIBERO-Pro 直接控制、VLA/SAM3 的现有命令见[模型指南](docs/sensenova-roborsi-27b-preview.zh-CN.md)。
-其他模型与高级参数见[已部署模型评测指南](docs/model-evaluation.zh-CN.md)。
+[正式版指南](docs/sensenova-roborsi-27b.zh-CN.md)汇总评测设置、演示和复现材料。已有推理服务的接入方式见[已部署模型评测指南](docs/model-evaluation.zh-CN.md)。
 
 ## BenchZoo
 
@@ -200,20 +188,20 @@ ICL 经验包统一托管在
 
 参考结果：[RoboCasa 官方榜单](https://robocasa.ai/leaderboard.html)。SenseNova-RoboRSI 使用 Target50 设置，官方榜单条目在预训练厨房中评测。以上为不同评测设置下的结果参考，不构成同一协议下的排名。
 
-## SenseNova-RoboRSI-27B-Preview
+## SenseNova-RoboRSI-27B
 
-**SenseNova-RoboRSI-27B-Preview** 是我们开源的 **27B 具身视觉语言模型**，将 RoboRSI
-从 Harness 改进进一步拓展到模型训练。通过**模型与 Harness 协同 RSI**，模型从经过验证的
-交互经验中学习，让目标理解、动作决策与反馈纠错逐步成为模型自身的能力。
+[🤗 Hugging Face](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) · [评测与演示](docs/sensenova-roborsi-27b.zh-CN.md#评测与演示) · [快速开始](docs/sensenova-roborsi-27b.zh-CN.md#快速开始)
 
-模型支持 **VLA 配合执行与 VLM 直接控制**两种架构，已在 RoboDojo、LIBERO-Pro 和
-RoboCasa365 上开展评测，并展示了仿真与真机任务能力。开放的模型权重为社区部署、复现和
-继续训练提供起点。
+SenseNova-RoboRSI-27B 在仿真中学会使用 VLA 和 Code as Policy，并用同一份权重驱动真实机械臂。
 
-![SenseNova-RoboRSI-27B-Preview 在 RoboDojo、LIBERO-Pro 与 RoboCasa365 上的评测结果](assets/roborsi-27b-preview-benchmarks.webp)
+![模型训练流程、动作控制与真机结果](assets/roborsi-27b-teaser.zh-CN.png)
 
-模型权重已在 [🤗 Hugging Face](https://huggingface.co/sensenova/sensenova-roborsi-27b-preview) 开放。
-详细评测结果、演示与使用说明请参阅[模型指南](docs/sensenova-roborsi-27b-preview.zh-CN.md)。
+从 Agent 训练到真机操作，本次发布的主要贡献有四项。
+
+1. **多轮 RSI。** 三轮迭代中，我们根据执行反馈改进 Harness，再用拒绝采样筛选出的教师轨迹微调 27B Agent，让它学会使用新工具。
+2. **VLA × Code as Policy。** 同一次叠碗任务中，Agent 可以先调用 VLA 抓碗，再切换到代码控制，在松爪前修正碗的位置。
+3. **更准的末端定位。** VLA2Agent 将开源 VLA 操作示范转为 Agent 的动作监督。加入这类数据后，末端位置预测误差在 50 mm 以内的比例从 24.9% 提升到 49.2%。
+4. **从仿真到真机。** 具身后训练仅使用仿真数据。同一份权重在 Piper 上仅用代码完成物体抓放，在 Piper X 上结合 VLA 和代码完成积木堆叠。
 
 ## Release Plan & Roadmap
 
@@ -224,6 +212,7 @@ RoboCasa365 上开展评测，并展示了仿真与真机任务能力。开放�
 - [x] 首批代码：Agent 运行时与 LIBERO 系列评测
 - [x] [使用文档](docs/README.md)
 - [x] [SenseNova-RoboRSI-27B-Preview 发布](docs/sensenova-roborsi-27b-preview.zh-CN.md)
+- [x] [SenseNova-RoboRSI-27B 正式发布](docs/sensenova-roborsi-27b.zh-CN.md)
 - [ ] Harness demo
 - [ ] RoboRSI 技术报告
 
