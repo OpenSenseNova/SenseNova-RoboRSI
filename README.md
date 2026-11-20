@@ -75,7 +75,7 @@ same runtime for evaluation and further exploration, connecting model training
 and Harness improvement through shared experience and joint retesting.
 
 <p align="center">
-  <img src="assets/sensenova-roborsi-overview-en.webp" alt="SenseNova-RoboRSI agent interfaces, execution loop, benchmark integration, and RSI workflow" width="75%" />
+  <img src="assets/sensenova-roborsi-overview.webp" alt="SenseNova-RoboRSI agent interfaces, execution loop, benchmark integration, and RSI workflow" width="75%" />
 </p>
 
 ### Core capabilities
