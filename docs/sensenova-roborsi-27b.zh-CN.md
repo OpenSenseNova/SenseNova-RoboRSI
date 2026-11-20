@@ -4,7 +4,7 @@
 
 SenseNova-RoboRSI-27B 是一款面向机器人操作的视觉语言模型。模型可以调用视觉语言动作策略（VLA）并审查候选轨迹，也可以编写代码计算夹爪的目标位姿，交给控制器执行（Code as Policy）。每次执行后，模型根据新的相机画面和机器人状态决定下一步动作。
 
-![训练流程、两种控制方式、评测结果和两款真机的任务起止画面](../assets/roborsi-27b-teaser.zh-CN.png)
+![多轮 RSI、VLA 与代码控制、末端位置预测精度及 Piper 和 Piper X 真机结果](../assets/roborsi-27b-teaser.zh-CN.png)
 
 *图 1　同一份模型权重用于 RoboDojo 仿真评测和两款真实机械臂。*
 
@@ -18,6 +18,10 @@ SenseNova-RoboRSI-27B 是一款面向机器人操作的视觉语言模型。模�
 
 *图 2　左图中，星号标出我们在 seed 0、layout 0 下的评测结果，GPT-6 Astra 的 27.6 分取自 [RoboDojo 官方榜单](https://robodojo-benchmark.com/leaderboard#agent)。右图对比三轮 RSI 的结果，每一轮都是模型与 Harness 协同迭代得分最高。*
 
+![根据交互反馈改进 Harness，在新 Harness 下采集教师轨迹，筛选后微调模型并进入下一轮验证](../assets/roborsi-27b/rsi-loop.png)
+
+*图 3　每一轮先用失败或低效的操作找出 Harness 需要改进的环节，再用教师模型在新 Harness 下采集轨迹。筛选后的轨迹用于微调 27B 模型，下一轮再验证两者的改进。*
+
 评测包含 **来自全部 RoboDojo 任务的 374 条局部动作**，其中单臂 179 条、双臂 195 条。逐条比较预测的夹爪终点坐标 (x, y, z) 与轨迹记录的终点坐标，位置误差以毫米计。双臂动作须两只手臂都落入误差阈值才计为命中。位置误差中位数按坐标可解析的预测统计。
 
 VLA2Agent 从开源 VLA 操作示范中提取末端目标位姿，作为动作监督。
@@ -29,7 +33,7 @@ VLA2Agent 从开源 VLA 操作示范中提取末端目标位姿，作为动作�
 
 ![三种误差阈值下的末端位置命中率和位置误差中位数](../assets/roborsi-27b/eef-accuracy.png)
 
-*图 3　开环末端位置预测。图中对比加入和未加入 VLA2Agent 监督的模型，并列出其他模型的参考结果。*
+*图 4　开环末端位置预测。图中对比加入和未加入 VLA2Agent 监督的模型，并列出其他模型的参考结果。*
 
 上面的开环评测衡量夹爪目标位置的预测误差。在下面的 RoboDojo 叠碗任务中，Agent 发现手里的碗比下方的碗偏左，于是保持夹爪闭合，用 Code as Policy 将目标位置向右调整 2 厘米，再放下碗。
 
@@ -39,7 +43,7 @@ VLA2Agent 从开源 VLA 操作示范中提取末端目标位姿，作为动作�
 
 ![四个 RoboDojo 仿真任务的相机画面和控制代码](../assets/roborsi-27b/code-as-policy.png)
 
-*图 4　Code as Policy 仿真示例。Agent 按物体朝向抓取、侧推 T 形块、用双臂对准衣摆两角，以及分两步将试管插入孔位。*
+*图 5　Code as Policy 仿真示例。Agent 按物体朝向抓取、侧推 T 形块、用双臂对准衣摆两角，以及分两步将试管插入孔位。*
 
 ### 真机（Piper 与 Piper X）
 
@@ -58,7 +62,7 @@ Piper 的两段实测轨迹展示了 Agent 如何根据相机画面确定抓取�
 
 ![Piper 用右腕相机辅助左臂抓取，以及放置偏移后的重新抓取](../assets/roborsi-27b/real-robot-recovery.png)
 
-*图 5　两段 Piper 实测轨迹。上排用右腕相机定位、左臂抓放。下排中，积木落在盘前，Agent 再次定位并抓起积木，将其放回盘内。*
+*图 6　两段 Piper 实测轨迹。上排用右腕相机定位、左臂抓放。下排中，积木落在盘前，Agent 再次定位并抓起积木，将其放回盘内。*
 
 ## 快速开始
 

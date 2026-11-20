@@ -4,7 +4,7 @@
 
 SenseNova-RoboRSI-27B is a vision-language model for robot manipulation. It can request motion from a vision-language-action (VLA) policy, review a proposed trajectory, or write code to compute and execute a gripper target pose (Code as Policy). After each action, the agent uses new camera observations and robot state to decide what to do next.
 
-![Training workflow, control modes, evaluation results and start/end frames from two physical robots](../assets/roborsi-27b-teaser.png)
+![Multi-round RSI, VLA and Code as Policy, end-effector accuracy, and results on Piper and Piper X](../assets/roborsi-27b-teaser.png)
 
 *Figure 1. The same checkpoint runs in RoboDojo and on two physical robot platforms.*
 
@@ -18,6 +18,10 @@ SenseNova-RoboRSI-27B averages **34.7** on RoboDojo, up from **10.0** for Previe
 
 *Figure 2. In the left panel, stars mark our evaluations at seed 0, layout 0. The GPT-6 Astra score of 27.6 comes from the [RoboDojo Team’s leaderboard](https://robodojo-benchmark.com/leaderboard#agent). In the right panel, updating the model and Harness together outperformed updating either alone in all three RSI rounds.*
 
+![Interaction feedback guides Harness updates, followed by teacher rollouts, trajectory selection, fine-tuning and a new evaluation round](../assets/roborsi-27b/en/rsi-loop.png)
+
+*Figure 3. Failed or inefficient actions guide each Harness update. We collect trajectories from the teacher using the revised Harness, then fine-tune the 27B model on selected trajectories for the next round.*
+
 We measured the distance in millimeters between the predicted and recorded gripper endpoint coordinates (x, y, z) on **374 local actions from all RoboDojo tasks**. Of these, 179 use one arm and 195 use both. A dual-arm prediction counts as a hit only when both arms meet the threshold. The median uses predictions with parseable coordinates.
 
 VLA2Agent supplies end-effector target poses from open VLA demonstrations.
@@ -29,7 +33,7 @@ VLA2Agent supplies end-effector target poses from open VLA demonstrations.
 
 ![Position accuracy at three distance thresholds and median position error](../assets/roborsi-27b/en/eef-accuracy.png)
 
-*Figure 3. Open-loop end-effector predictions, with and without VLA2Agent supervision and across reference models.*
+*Figure 4. Open-loop end-effector predictions, with and without VLA2Agent supervision and across reference models.*
 
 The open-loop test measures how accurately the agent predicts a gripper target. In the RoboDojo trial below, the bowl is slightly left of the stack. The agent keeps its grip and uses Code as Policy to shift the target 2 cm to the right before lowering the bowl.
 
@@ -39,7 +43,7 @@ The open-loop test measures how accurately the agent predicts a gripper target. 
 
 ![Camera views and control code from four RoboDojo manipulation tasks](../assets/roborsi-27b/en/code-as-policy.png)
 
-*Figure 4. Code as Policy in simulation. The agent uses object orientation to plan a grasp, nudges a T-block sideways, aligns both grippers with garment corners, and inserts a test tube in two steps.*
+*Figure 5. Code as Policy in simulation. The agent uses object orientation to plan a grasp, nudges a T-block sideways, aligns both grippers with garment corners, and inserts a test tube in two steps.*
 
 ### Physical robots (Piper & Piper X)
 
@@ -58,7 +62,7 @@ Two Piper trials show how the agent uses camera feedback to decide where to gras
 
 ![Right-wrist localization for a left-arm grasp and recovery from a missed placement](../assets/roborsi-27b/en/real-robot-recovery.png)
 
-*Figure 5. Two Piper trials. In the first, the right wrist camera locates the target for a left-arm grasp. In the second, the block lands in front of the dish. The agent locates it again, picks it up and places it inside.*
+*Figure 6. Two Piper trials. In the first, the right wrist camera locates the target for a left-arm grasp. In the second, the block lands in front of the dish. The agent locates it again, picks it up and places it inside.*
 
 ## Quickstart
 
