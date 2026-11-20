@@ -12,11 +12,11 @@ SenseNova-RoboRSI-27B 是一款面向机器人操作的视觉语言模型。模�
 
 ### RoboDojo 仿真
 
-GPT-6 Astra 采用 RoboDojo Team 公布的榜单成绩，正式版比该参考高 7.1 分。其余九项均在 **seed 0、layout 0** 下使用同一套通用 Harness 测试，未配置任务专属技能。Opus 5.5、GPT-6.1 Sol、Capek 0.5-35B-A3B 和 PEAR-27B 的平均得分分别为 40.7、33.7、9.1 和 4.4。[RoboDojo Agent 排行榜](https://robodojo-benchmark.com/leaderboard#agent)
+在 RoboDojo 上，SenseNova-RoboRSI-27B 的平均得分从 Preview 的 **10.0 分**升至正式版的 **34.7 分**。我们用同一套通用 Harness 评测了九个模型，均未配置任务专属技能，只有 Opus 5.5 的得分高于正式版。
 
 ![十个模型的 RoboDojo 平均得分及三轮 RSI 对照实验](../assets/roborsi-27b/robodojo-results.png)
 
-*图 2　从 Preview 的 10.0 分出发，三轮后，模型与 Harness 同时迭代达到 34.7 分，仅更新模型为 32.2 分，仅更新 Harness 为 24.8 分。*
+*图 2　左图中，星号标出我们在 seed 0、layout 0 下的评测结果，GPT-6 Astra 的 27.6 分取自 [RoboDojo 官方榜单](https://robodojo-benchmark.com/leaderboard#agent)。右图对比三轮 RSI 的结果，每一轮都是模型与 Harness 协同迭代得分最高。*
 
 评测包含 **来自全部 RoboDojo 任务的 374 条局部动作**，其中单臂 179 条、双臂 195 条。逐条比较预测的夹爪终点坐标 (x, y, z) 与轨迹记录的终点坐标，位置误差以毫米计。双臂动作须两只手臂都落入误差阈值才计为命中。位置误差中位数按坐标可解析的预测统计。
 
