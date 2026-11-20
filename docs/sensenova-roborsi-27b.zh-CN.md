@@ -12,7 +12,7 @@ SenseNova-RoboRSI-27B 是一款面向机器人操作的视觉语言模型。模�
 
 ### RoboDojo 仿真
 
-在 RoboDojo 上，SenseNova-RoboRSI-27B 的平均得分从 Preview 的 **10.0 分**升至正式版的 **34.7 分**。我们用同一套通用 Harness 评测了九个模型，均未配置任务专属技能，只有 Opus 5.5 的得分高于正式版。
+在 RoboDojo 上，SenseNova-RoboRSI-27B 的平均得分从 Preview 的 **10.0 分**升至正式版的 **34.7 分**。我们用同一套通用 Harness 评测了九个模型，均未配置任务专属技能。
 
 ![十个模型的 RoboDojo 平均得分及三轮 RSI 对照实验](../assets/roborsi-27b/robodojo-results.png)
 
