@@ -1,0 +1,4 @@
+# The native base owns Torch, NumPy, Pillow, SIMPLE, MuJoCo and Isaac Sim.
+pydantic>=2.11,<3
+jsonschema>=4.23,<5
+PyYAML>=6,<7

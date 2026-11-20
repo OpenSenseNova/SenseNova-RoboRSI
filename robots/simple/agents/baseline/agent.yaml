@@ -1,0 +1,18 @@
+schema_version: 1
+source_root: ../../../..
+prompt_file: prompt.md
+agent:
+  planner: api
+  max_turns: 1000
+  max_tokens: null
+  planner_timeout_s: null
+  action_timeout_s: 900
+  reasoning_effort: max
+runtime:
+  llm:
+    provider: openai
+    model: YOUR_VISION_TOOL_MODEL
+    openai_format: responses
+    parallel_tool_calls: false
+  trace:
+    mode: full
