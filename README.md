@@ -76,7 +76,7 @@ improvements are carried into the next agent version.
 
 [SenseNova-RoboRSI-27B](docs/sensenova-roborsi-27b.md) is a vision-language model for robot manipulation, refined alongside the RoboRSI Harness over multiple rounds of RSI. It can review trajectories proposed by a VLA policy and write code to compute target poses and control the gripper. SenseNova-RoboRSI-27B learns to use VLA and Code as Policy in simulation and uses the same weights to control physical robots.
 
-![RoboDojo average score of 34.7, model comparison and three rounds of RSI, with real-robot results on Piper and Piper X](assets/roborsi-27b/homepage-teaser.png)
+![RoboDojo average score of 34.7, comparison across ten models and three rounds of RSI, with real-robot results on Piper and Piper X](assets/roborsi-27b/homepage-teaser.png)
 
 ### Core capabilities
 
@@ -223,14 +223,18 @@ Reference results: [official RoboCasa leaderboard](https://robocasa.ai/leaderboa
 
 | Model | Average score ↑ |
 | --- | ---: |
+| Opus 5.5 | 40.7 |
 | SenseNova-RoboRSI-27B | **34.7** |
+| GPT-6.1 Sol | 33.7 |
 | GPT-6 Astra (RoboDojo Team) | 27.6 |
 | Qwen4-Max | 18.9 |
 | DeepSeek-V4.1-Flash | 11.8 |
 | SenseNova-RoboRSI-27B-Preview | 10.0 |
+| Capek 0.5-35B-A3B | 9.1 |
 | Qwen3.8-27B | 9.1 |
+| PEAR-27B | 4.4 |
 
-The GPT-6 Astra score comes from the [official RoboDojo Agent leaderboard](https://robodojo-benchmark.com/leaderboard#agent). We evaluated the other five models at seed 0, layout 0 using the same general-purpose Harness without task-specific skills.
+The GPT-6 Astra score comes from the [official RoboDojo Agent leaderboard](https://robodojo-benchmark.com/leaderboard#agent). We evaluated the other nine models at seed 0, layout 0 using the same general-purpose Harness without task-specific skills.
 
 ### Physical robots: Piper and Piper X
 

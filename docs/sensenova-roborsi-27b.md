@@ -12,9 +12,9 @@ SenseNova-RoboRSI-27B is a vision-language model for robot manipulation. It can 
 
 ### RoboDojo simulation
 
-The GPT-6 Astra result comes from the RoboDojo Team’s published leaderboard. The release scores 7.1 points higher. We evaluated the other five entries at **seed 0, layout 0**, using the same general-purpose Harness with no task-specific skills. [RoboDojo Agent leaderboard](https://robodojo-benchmark.com/leaderboard#agent)
+The GPT-6 Astra result comes from the RoboDojo Team’s published leaderboard. The release scores 7.1 points higher. We evaluated the other nine models at **seed 0, layout 0**, using the same general-purpose Harness with no task-specific skills. Opus 5.5 scored 40.7, GPT-6.1 Sol 33.7, Capek 0.5-35B-A3B 9.1, and PEAR-27B 4.4. [RoboDojo Agent leaderboard](https://robodojo-benchmark.com/leaderboard#agent)
 
-![RoboDojo agent comparison and scores across three rounds of RSI](../assets/roborsi-27b/en/robodojo-results.png)
+![RoboDojo average scores for ten models and scores across three rounds of RSI](../assets/roborsi-27b/en/robodojo-results.png)
 
 *Figure 2. Starting from a Preview score of 10.0, three rounds of updates reached 34.7 when both the model and Harness changed, 32.2 with model updates alone and 24.8 with Harness updates alone.*
 
