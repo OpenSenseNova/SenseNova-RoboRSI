@@ -71,7 +71,7 @@
 更新后的模型回到同一运行框架中复测并继续探索，让模型训练与 Harness 改进通过共享经验
 和联合验证形成持续演进的闭环。
 
-![SenseNova-RoboRSI 用户接口、Agent 执行闭环、Benchmark 接入与 RSI 迭代流程](assets/sensenova-roborsi-overview.webp)
+![SenseNova-RoboRSI 用户接口、Agent 执行闭环、Benchmark 接入与 RSI 迭代流程](assets/sensenova-roborsi-overview-zh.webp)
 
 ### 核心能力
 
