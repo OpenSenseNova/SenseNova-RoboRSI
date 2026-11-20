@@ -71,7 +71,7 @@
 
 [SenseNova-RoboRSI-27B](docs/sensenova-roborsi-27b.zh-CN.md) 是面向机器人操作的视觉语言模型，通过多轮 RSI 与 RoboRSI Harness 协同迭代。模型可以审查 VLA 提出的候选轨迹，也可以编写代码计算目标位姿、控制夹爪。SenseNova-RoboRSI-27B 在仿真中学会使用 VLA 和 Code as Policy，并用同一份权重驱动真实机械臂。
 
-![RoboDojo 平均得分 34.7 分、六个模型的对比与三轮 RSI 迭代，以及 Piper 和 Piper X 的真机结果](assets/roborsi-27b/homepage-teaser.zh-CN.png)
+![RoboDojo 平均得分 34.7 分、十个模型的对比与三轮 RSI 迭代，以及 Piper 和 Piper X 的真机结果](assets/roborsi-27b/homepage-teaser.zh-CN.png)
 
 ### 核心能力
 
@@ -206,14 +206,18 @@ ICL 经验包统一托管在
 
 | 模型 | 平均得分 ↑ |
 | --- | ---: |
+| Opus 5.5 | 40.7 |
 | SenseNova-RoboRSI-27B | **34.7** |
+| GPT-6.1 Sol | 33.7 |
 | GPT-6 Astra（RoboDojo Team） | 27.6 |
 | Qwen4-Max | 18.9 |
 | DeepSeek-V4.1-Flash | 11.8 |
 | SenseNova-RoboRSI-27B-Preview | 10.0 |
+| Capek 0.5-35B-A3B | 9.1 |
 | Qwen3.8-27B | 9.1 |
+| PEAR-27B | 4.4 |
 
-GPT-6 Astra 的成绩来自 [RoboDojo 官方 Agent 榜单](https://robodojo-benchmark.com/leaderboard#agent)。其余五个模型均在 seed 0、layout 0 下使用同一套通用 Harness 评测，未配置任务专属技能。
+GPT-6 Astra 的成绩来自 [RoboDojo 官方 Agent 榜单](https://robodojo-benchmark.com/leaderboard#agent)。其余九个模型均在 seed 0、layout 0 下使用同一套通用 Harness 评测，未配置任务专属技能。
 
 ### Piper 与 Piper X 真机
 

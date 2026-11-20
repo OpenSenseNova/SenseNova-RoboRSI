@@ -12,9 +12,9 @@ SenseNova-RoboRSI-27B 是一款面向机器人操作的视觉语言模型。模�
 
 ### RoboDojo 仿真
 
-GPT-6 Astra 采用 RoboDojo Team 公布的榜单成绩，正式版比该参考高 7.1 分。其余五项均在 **seed 0、layout 0** 下使用同一套通用 Harness 测试，未配置任务专属技能。[RoboDojo Agent 排行榜](https://robodojo-benchmark.com/leaderboard#agent)
+GPT-6 Astra 采用 RoboDojo Team 公布的榜单成绩，正式版比该参考高 7.1 分。其余九项均在 **seed 0、layout 0** 下使用同一套通用 Harness 测试，未配置任务专属技能。Opus 5.5、GPT-6.1 Sol、Capek 0.5-35B-A3B 和 PEAR-27B 的平均得分分别为 40.7、33.7、9.1 和 4.4。[RoboDojo Agent 排行榜](https://robodojo-benchmark.com/leaderboard#agent)
 
-![不同模型的 RoboDojo 得分及三轮 RSI 对照实验](../assets/roborsi-27b/robodojo-results.png)
+![十个模型的 RoboDojo 平均得分及三轮 RSI 对照实验](../assets/roborsi-27b/robodojo-results.png)
 
 *图 2　从 Preview 的 10.0 分出发，三轮后，模型与 Harness 同时迭代达到 34.7 分，仅更新模型为 32.2 分，仅更新 Harness 为 24.8 分。*
 
