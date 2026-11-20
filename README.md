@@ -224,7 +224,7 @@ Reference results: [official RoboCasa leaderboard](https://robocasa.ai/leaderboa
 | Model | Average score ↑ |
 | --- | ---: |
 | Opus 5.5 | 40.7 |
-| SenseNova-RoboRSI-27B | **34.7** |
+| **SenseNova-RoboRSI-27B (Ours)** | **34.7** |
 | GPT-6.1 Sol | 33.7 |
 | GPT-6 Astra (RoboDojo Team) | 27.6 |
 | Qwen4-Max | 18.9 |
