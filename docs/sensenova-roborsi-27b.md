@@ -82,7 +82,7 @@ python -m pip install 'vllm==0.21.0+cu129' huggingface_hub \
 
 ### Download the model
 
-Download the release weights, tokenizer, visual processor and chat template. For a private repository, first run `hf auth login` with an account that has access. If you already have the complete checkpoint, set `MODEL_DIR` to its absolute path and continue to the next step. [🤗 Model Weights](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B/tree/52ac9fdd07cbad42fab74217e595db12b4f1a000)
+Download the release weights, tokenizer, visual processor and chat template. For a private repository, first run `hf auth login` with an account that has access. If you already have the complete checkpoint, set `MODEL_DIR` to its absolute path and continue to the next step. [🤗 Model Weights](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B/tree/main)
 
 ```bash
 export MODEL_DIR="$PWD/SenseNova-RoboRSI-27B"

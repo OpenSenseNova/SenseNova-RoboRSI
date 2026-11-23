@@ -82,7 +82,7 @@ python -m pip install 'vllm==0.21.0+cu129' huggingface_hub \
 
 ### 下载模型
 
-下载正式版的权重、分词器、视觉处理器和对话模板。访问私有仓库时，先用有权限的账号运行 `hf auth login`。如果已有完整的本地模型，可将 `MODEL_DIR` 设为其绝对路径，直接启动服务。[🤗 模型权重](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B/tree/52ac9fdd07cbad42fab74217e595db12b4f1a000)
+下载正式版的权重、分词器、视觉处理器和对话模板。访问私有仓库时，先用有权限的账号运行 `hf auth login`。如果已有完整的本地模型，可将 `MODEL_DIR` 设为其绝对路径，直接启动服务。[🤗 模型权重](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B/tree/main)
 
 ```bash
 export MODEL_DIR="$PWD/SenseNova-RoboRSI-27B"
