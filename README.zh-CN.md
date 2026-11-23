@@ -227,7 +227,9 @@ GPT-6 Astra 的成绩来自 [RoboDojo 官方 Agent 榜单](https://robodojo-benc
 | SenseNova-RoboRSI-27B-Preview | 20% | 30% |
 | Qwen3.8-27B | 0% | 0% |
 
-### 双臂还原二阶魔方
+<a name="双臂还原二阶魔方"></a>
+
+### 用 Code as Policy 协调双臂还原二阶魔方
 
 ![双臂机器人还原二阶魔方，右侧同步显示两个腕部相机的视角](assets/roborsi-27b/dual-arm-cube.webp)
 
