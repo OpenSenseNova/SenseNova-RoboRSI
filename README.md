@@ -22,7 +22,7 @@
 
 ## News
 
-- **2026-11-23** — 🎉 [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) is now available, with an average score of **34.7** under RoboDojo’s new Agent evaluation protocol. On real robots, it achieves **60%** success on Piper pick-and-place and **90%** on Piper X block stacking. It also solves a 2×2 cube using both arms.
+- **2026-11-23** — 🎉 [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) is now available, with an average score of **34.7** under RoboDojo’s new Agent evaluation protocol. On real robots, it succeeds in **60%** of pick-and-place trials on Piper, stacks blocks in **90%** of trials on Piper X, and uses Code as Policy to solve a 2×2 cube with both arms.
 
 - **2026-11-19** — Initial code and usage guides for [**SIMPLE**](benchmarks/simple/README.md) are available.
 
