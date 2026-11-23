@@ -22,7 +22,7 @@
 
 ## News
 
-- **2026-11-19** — 🎉 [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) 正式发布。模型在 RoboDojo 新版 Agent 评测协议下取得 **34.7 分**，在 Piper 上抓放物体的成功率为 **60%**，在 Piper X 上堆叠积木的成功率为 **90%**。
+- **2026-11-23** — 🎉 [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) 正式发布。模型在 RoboDojo 新版 Agent 评测协议下取得 **34.7 分**，在 Piper 上抓放物体的成功率为 **60%**，在 Piper X 上堆叠积木的成功率为 **90%**。模型还能用双臂还原二阶魔方。
 
 - **2026-11-19** — 已提供 [**SIMPLE**](benchmarks/simple/README.zh-CN.md) 的首批代码与使用指南。
 
