@@ -213,11 +213,9 @@ ICL 经验包统一托管在
 | Qwen4-Max | 18.9 |
 | DeepSeek-V4.1-Flash | 11.8 |
 | SenseNova-RoboRSI-27B-Preview | 10.0 |
-| Capek 0.5-35B-A3B | 9.1 |
 | Qwen3.8-27B | 9.1 |
-| PEAR-27B | 4.4 |
 
-GPT-6 Astra 的成绩来自 [RoboDojo 官方 Agent 榜单](https://robodojo-benchmark.com/leaderboard#agent)。其余九个模型均在 seed 0、layout 0 下使用同一套通用 Harness 评测，未配置任务专属技能。
+GPT-6 Astra 的成绩来自 [RoboDojo 官方 Agent 榜单](https://robodojo-benchmark.com/leaderboard#agent)。其余七个模型均在 seed 0、layout 0 下使用同一套通用 Harness 评测，未配置任务专属技能。
 
 ### Piper 与 Piper X 真机
 

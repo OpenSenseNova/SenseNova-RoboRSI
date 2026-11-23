@@ -230,11 +230,9 @@ Reference results: [official RoboCasa leaderboard](https://robocasa.ai/leaderboa
 | Qwen4-Max | 18.9 |
 | DeepSeek-V4.1-Flash | 11.8 |
 | SenseNova-RoboRSI-27B-Preview | 10.0 |
-| Capek 0.5-35B-A3B | 9.1 |
 | Qwen3.8-27B | 9.1 |
-| PEAR-27B | 4.4 |
 
-The GPT-6 Astra score comes from the [official RoboDojo Agent leaderboard](https://robodojo-benchmark.com/leaderboard#agent). We evaluated the other nine models at seed 0, layout 0 using the same general-purpose Harness without task-specific skills.
+The GPT-6 Astra score comes from the [official RoboDojo Agent leaderboard](https://robodojo-benchmark.com/leaderboard#agent). We evaluated the other seven models at seed 0, layout 0 using the same general-purpose Harness without task-specific skills.
 
 ### Physical robots: Piper and Piper X
 
