@@ -4,9 +4,9 @@
 
 SenseNova-RoboRSI-27B is a vision-language model for robot manipulation. It can request motion from a vision-language-action (VLA) policy, review a proposed trajectory, or write code to compute and execute a gripper target pose (Code as Policy). After each action, the agent uses new camera observations and robot state to decide what to do next.
 
-![Multi-round RSI, VLA and Code as Policy, end-effector accuracy, and results on Piper and Piper X](../assets/roborsi-27b-teaser.png)
+![Multi-round RSI, VLA and Code as Policy, end-effector accuracy, Piper pick-and-place, Piper X block stacking, and dual-arm cube solving](../assets/roborsi-27b-teaser.png)
 
-*Figure 1. The same checkpoint runs in RoboDojo and on two physical robot platforms.*
+*Figure 1. The same checkpoint runs in RoboDojo and on two physical robot platforms. The bottom-right sequence shows the robot inspecting, turning, and solving a 2×2 cube.*
 
 ## Results & Demos
 
