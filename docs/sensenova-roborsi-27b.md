@@ -60,7 +60,7 @@ With **no real-robot data in embodied post-training**, SenseNova-RoboRSI-27B use
 
 ![Two robot arms solving a 2×2 cube, with views from both wrist cameras](../assets/roborsi-27b/en/dual-arm-cube.webp)
 
-*Demo 3. Two robot arms turn a 2×2 cube to inspect all six faces, then solve it in six moves. Shown at 6× speed.*
+*Demo 3. Without task-specific training, SenseNova-RoboRSI-27B uses Code as Policy to coordinate two robot arms as they inspect all six faces of a 2×2 cube and solve it.*
 
 Two Piper trials show how the agent uses camera feedback to decide where to grasp and when to try again after a missed placement.
 
