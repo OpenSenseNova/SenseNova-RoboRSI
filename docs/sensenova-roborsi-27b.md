@@ -58,6 +58,10 @@ With **no real-robot data in embodied post-training**, SenseNova-RoboRSI-27B use
 
 *Demo 2. Both robots use the same checkpoint. On the left, Piper X stacks blocks using VLA and Code as Policy. On the right, Piper places an object in a dish using Code as Policy alone.*
 
+![Two robot arms solving a 2×2 cube, with views from both wrist cameras](../assets/roborsi-27b/en/dual-arm-cube.webp)
+
+*Demo 3. Two robot arms turn a 2×2 cube to inspect all six faces, then solve it in six moves. Shown at 6× speed.*
+
 Two Piper trials show how the agent uses camera feedback to decide where to grasp and when to try again after a missed placement.
 
 ![Right-wrist localization for a left-arm grasp and recovery from a missed placement](../assets/roborsi-27b/en/real-robot-recovery.png)

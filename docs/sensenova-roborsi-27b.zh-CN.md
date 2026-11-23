@@ -58,6 +58,10 @@ SenseNova-RoboRSI-27B 在**具身后训练中未使用任何真机数据**，直
 
 *演示 2　同一份模型权重在两款真机上的表现。左侧 Piper X 结合 VLA 和 Code as Policy 堆叠积木，右侧 Piper 仅用 Code as Policy 将物体放入盘中。*
 
+![双臂机器人还原二阶魔方，右侧同步显示两个腕部相机的视角](../assets/roborsi-27b/dual-arm-cube.webp)
+
+*演示 3　两只机械臂翻转二阶魔方，观察六个面，再用六步将魔方还原。画面以 6 倍速播放。*
+
 Piper 的两段实测轨迹展示了 Agent 如何根据相机画面确定抓取位置，以及在积木落到盘外后如何重新抓取。
 
 ![Piper 用右腕相机辅助左臂抓取，以及放置偏移后的重新抓取](../assets/roborsi-27b/real-robot-recovery.png)
