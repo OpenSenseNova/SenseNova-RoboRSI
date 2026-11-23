@@ -54,9 +54,9 @@ With **no real-robot data in embodied post-training**, SenseNova-RoboRSI-27B use
 | Piper | Object pick-and-place | Code as Policy only | **6/10 (60%)** | 2/10 | 0/10 |
 | Piper X | Block stacking | VLA × Code as Policy | **9/10 (90%)** | 3/10 | 0/10 |
 
-![Piper X stacking blocks on the left and Piper placing an object in a dish on the right](../assets/roborsi-27b/en/real-robots.webp)
+![Piper pick-and-place trials in the top two rows and Piper X block-stacking trials in the bottom two](../assets/roborsi-27b/en/real-robots.webp)
 
-*Demo 2. Both robots use the same checkpoint. On the left, Piper X stacks blocks using VLA and Code as Policy. On the right, Piper places an object in a dish using Code as Policy alone.*
+*Demo 2. Each tile shows one trial. Piper uses Code as Policy alone to place objects in a dish (top two rows, 6/10 successes). With the same checkpoint, Piper X combines VLA and Code as Policy to stack blocks (bottom two rows, 9/10 successes).*
 
 ![Two robot arms solving a 2×2 cube, with views from both wrist cameras](../assets/roborsi-27b/en/dual-arm-cube.webp)
 

@@ -54,9 +54,9 @@ SenseNova-RoboRSI-27B 在**具身后训练中未使用任何真机数据**，直
 | Piper | 物体抓放 | 仅 Code as Policy | **6/10（60%）** | 2/10 | 0/10 |
 | Piper X | 堆叠积木 | VLA × Code as Policy | **9/10（90%）** | 3/10 | 0/10 |
 
-![左侧 Piper X 堆叠积木，右侧 Piper 抓放物体](../assets/roborsi-27b/real-robots.webp)
+![20 次真机测试，上方两行是 Piper 抓放物体，下方两行是 Piper X 堆叠积木](../assets/roborsi-27b/real-robots.webp)
 
-*演示 2　同一份模型权重在两款真机上的表现。左侧 Piper X 结合 VLA 和 Code as Policy 堆叠积木，右侧 Piper 仅用 Code as Policy 将物体放入盘中。*
+*演示 2　每格为一次真机测试。上方两行中，Piper 仅用 Code as Policy 将物体放入盘中，10 次成功 6 次。下方两行中，Piper X 使用同一份模型权重，结合 VLA 与 Code as Policy 堆叠积木，10 次成功 9 次。*
 
 ![双臂机器人还原二阶魔方，右侧同步显示两个腕部相机的视角](../assets/roborsi-27b/dual-arm-cube.webp)
 
