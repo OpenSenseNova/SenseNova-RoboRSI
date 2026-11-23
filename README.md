@@ -244,6 +244,12 @@ Success rates are based on 10 trials per model per task.
 | SenseNova-RoboRSI-27B-Preview | 20% | 30% |
 | Qwen3.8-27B | 0% | 0% |
 
+### Dual-arm cube solving
+
+![Two robot arms solving a 2×2 cube, with views from both wrist cameras](assets/roborsi-27b/en/dual-arm-cube.webp)
+
+*Without task-specific training, SenseNova-RoboRSI-27B uses Code as Policy to coordinate two robot arms as they inspect all six faces of a 2×2 cube and solve it.*
+
 For more simulation and real-robot videos, see [Results & Demos](docs/sensenova-roborsi-27b.md#results--demos).
 
 ## Release Plan & Roadmap
