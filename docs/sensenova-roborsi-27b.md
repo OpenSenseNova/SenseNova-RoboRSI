@@ -105,7 +105,7 @@ We also tried a two-arm task for which the model had received no task-specific t
 
 *Demo 4. The wrist views show how the cube changes orientation as the arms take turns holding and turning it.*
 
-## What we want to test next
+## Future Directions
 
 ### Sustainable RSI
 
