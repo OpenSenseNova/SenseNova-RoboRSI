@@ -4,9 +4,9 @@
 
 SenseNova-RoboRSI-27B 是一款面向机器人操作的视觉语言模型。模型可以调用视觉语言动作策略（VLA）并审查候选轨迹，也可以编写代码计算夹爪的目标位姿，交给控制器执行（Code as Policy）。每次执行后，模型根据新的相机画面和机器人状态决定下一步动作。
 
-![多轮 RSI、VLA 与代码控制、末端位置预测精度及 Piper 和 Piper X 真机结果](../assets/roborsi-27b-teaser.zh-CN.png)
+![多轮 RSI、VLA 与 Code as Policy、末端位置预测精度，以及 Piper 抓放、Piper X 叠积木与双臂还原二阶魔方](../assets/roborsi-27b-teaser.zh-CN.png)
 
-*图 1　同一份模型权重用于 RoboDojo 仿真评测和两款真实机械臂。*
+*图 1　同一份模型权重用于 RoboDojo 仿真评测和两款真实机械臂。右下三帧展示双臂观察、转动并还原二阶魔方的过程。*
 
 ## 评测与演示
 
@@ -82,7 +82,7 @@ python -m pip install 'vllm==0.21.0+cu129' huggingface_hub \
 
 ### 下载模型
 
-下载正式版的权重、分词器、视觉处理器和对话模板。访问私有仓库时，先用有权限的账号运行 `hf auth login`。如果已有完整的本地模型，可将 `MODEL_DIR` 设为其绝对路径，直接启动服务。[🤗 模型权重](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B/tree/52ac9fdd07cbad42fab74217e595db12b4f1a000)
+下载正式版的权重、分词器、视觉处理器和对话模板。访问私有仓库时，先用有权限的账号运行 `hf auth login`。如果已有完整的本地模型，可将 `MODEL_DIR` 设为其绝对路径，直接启动服务。[🤗 模型权重](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B/tree/main)
 
 ```bash
 export MODEL_DIR="$PWD/SenseNova-RoboRSI-27B"
