@@ -304,7 +304,7 @@ def start_capture(profile, run, model_cfg):
     """Capture and normalize actual wire input using the same upstream and key."""
     from roborsi.planner.provider_capture import ProviderCaptureConfig
     from .output_retry import GuardedCapture
-    from .runtime_config import resolve_base_url, resolve_model
+    from .runtime_config import resolve_base_url, resolve_model, resolve_cci_limits
     from .training_store import storage_mode
     from .hybrid_resume import read_json
     mode=storage_mode(model_cfg)
@@ -312,12 +312,13 @@ def start_capture(profile, run, model_cfg):
     upstream = resolve_base_url()
     cci = None
     native_messages_transport = None
+    cci_limits = None
     provider_kind = model_cfg.get("provider_kind", "responses")
     if provider_kind == "cci":
         from .cci_protocol import CciAdapter
-        seconds = model_cfg.get("episode_seconds")
+        cci_limits = resolve_cci_limits(model_cfg)
         cci = CciAdapter(upstream, resolve_model(), owner/"cci-wire",
-                         request_timeout=300 if seconds is None else min(300, seconds),
+                         request_timeout=cci_limits["request_timeout_s"],
                          sampling=model_cfg.get("sampling"),
                          enable_thinking=model_cfg.get("enable_thinking", True), save_raw=mode=='raw',
                          reasoning_directory=owner/'training/provider_reasoning' if mode=='training' else owner/'cci-wire/provider_reasoning')
@@ -348,6 +349,7 @@ def start_capture(profile, run, model_cfg):
         prior_rows=prior_rows,
         storage_mode=mode,
         native_messages_transport=native_messages_transport,
+        context_input_token_limit=cci_limits["input_token_limit"] if cci_limits else None,
         training_metadata={'task_id':model_cfg.get('task_name',profile.task if hasattr(profile,'task') else None),
             'model':resolve_model(),'reasoning_effort':model_cfg.get('reasoning_effort','xhigh'),
             'provider_kind':provider_kind,'sampling':model_cfg.get('sampling'),

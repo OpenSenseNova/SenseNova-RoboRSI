@@ -23,6 +23,8 @@ _ALLOWED = {
     "official_description_bundle",
     "official_description_manifest_sha256",
     "episode_seconds",
+    "cci_request_timeout_s",
+    "cci_context_window",
     "agent_exit_policy",
 }
 

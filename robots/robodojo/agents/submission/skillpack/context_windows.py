@@ -23,7 +23,10 @@ def token_upper_bound(value):
 
 
 class ContextWindows:
-    def __init__(self,directory):
+    def __init__(self,directory,*,input_token_limit=200000):
+        if type(input_token_limit) is not int or input_token_limit<10000:
+            raise ValueError('Context input token limit must be an integer >= 10000')
+        self.input_token_limit=input_token_limit
         root=Path(directory)
         self.prompt=(root/'default_compact_prompt.txt').read_text()
         self.prefix=(root/'default_summary_prefix.txt').read_text()
@@ -48,9 +51,12 @@ class ContextWindows:
         reasons=[]
         if image_count(actual)>50:reasons.append('image_limit_50')
         if self.calls>=120:reasons.append('model_rounds_120')
-        if estimate>=200000:reasons.append('context_200k_conservative_estimate')
+        if estimate>=self.input_token_limit:
+            reasons.append('context_200k_conservative_estimate' if self.input_token_limit==200000
+                           else 'provider_context_limit_conservative_estimate')
         evidence={'epoch':self.epoch,'ordinary_completed_in_epoch':self.calls,'images':image_count(actual),
-                  'estimated_input_tokens_upper_bound':estimate,'triggers':reasons}
+                  'estimated_input_tokens_upper_bound':estimate,'triggers':reasons,
+                  'input_token_limit':self.input_token_limit}
         if reasons:
             if self.last_raw is None or not self.last_actual:
                 raise ValueError('Initial request exceeds context limit; no past window can be compacted')

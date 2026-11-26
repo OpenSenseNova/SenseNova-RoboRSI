@@ -56,7 +56,7 @@
     "skillpack/common/skills/robodojo-spatial-localize/scripts/support_plane.py": "2bdbecedc90b2e4c075e850bc561002689a7257c3e45cb98a88be00eec3316e5",
     "skillpack/common/skills_instruction.md": "11c2b5fec770bc44e68275113a6f598fab66218d49f75c75621a1234430eeaa1",
     "skillpack/common/space.json": "c50bb7390e0aa547176790d968b06a2a1fc4e2516b022d394968527704d89d07",
-    "skillpack/context_windows.py": "07f13ac2ed80acd0918f7a62ad2f49f55459d7a8a47f474028a40fc95b821a55",
+    "skillpack/context_windows.py": "11b546b38dbb6173a2810c2670d8f5c9239c31b4c51d41b3d76ce5051733b142",
     "skillpack/default_compact_prompt.txt": "ab0c334d4faca17e3afbb9b16967c1b2fdcc7242a9a0880af57949fa236d6d07",
     "skillpack/default_summary_prefix.txt": "371aca20f23d546135443e5c289f62b304aea1a9ce21cfa0e80e17d4c6020fd0",
     "skillpack/frozen_common.json": "18d523d608172611630fdb8855119fdb6dadd81d2b1c883c2fb969a88f71e637",

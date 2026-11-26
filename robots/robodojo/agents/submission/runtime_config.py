@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
 import sys
@@ -29,6 +30,32 @@ MODEL_ENV = "ROBORSI_CODEX_MODEL"
 BASE_URL_ENV = "ROBORSI_CODEX_BASE_URL"
 TRAJECTORY_ID_ENV = "ROBORSI_TRAJECTORY_ID"
 EEF_EXECUTION_BACKENDS = frozenset({"bounded_curobo", "legacy_dls"})
+
+
+def resolve_cci_limits(model_cfg: dict[str, Any]) -> dict[str, int | float]:
+    """Reserve output and compaction space within the deployed provider limits."""
+    seconds = model_cfg.get("cci_request_timeout_s", 300)
+    if type(seconds) not in (int, float) or not math.isfinite(seconds) or seconds <= 0:
+        raise ValueError("cci_request_timeout_s must be a positive finite number")
+    episode = model_cfg.get("episode_seconds")
+    if episode is not None:
+        if type(episode) not in (int, float) or not math.isfinite(episode) or episode <= 0:
+            raise ValueError("episode_seconds must be a positive finite number or null")
+        seconds = min(seconds, episode)
+    limit = 200000
+    window = model_cfg.get("cci_context_window")
+    if window is not None:
+        if type(window) is not int or window <= 0:
+            raise ValueError("cci_context_window must be a positive integer")
+        from .cci_protocol import CCI_MAX_OUTPUT_TOKENS
+
+        prompt_bytes = len((POLICY_DIR / "skillpack/default_compact_prompt.txt").read_bytes())
+        # The compact request appends the pinned summary prompt. Reserve it and
+        # framing/tokenization headroom before the unchanged output allowance.
+        limit = min(limit, window - CCI_MAX_OUTPUT_TOKENS - prompt_bytes - 4096)
+        if limit < 10000:
+            raise ValueError("CCI context window cannot fit the configured output allowance")
+    return {"request_timeout_s": seconds, "input_token_limit": limit}
 
 
 def resolve_eef_execution_backend(model_cfg: dict[str, Any], task: str) -> str:

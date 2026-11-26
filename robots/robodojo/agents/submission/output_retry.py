@@ -8,12 +8,14 @@ from copy import deepcopy
 import gzip
 import hashlib
 import json
+from pathlib import Path
 import time
 import zlib
 
 from roborsi.planner.provider_capture import ProviderCapture, parse_response_body
 
 from .skillpack.capture_guard import GuardedCapture as OriginalCapture, write
+from .skillpack.context_windows import ContextWindows
 from .turn_output_retry import MAX_ADDITIONAL_RETRIES, classify, compaction_request
 
 
@@ -38,7 +40,13 @@ class _Context:
 
 class GuardedCapture(OriginalCapture):
     def __init__(self, *args, **kwargs):
+        input_limit = kwargs.pop("context_input_token_limit", None)
         super().__init__(*args, **kwargs)
+        if input_limit is not None:
+            self.context = ContextWindows(
+                Path(__file__).resolve().parent / "skillpack",
+                input_token_limit=input_limit,
+            )
         self._output_decisions = {}
         self.context = _Context(self.context)
 
