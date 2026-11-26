@@ -682,7 +682,9 @@ class ProviderCapture:
                 )
         self._closed = True
         if self._owns_output:
-            _write_json(self.output_dir / "summary.json", self.summary)
+            self._publish_capture_summary(
+                self.output_dir / "summary.json", self.summary
+            )
         if self._errors:
             raise RuntimeError(
                 "Provider capture could not persist all response records"
@@ -744,6 +746,10 @@ class ProviderCapture:
             }
         )
         await send({"type": "http.response.body", "body": message})
+
+    def _upstream_stream(self, client, method, url, **kwargs):
+        """Allow a capture subclass to project its declared provider protocol."""
+        return client.stream(method, url, **kwargs)
 
     async def _forward(self, scope: dict[str, Any], body: bytes, send: Any) -> None:
         with self._lock:
@@ -810,7 +816,7 @@ class ProviderCapture:
                 forwarded_record_sha256 = hashlib.sha256(canonical_record).hexdigest()
             except (TypeError, ValueError):
                 forwarded_record_sha256 = None
-            _write_json(
+            self._publish_capture_request(
                 self.output_dir / f"{stem}.request.json",
                 {
                     "request_id": sequence,
@@ -841,14 +847,15 @@ class ProviderCapture:
                 if name.lower() != b"content-length"
             ]
             timeout = httpx.Timeout(None, connect=30.0, write=30.0, pool=30.0)
-            with raw_path.open("wb") as raw:
+            with self._capture_raw_sink(raw_path) as raw:
                 async with httpx.AsyncClient(
                     timeout=timeout,
                     proxy=self._proxy,
                     trust_env=False,
                     follow_redirects=False,
                 ) as client:
-                    async with client.stream(
+                    async with self._upstream_stream(
+                        client,
                         "POST",
                         upstream_target,
                         content=forwarded_body,
@@ -901,10 +908,22 @@ class ProviderCapture:
         if started and record["transport_complete"]:
             await send({"type": "http.response.body", "body": b"", "more_body": False})
 
-    def _finish_record(self, record: dict[str, Any], path: Path, encoding: str) -> None:
+    def _publish_capture_summary(self, path: Path, value: Any) -> None:
+        _write_json(path, value)
+
+    def _publish_capture_request(self, path: Path, value: Any) -> None:
+        _write_json(path, value)
+
+    def _capture_raw_sink(self, path: Path):
+        return path.open("wb")
+
+    def _capture_raw_bytes(self, path: Path) -> bytes:
         if not path.exists():
             path.write_bytes(b"")
-        body = path.read_bytes()
+        return path.read_bytes()
+
+    def _finish_record(self, record: dict[str, Any], path: Path, encoding: str) -> None:
+        body = self._capture_raw_bytes(path)
         record["response_bytes"] = len(body)
         record["response_sha256"] = hashlib.sha256(body).hexdigest()
         record["content_encoding"] = encoding
@@ -947,6 +966,9 @@ class ProviderCapture:
             for item in items
             if item["encrypted_content_state"] == "nonempty"
         )
+        self._publish_capture_record(path, record, items)
+
+    def _publish_capture_record(self, path: Path, record: dict, items: list) -> None:
         _write_json(path.with_suffix(".json"), record)
         with self._lock:
             with (self.output_dir / "reasoning.jsonl").open(

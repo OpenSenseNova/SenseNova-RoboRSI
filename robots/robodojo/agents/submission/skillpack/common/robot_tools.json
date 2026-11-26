@@ -1,0 +1,430 @@
+[
+  {
+    "name": "observe",
+    "description": "Read current RGB, measured TCP positions, pitch/roll/yaw degrees relative to the downward reference, permissions and budgets without advancing physics. Display floats use at most three decimal places.",
+    "input_schema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "vla_propose",
+    "description": "Predict without moving. Prefer localized code-computed TCP motion when geometry is usable. VLA is also available when localization is unavailable or TCP tracking stalls; no localized point or distance threshold is required. Choose the accepted prefix from the preview and current feedback within the native 5..50-step range. Keep the same short visual instruction for the same subgoal; put metric corrections in TCP targets. Give a short English instruction for the selected work, naming the observed object and destination when needed. Follow the supplied subgoal wording rules; use separate short sentences and necessary conditions. Omit reasoning, code and unrelated future plans. Return proposal_id and preview at steps 5,10,15,20,25,30,35,40,45,50 only. Each arm has pos_m (TCP XYZ), angles_deg ([pitch about +X, roll about +Y, yaw about +Z] from downward), grip (0 closed, 1 open), and measured-start prefix diagnostics: delta_cm, path_cm, max_step_cm, max_rotation_step_deg, max_joint_step_rad, grip_delta and grip_range (including start). Row bounds are cumulative existing warnings through that step. Statistics include every original step in the prefix. Read with RGB; predictions do not establish grasp or safety. No full 50-point inspection. A new proposal replaces the old one; act uses its stored original joint prefix.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "subgoal": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "subgoal"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "act",
+    "description": "Accept stored original VLA joint steps, or track model-supplied TCP targets with internal measured-state feedback and IK. TCP targets use continuous gripper_opening (0 closed, 1 open). Supplying targets declines the proposal. Return status, actual native steps, residual errors, current RGB and measured TCP state. Inspect interrupted results before choosing another action; an interrupted VLA proposal cannot be reused. Pose arrival does not verify grasp. Keep reason/assessment concise. Only when observe reports review_due, act.review records legacy checkpoint analysis; it does not determine the native score.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "proposal_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Copy the current short VLA proposal_id, e.g. p1; omit when supplying targets."
+        },
+        "steps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50,
+          "description": "Consecutive prefix length; VLA allows 5..50, default 5."
+        },
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "left": {
+                "type": "object",
+                "properties": {
+                  "position": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "description": "Absolute gripping-face-centre TCP XYZ in environment-origin metres."
+                  },
+                  "pitch_deg": {
+                    "type": "number",
+                    "minimum": -180,
+                    "maximum": 180,
+                    "description": "Degrees about environment +X, relative to the downward reference."
+                  },
+                  "roll_deg": {
+                    "type": "number",
+                    "minimum": -90,
+                    "maximum": 90,
+                    "description": "Degrees about environment +Y, applied after pitch."
+                  },
+                  "yaw_deg": {
+                    "type": "number",
+                    "minimum": -180,
+                    "maximum": 180,
+                    "description": "Degrees about environment +Z, applied after roll."
+                  },
+                  "gripper_opening": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Continuous normalized opening: 0 fully closed, 1 fully open."
+                  }
+                },
+                "required": [
+                  "position",
+                  "pitch_deg",
+                  "roll_deg",
+                  "yaw_deg",
+                  "gripper_opening"
+                ],
+                "additionalProperties": false
+              },
+              "right": {
+                "type": "object",
+                "properties": {
+                  "position": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3,
+                    "description": "Absolute gripping-face-centre TCP XYZ in environment-origin metres."
+                  },
+                  "pitch_deg": {
+                    "type": "number",
+                    "minimum": -180,
+                    "maximum": 180,
+                    "description": "Degrees about environment +X, relative to the downward reference."
+                  },
+                  "roll_deg": {
+                    "type": "number",
+                    "minimum": -90,
+                    "maximum": 90,
+                    "description": "Degrees about environment +Y, applied after pitch."
+                  },
+                  "yaw_deg": {
+                    "type": "number",
+                    "minimum": -180,
+                    "maximum": 180,
+                    "description": "Degrees about environment +Z, applied after roll."
+                  },
+                  "gripper_opening": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "description": "Continuous normalized opening: 0 fully closed, 1 fully open."
+                  }
+                },
+                "required": [
+                  "position",
+                  "pitch_deg",
+                  "roll_deg",
+                  "yaw_deg",
+                  "gripper_opening"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "left",
+              "right"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 50,
+          "description": "Model-chosen dual-arm TCP waypoints; no proposal_id or reject flag. Harness tracks each to 3mm/3deg before advancing. A waypoint may consume multiple native steps; model-side interpolation is unnecessary."
+        },
+        "max_native_steps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 160,
+          "description": "Shared native-step budget for TCP tracking, default 80. Omit for original VLA acceptance; a redundant value at least steps is ignored with a warning, and a smaller value is rejected."
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "assessment": {
+          "type": "object",
+          "properties": {
+            "current_subgoal": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "current_subgoal"
+          ],
+          "additionalProperties": false
+        },
+        "review": {
+          "type": "object",
+          "properties": {
+            "observed_state": {
+              "type": "string",
+              "minLength": 1
+            },
+            "demo_comparison": {
+              "type": "string",
+              "minLength": 1
+            },
+            "why_not_done": {
+              "type": "string",
+              "minLength": 1
+            },
+            "next_plan": {
+              "type": "string",
+              "minLength": 1
+            },
+            "ending_check": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "observed_state",
+            "demo_comparison",
+            "why_not_done",
+            "next_plan",
+            "ending_check"
+          ],
+          "additionalProperties": false,
+          "description": "Legacy harness checkpoint record, only when observe reports review_due. These fields are not native scoring conditions. Without proposal_id/steps/targets, records the due checkpoint without motion."
+        }
+      },
+      "required": [
+        "reason",
+        "assessment"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "hold_current",
+    "description": "Calculate one full dual-arm TCP target from the latest measured state, preserving both poses and gripper openings. Read-only: no motion, VLA call, physics step or proposal replacement. Returns control_step, computed_only and targets; inspect them, then call act with targets to execute. Recalculate after any intervening action.",
+    "input_schema": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "close_in_place",
+    "description": "Calculate one full dual-arm TCP target from the latest measured state. Keep both poses and the other gripper unchanged; set the selected arm's opening (default 0, fully closed). Read-only; does not close or verify grasp. Returns control_step, computed_only and targets; inspect them, then call act with targets. Recalculate after any intervening action.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "arm": {
+          "type": "string",
+          "enum": [
+            "left",
+            "right"
+          ]
+        },
+        "opening": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "description": "Selected gripper's target opening, 0 closed and 1 open."
+        }
+      },
+      "required": [
+        "arm"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "move_relative",
+    "description": "Calculate one full dual-arm TCP target from the latest measured state. Add delta_m to the selected arm's TCP XYZ in environment axes; preserve both orientations, gripper openings and the other arm. Read-only; no motion or collision planning. Returns control_step, computed_only and targets; inspect them, then call act with targets. Recalculate after any intervening action.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "arm": {
+          "type": "string",
+          "enum": [
+            "left",
+            "right"
+          ]
+        },
+        "delta_m": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Environment-frame XYZ offsets in metres, not tool-local axes."
+        }
+      },
+      "required": [
+        "arm",
+        "delta_m"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "spatial_localize_pixel",
+    "description": "Map an ORIGINAL RGB pixel to environment XYZ by intersecting its snapshot camera ray with a declared plane or absolute known Z height. Uses no grounding model. Copy observation_id/image_id from observe. Geometry is conditional on the point actually belonging to the specified plane; give plane_membership=violated to reject a known mismatch.",
+    "input_schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "camera_id",
+        "pixel",
+        "coordinate_frame",
+        "reference_point"
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "observation_id"
+          ]
+        },
+        {
+          "required": [
+            "image_id"
+          ]
+        }
+      ],
+      "oneOf": [
+        {
+          "required": [
+            "target_plane"
+          ],
+          "not": {
+            "required": [
+              "known_height_m"
+            ]
+          }
+        },
+        {
+          "required": [
+            "known_height_m"
+          ],
+          "not": {
+            "required": [
+              "target_plane"
+            ]
+          }
+        }
+      ],
+      "properties": {
+        "camera_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "observation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "image_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "pixel": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "coordinate_frame": {
+          "type": "string",
+          "const": "environment_origin"
+        },
+        "reference_point": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "target_plane": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "normal",
+            "b",
+            "coordinate_frame",
+            "uncertainty_m"
+          ],
+          "properties": {
+            "normal": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "b": {
+              "type": "number"
+            },
+            "coordinate_frame": {
+              "type": "string",
+              "const": "environment_origin"
+            },
+            "uncertainty_m": {
+              "type": "number",
+              "minimum": 0
+            },
+            "source": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            }
+          },
+          "description": "Plane n dot P + b = 0 in metres; normal need not be unit length. Uncertainty is normal-distance sigma in metres."
+        },
+        "known_height_m": {
+          "type": "number"
+        },
+        "height_uncertainty_m": {
+          "type": "number",
+          "minimum": 0
+        },
+        "pixel_uncertainty_px": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "plane_membership": {
+          "type": "string",
+          "enum": [
+            "assumed",
+            "confirmed",
+            "violated"
+          ]
+        }
+      }
+    }
+  }
+]

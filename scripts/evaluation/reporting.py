@@ -68,7 +68,9 @@ def plan(args, preparation):
                 if args.registry_root
                 else "managed",
                 "token_env": args.benchmark_tokens.get(name),
-                "agent_resources": "prepare ICL/tokenizer/VLA as required",
+                "agent_resources": "canonical descriptions + public scoring; no ICL"
+                if name == "robodojo"
+                else "prepare ICL/tokenizer/VLA as required",
             }
             for name in args.benchmark
         },

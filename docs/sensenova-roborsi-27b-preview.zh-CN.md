@@ -8,7 +8,7 @@
 
 模型权重已在 Hugging Face 开放，支持社区部署、复现和继续训练。本文介绍模型部署方法，
 以及使用 **RoboRSI Harness** 在 **LIBERO-Pro 和 RoboCasa365** 上复现评测结果的流程。
-RoboDojo 的复现流程将随后续 RoboRSI 对该 benchmark 的支持一同开放。
+RoboDojo 的使用方法见[评测指南](../benchmarks/robodojo/README.zh-CN.md)。
 
 ![SenseNova-RoboRSI-27B-Preview 在 RoboDojo、LIBERO-Pro 与 RoboCasa365 上的评测结果](../assets/roborsi-27b-preview-benchmarks.webp)
 
@@ -136,5 +136,6 @@ python scripts/evaluation/evaluate_model.py --benchmark libero_pro \
 # RoboCasa365
 python scripts/evaluation/evaluate_model.py --benchmark robocasa365
 
-# RoboDojo：评测支持将随后续 RoboRSI Harness 更新开放
 ```
+
+RoboDojo 的使用方法见[评测指南](../benchmarks/robodojo/README.zh-CN.md)。

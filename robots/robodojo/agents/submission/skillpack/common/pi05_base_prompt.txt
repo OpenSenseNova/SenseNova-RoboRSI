@@ -1,0 +1,47 @@
+Apply these rules only to the English subgoal string on a VLA call the existing protocol already calls for. Use the supplied entry point: the subgoal of a direct move_eef call, the subgoal of move_eef when decision is propose, or vla_propose(subgoal=...). Apply the same rules when a script or skill constructs that string. Generate the text from the live task, observations, robot state, and feedback. The existing protocol still governs planning, tool selection, review, recovery, and completion. Do not add calls or apply these rules to note, review or assessment text, motion targets, or other arguments.
+
+1. Describe the action selected for this call. Name what the robot should do, the relevant object, and the destination or result when needed. If the work is to reach toward an opening, ask for the reach. Do not turn it into insertion, placement, or release. Use the current observed state to distinguish work that is active, already done, or only needed later.
+
+2. Prefer plain, short action sentences or clear action phrases. Give distinct selected motions with different endpoints separate main sentences in the correct order. Keep a routine transfer together when it is one selected action sequence. Use a short phrase for a required state of the acting hand or object, such as “with the gripper open.” A held state is not an extra action to change it. If another hand acts or holds something at the same time, give its action a separate sentence with an explicit timing link. Put only the instruction in one subgoal string. Do not include example markers, headings, alternatives, or explanations.
+
+3. Never use the word without in the subgoal. Use a concise property, such as “the tray with no divider,” or a short Keep or Do not sentence tied to the same action or condition. Avoid chains of while, keeping, and ensuring clauses. Keep a necessary if, until, or only after. A condition on release is not an instruction to release now. A limit during a future action does not authorize that action now. A remembered target remains a state.
+
+4. Keep the hand assignment, object attributes, ID, amount, direction, pose, and clearance when they affect what to do. Keep an unresolved identifier or value as supplied. Use a named pose in place of raw coordinates only when it denotes exactly the same endpoint. Leave planner commentary and bookkeeping in their existing fields.
+
+5. When a new VLA call is due, reuse the previous subgoal text if it still describes the active work, its requirements still hold, and the text follows these rules. A new image or small movement alone does not call for rewording. Reusing text does not reuse an action or proposal ID or override any response to feedback.
+
+WORDING EXAMPLES
+
+These examples show what to avoid and what to say for the same work. Use the live task and state to determine what work is needed.
+
+If both grasp and lift are selected, separate their endpoints and keep the condition throughout the lift.
+Avoid: With the right gripper, grasp the right end of the long board and lift it clear of the table while keeping it level.
+Prefer: Grasp the right end of the long board with the right gripper. Lift the board clear of the table. Keep the board level during the lift.
+
+Keep the reach and its required state. Do not turn it into a press.
+Avoid: Move the closed left gripper above the left red button beneath card 1, fingers downward, without pressing yet.
+Prefer: Move the closed left gripper above the left red button beneath card 1 with its fingers pointing down. Do not press the button yet.
+
+Make the timing of two hands explicit.
+Avoid: Grasp the pink nut with the right hand while continuing the open left reset above blue.
+Prefer: Grasp the pink nut with the right hand. During the grasp, continue moving the open left hand back above blue.
+
+Keep an exact increment.
+Avoid: Continue a 4 mm forward push on the first matching tile.
+Prefer: Push the first matching tile forward another 4 mm.
+
+Keep a short, necessary condition.
+Avoid: Release left grip once right hand securely holds bread.
+Prefer: Release the bread from the left gripper only after the right hand has a secure hold.
+
+Keep the referent and the stop before contact.
+Avoid: Approach purple3 with open right fingers, stopping above contact.
+Prefer: Move the open right gripper toward purple3. Stop above purple3 before contact.
+
+Keep the remembered target as state.
+Avoid: Observe the incoming rectangular gray distractor without grasping. Keep right hand high and open; green oval screen toy remains the remembered target.
+Prefer: Observe the incoming rectangular gray distractor. Do not grasp it during observation. Keep the right hand high and open. The green oval screen toy remains the remembered target.
+
+A clear label can stand on its own. A short action phrase is also natural if it identifies the selected work.
+Prefer: Pick up the yellow bottle with the right hand.
+Prefer: sweep into pile

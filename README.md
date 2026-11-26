@@ -22,6 +22,8 @@
 
 ## News
 
+- **2026-11-26** — Code and usage guides for [**RoboDojo**](benchmarks/robodojo/README.md) are now available.
+
 - **2026-11-23** — 🎉 [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) is now available, with an average score of **34.7** under RoboDojo’s new Agent evaluation protocol. On real robots, it succeeds in **60%** of pick-and-place trials on Piper, stacks blocks in **90%** of trials on Piper X, and uses Code as Policy to solve a 2×2 cube with both arms.
 
 - **2026-11-19** — Initial code and usage guides for [**SIMPLE**](benchmarks/simple/README.md) are available.
@@ -152,7 +154,7 @@ corresponding image reference from the table.
 
 | Benchmark | Status | ICL experience package | Docker image |
 | --- | --- | --- | --- |
-| RoboDojo | Coming soon | — | — |
+| [RoboDojo](benchmarks/robodojo/) | Released | — | `ghcr.io/opensensenova/sensenova-roborsi-robodojo:v1.0.0-cu128-native` |
 | [RoboCasa365](benchmarks/robocasa365/) | Released | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/main/robocasa365/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-robocasa365@sha256:28d210a42597f88c7af23b63f88fefc587edc901e268a0339cbfbf6ea1814cb5` |
 | [LIBERO-Pro](benchmarks/libero_pro/) | Released | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/main/libero-pro/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-libero-pro@sha256:a83417f1459a4c555c457caa82ef00a5de50191e3d8deb943894fa9285cff172` |
 | [LIBERO-Long++](benchmarks/libero_lilo/) | Released | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/main/libero-long-plus-plus/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-libero-long-plus-plus@sha256:814139261e914b114cb89a359c6a39d4f409a556f79928e986b6ade3dfe7dc7a` |
@@ -264,6 +266,7 @@ For more simulation and real-robot videos, see [Results & Demos](docs/sensenova-
 - [x] [Usage documentation](docs/README.md)
 - [x] [SenseNova-RoboRSI-27B-Preview release](docs/sensenova-roborsi-27b-preview.md)
 - [x] [SenseNova-RoboRSI-27B release](docs/sensenova-roborsi-27b.md)
+- [x] [RoboDojo evaluation](benchmarks/robodojo/README.md)
 - [ ] Harness demo
 - [ ] RoboRSI Technical Report
 

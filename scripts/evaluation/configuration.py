@@ -31,6 +31,7 @@ BENCHMARKS = (
     "libero_long_plus_plus",
     "libero_ultra_long",
     "robocasa365",
+    "robodojo",
 )
 SUITES = {"libero_spatial", "libero_object", "libero_goal", "libero_10", "libero_90"}
 
@@ -104,6 +105,13 @@ def _pin(value, pattern: str, label: str) -> None:
 
 
 def _environment(path: Path, name: str, value) -> dict:
+    if name == "robodojo":
+        env = dict(
+            _fields(value, {"kind", "catalog"}, {"kind", "catalog"}, "environment")
+        )
+        if env["kind"] != "robodojo" or env["catalog"] != {"profile": "external"}:
+            raise ValueError("RoboDojo uses a prepared native HTTP service or registry")
+        return env
     env = dict(
         _fields(
             value,

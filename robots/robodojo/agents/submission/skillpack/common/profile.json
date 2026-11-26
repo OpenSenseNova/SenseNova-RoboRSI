@@ -1,0 +1,162 @@
+{
+  "profile_id": "robodojo_general_only_v1",
+  "task": null,
+  "skills": [
+    "robo-general",
+    "manipulation"
+  ],
+  "sha256": {
+    "actual_robot_declarations.json": "0f72d5401e4ace4cbb8509b077ca11f3146a2d9ad4f2c29ecc647684c941c4cf",
+    "agent_core.md": "7eade77703cbd835d92381333717b923c855ca0c19d48da274e665aea2a6edce",
+    "native_tools.json": "2bbfa2306f5cc66ce7d1c1e9b1a167e92582cab89c0cb662ec0e3825f364e6ad",
+    "pi05_base_prompt.txt": "b173dd647540fc5ca626459b1b8ba33f93d7d2ce4fe2c8c0c067e04d1c932b48",
+    "robot_tools.json": "32d425eb00544f8348ee1eb6e09d600234d3fcc265e9c98a38b874ec89ff8f4d",
+    "skills_instruction.md": "11c2b5fec770bc44e68275113a6f598fab66218d49f75c75621a1234430eeaa1",
+    "skills/manipulation/SKILL.md": "57daa527a9e9f035530bfd6f6ccb153e4a134728e73a2613ca042ac0f0d6f880",
+    "skills/robo-general/SKILL.md": "ffc3eaa9b36948a103f246202e0ee3942de46e4e3ddf8e5f4415ce295b3c6344",
+    "skills/robo-general/scripts/robot_reply.py": "d752e79ac10c2582f013f4cfe2e781b15e5b921618e4818a6f6565c932dc24c4",
+    "skills/robo-general/scripts/rgb_inspect.py": "03f877dbd8dcd9b71aff56b9218dea960aba7fb9630bcd462640f2f0a45b6f82"
+  },
+  "remove_legacy_markdown": [
+    "AGENTS.md",
+    "README.md"
+  ],
+  "compact_tokens": 200000,
+  "image_limit": 50,
+  "round_limit": 120,
+  "robot_tool_registration": {
+    "implementation": "../../robot_tools/v1/robot_tools.py",
+    "tools": [
+      "observe",
+      "vla_propose",
+      "act",
+      "hold_current",
+      "close_in_place",
+      "move_relative",
+      "spatial_localize_pixel"
+    ],
+    "trajectory_display_stride": 5,
+    "sample_step_numbers": [
+      5,
+      10,
+      15,
+      20,
+      25,
+      30,
+      35,
+      40,
+      45,
+      50
+    ],
+    "sample_zero_based_indices": [
+      4,
+      9,
+      14,
+      19,
+      24,
+      29,
+      34,
+      39,
+      44,
+      49
+    ],
+    "full_trajectory_retained": true,
+    "frame": "TCP in environment-origin metres; reference-relative pitch/roll/yaw degrees; all native conversion internal",
+    "native_tool_offset_m": 0.1501,
+    "action_choices": [
+      "proposal_id + steps",
+      "targets without proposal_id or reject flag"
+    ],
+    "proposal_display_decimals": 3,
+    "native_bridge_factory": "../../robot_tools/v1/native_request.py:make_experiment_class",
+    "allow_direct_targets": true,
+    "public_pose_contract": {
+      "reference_point": "TCP/GRASP_POINT",
+      "coordinate_frame": "environment_origin",
+      "position_units": "metres",
+      "orientation_reference": "vertical_down",
+      "orientation_units": "degrees",
+      "orientation_axes": {
+        "pitch_deg": "+X",
+        "roll_deg": "+Y",
+        "yaw_deg": "+Z"
+      },
+      "orientation_order": [
+        "pitch_deg",
+        "roll_deg",
+        "yaw_deg"
+      ]
+    },
+    "native_orientation": "unit quaternion wxyz",
+    "public_state_display_decimals": 3,
+    "native_measurement_and_execution_precision": "unchanged",
+    "vla_execution": "stored original clipped joint prefix; no IK",
+    "manual_tcp_execution": "measured-state closed-loop IK",
+    "tcp_tracking_default_max_native_steps": 80,
+    "tcp_tracking_max_native_steps": 160,
+    "position_tolerance_m": 0.003,
+    "orientation_tolerance_deg": 3,
+    "termination_owner": "harness; no model stop tool",
+    "profile_loader": "../../robot_tools/v1/prompt_profile.py",
+    "gripper_control": {
+      "field": "gripper_opening",
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "zero": "fully_closed",
+      "one": "fully_open",
+      "preview": "same clipped continuous values as stored VLA execution",
+      "manual_execution": "preserved through TCP tracking and IK into native joint commands"
+    },
+    "tool_exposure": "native direct MCP with automatic text and image blocks; generic exec/wait retained",
+    "gripper_monitor": {
+      "implementation": "robot_runtime/gripper_monitor.py",
+      "execution_paths": [
+        "model_tcp_closed_loop",
+        "vla_original_joints"
+      ],
+      "sampling": "after every acknowledged native control step",
+      "opening_change_threshold": 0.02,
+      "command_change_tolerance": 0.005,
+      "settle_range": 0.003,
+      "settle_samples": 3,
+      "reference": "fixed after settling; retained across act calls until command change, interruption or feedback discontinuity",
+      "interrupt_status": "gripper_change_reobserve",
+      "response": "gripper_event, current RGB and measured state; remaining act cancelled",
+      "interpretation": "contact change requiring visual inspection; not confirmed object loss"
+    },
+    "target_calculators": {
+      "tools": [
+        "hold_current",
+        "close_in_place",
+        "move_relative"
+      ],
+      "source": "latest full-precision measured TCP state",
+      "output": "control_step, computed_only=true, one dual-arm targets list; at most three decimal places",
+      "execution": "read-only; model inspects targets and then calls act; recalculate after intervening action",
+      "relative_frame": "environment XYZ metres"
+    }
+  },
+  "single_markdown_skills": [
+    "robo-general",
+    "manipulation"
+  ],
+  "helper_output_contract": {
+    "decimal_places": 3,
+    "cli_json": "compact",
+    "usage": "documented CLI/API, then help; minimal source only for an actual unresolved error",
+    "calculation_precision": "unchanged before public result formatting"
+  },
+  "proposal_ids": {
+    "public_format": "p1, p2, ...",
+    "native_uuid": "preserved privately",
+    "mapping": "private controller/proposal_ids.json; continued on same-episode recovery"
+  },
+  "spatial_localization": {
+    "mode": "pixel",
+    "stateless": true,
+    "isolated_process": true,
+    "tool": "spatial_localize_pixel",
+    "spatial_memory_enabled": false
+  }
+}

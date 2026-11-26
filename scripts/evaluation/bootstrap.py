@@ -88,7 +88,9 @@ def preparation_plan(benchmarks, work_dir: Path, *, configurations=None) -> dict
         },
         "icl": {
             name: (
-                "embedded sealed packages (migration_subset)"
+                "not used (RoboDojo Agent Track)"
+                if name == "robodojo"
+                else "embedded sealed packages (migration_subset)"
                 if config.environment["kind"] == "libero_three"
                 else "{repo_id}@{revision}/{prefix}".format(**config.environment["icl"])
                 if name == "robocasa365"
@@ -105,7 +107,9 @@ def preparation_plan(benchmarks, work_dir: Path, *, configurations=None) -> dict
             for name, c in configs.items()
         },
         "catalog_environment": {
-            name: {
+            name: dict(config.environment["catalog"])
+            if name == "robodojo"
+            else {
                 key: catalog_setting(config, key)
                 for key in config.environment["catalog"]
             }
@@ -427,7 +431,19 @@ def prepare_agents(benchmarks, work_dir: Path, *, configurations=None) -> Prepar
         config = configs[name]
         environment = config.environment
         agent = AgentConfig.from_file(config.agent)
-        if agent.factory in {
+        if name == "robodojo":
+            from scripts.evaluation.robodojo import description_parameters
+
+            prepared.presets[name] = _write_preset(
+                work_dir,
+                name,
+                {
+                    "extends": config.agent.as_posix(),
+                    "parameters": description_parameters(config, work_dir),
+                },
+                config,
+            )
+        elif agent.factory in {
             "robots.libero.three_benchmark_agent:make_three_benchmark_agent",
             "robots.libero.roborsi_27b_agent:make_agent",
         }:

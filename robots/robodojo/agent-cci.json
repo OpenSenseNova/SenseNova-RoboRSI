@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "extends": "agents/agent-track.yaml",
+  "parameters": {
+    "vla_backend": "simate_beta",
+    "checkpoint_path": "checkpoints/simate-beta-robodojo-eval",
+    "provider_kind": "cci",
+    "reasoning_effort": "medium",
+    "skill_library_mode": "general_only",
+    "sampling": {
+      "temperature": 1.0,
+      "top_k": 20,
+      "top_p": 0.95
+    }
+  }
+}

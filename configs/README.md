@@ -7,6 +7,10 @@ that declares them. The command works from any current directory.
 `evaluate_model.py --benchmark NAME` 自动读取 `benchmarks/NAME.yaml`，组合其中引用的
 模型与 Agent 配置。引用路径以声明它的 YAML 所在目录为基准。
 
+RoboDojo uses [benchmarks/robodojo.yaml](benchmarks/robodojo.yaml) and
+[models/robodojo.yaml](models/robodojo.yaml). See the
+[RoboDojo guide](../benchmarks/robodojo/README.md) for setup and evaluation.
+
 ```text
 configs/
   benchmarks/       # Environment, downloads, catalog and model/Agent selection
