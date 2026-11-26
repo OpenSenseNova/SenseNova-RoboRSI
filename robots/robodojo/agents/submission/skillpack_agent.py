@@ -1,6 +1,7 @@
 """Frozen registered skillpack on this checkout's native XPolicyLab ACK loop."""
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import replace
 import json
 import os
@@ -61,6 +62,7 @@ class SkillpackCodexCliPlanner(HybridCodexCliPlanner):
 
     def launch_segment(self, cfg, run, private_home, segment, prompt, session=None):
         from .execution_profile import RobotCodeModeProfile, start_capture
+        from .runtime_config import resolve_cci_limits
 
         with self._resource_lock:
             if self._cancelled.is_set():
@@ -73,12 +75,19 @@ class SkillpackCodexCliPlanner(HybridCodexCliPlanner):
             if self._capture is None:
                 capture_profile = RobotCodeModeProfile(self.profile, self.toolkit.get_tools_spec())
                 self._capture = start_capture(capture_profile, Path(run), self.context.model_cfg or {})
+            input_limit = 200000
+            provider_limits = None
+            if (self.context.model_cfg or {}).get("provider_kind") == "cci":
+                provider_limits = resolve_cci_limits(self.context.model_cfg)
+                input_limit = provider_limits["input_token_limit"]
+                cfg = deepcopy(cfg)
+                cfg["options"]["codex_compact_tokens"] = input_limit
             overrides = dict(self.config.config_overrides)
             overrides.update({
                 "model_providers.runtime.base_url": self._capture.base_url,
                 "model_instructions_file": "/workspace/preparation/agent_system.md",
-                "model_auto_compact_token_limit": 200000,
-                "model_context_window": 200000,
+                "model_auto_compact_token_limit": input_limit,
+                "model_context_window": input_limit,
                 "mcp_servers.robot.url": self._robot_server.url,
                 "mcp_servers.robot.enabled": True,
                 "mcp_servers.robot.required": True,
@@ -114,6 +123,7 @@ class SkillpackCodexCliPlanner(HybridCodexCliPlanner):
                 "operator_limits_in_prompt": False,
                 "planner": "SkillpackCodexCliPlanner",
                 "source": str(POLICY_DIR),
+                "provider_limits": provider_limits,
             }, indent=2)+"\n")
             try:
                 process = super().launch_segment(cfg, run, private_home, segment, short, session)

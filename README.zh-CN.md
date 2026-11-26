@@ -22,7 +22,7 @@
 
 ## News
 
-- **2026-11-26** — [**RoboDojo**](benchmarks/robodojo/README.zh-CN.md) 的代码与使用指南已开源。
+- **2026-11-26** — [**RoboDojo**](benchmarks/robodojo/README.zh-CN.md) 的代码与使用指南已开源，并提供配套 [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) 的[一键复现脚本](docs/sensenova-roborsi-27b.zh-CN.md#robodojo-一键复现)。
 
 - **2026-11-23** — 🎉 [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) 正式发布。模型在 RoboDojo 新版 Agent 评测协议下取得 **34.7 分**，在 Piper 上抓放物体的成功率为 **60%**，在 Piper X 上堆叠积木的成功率为 **90%**，并通过 Code as Policy 协调双臂还原二阶魔方。
 
@@ -32,12 +32,12 @@
 
 - **2026-11-16** — **SenseNova-RoboRSI** 现已登上 [**RoboDojo 官方 Agent 榜单**](https://robodojo-benchmark.com/leaderboard#agent)，在 **Avg.（w/o Open）** 口径下取得 **57.10 的平均得分**和 **49.17% 的成功率**。
 
+<details>
+<summary>历史动态</summary>
+
 - **2026-11-15** — 新增 **ICL 材料包构建与校验工具**，并补充 **BEHAVIOR-1K**、**Bench2Dex** 和 **DexJoCo** 的演示学习及冻结包评测指南。[ICL 指南](docs/icl.zh-CN.md) · [源码覆盖说明](docs/icl-coverage.zh-CN.md)。
 
 - **2026-11-03** — 已提供 [**LHPR-VLN**](benchmarks/lhpr_vln/README.zh-CN.md) 和 [**VLN-CE（R2R / RxR）**](benchmarks/vlnce/README.zh-CN.md) 的首批代码与使用指南。
-
-<details>
-<summary>历史动态</summary>
 
 - **2026-10-30** — 已提供 [**RoboLab**](benchmarks/robolab/README.zh-CN.md) 的首批代码与使用指南。
 

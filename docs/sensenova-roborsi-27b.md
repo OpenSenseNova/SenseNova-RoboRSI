@@ -142,7 +142,18 @@ export OPENAI_API_KEY='EMPTY'
 export MODEL_NAME='sensenova-roborsi-27b'
 ```
 
-**RoboDojo reproduction.** We will release the reproduction script after we submit our results to the RoboDojo leaderboard.
+### RoboDojo reproduction
+
+Prepare and start the Benchmark service following the [RoboDojo setup guide](../benchmarks/robodojo/README.md#setup). With the model connection configured above, run from the repository root:
+
+```bash
+python scripts/evaluation/evaluate_model.py --benchmark robodojo \
+  --benchmark-url robodojo=http://127.0.0.1:18800 \
+  --run-id roborsi-27b-robodojo-001
+```
+
+Replace the Benchmark URL with your service address. Results are saved under
+`work/model_eval/results/roborsi-27b-robodojo-001/`.
 
 ## License
 
