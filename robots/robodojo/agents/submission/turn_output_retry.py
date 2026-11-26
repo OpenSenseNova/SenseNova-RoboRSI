@@ -176,20 +176,12 @@ def output_error(request, response):
     return None if calls or "".join(texts).strip() else "public_output_missing"
 
 
-def classify(status, response, request, *, transport_complete):
-    if not transport_complete:
+def classify(status, response, request, *, transport_complete, transport_error=None):
+    if transport_error == "cancelled_or_disconnected":
         return {
             "retryable": False,
             "unknown": True,
-            "reason": "transport_outcome_unknown",
-            "valid": False,
-        }
-    error = response.get("error") if isinstance(response, dict) else None
-    if isinstance(error, dict) and error.get("outcome_unknown") is True:
-        return {
-            "retryable": False,
-            "unknown": True,
-            "reason": "upstream_outcome_unknown",
+            "reason": "caller_cancelled_or_disconnected",
             "valid": False,
         }
     if terminal_rejection(status, response):
@@ -197,6 +189,21 @@ def classify(status, response, request, *, transport_complete):
             "retryable": False,
             "unknown": False,
             "reason": "terminal_provider_rejection",
+            "valid": False,
+        }
+    if not transport_complete:
+        return {
+            "retryable": True,
+            "unknown": True,
+            "reason": "transport_outcome_unknown",
+            "valid": False,
+        }
+    error = response.get("error") if isinstance(response, dict) else None
+    if isinstance(error, dict) and error.get("outcome_unknown") is True:
+        return {
+            "retryable": True,
+            "unknown": True,
+            "reason": "upstream_outcome_unknown",
             "valid": False,
         }
     if not 200 <= status < 300:

@@ -4,17 +4,18 @@
 """One retry owner for a buffered model turn, before any tool output delivery."""
 
 import asyncio
-from copy import deepcopy
 import gzip
 import hashlib
 import json
-from pathlib import Path
 import time
 import zlib
+from copy import deepcopy
+from pathlib import Path
 
 from roborsi.planner.provider_capture import ProviderCapture, parse_response_body
 
-from .skillpack.capture_guard import GuardedCapture as OriginalCapture, write
+from .skillpack.capture_guard import GuardedCapture as OriginalCapture
+from .skillpack.capture_guard import write
 from .skillpack.context_windows import ContextWindows
 from .turn_output_retry import MAX_ADDITIONAL_RETRIES, classify, compaction_request
 
@@ -81,6 +82,7 @@ class GuardedCapture(OriginalCapture):
             response,
             request,
             transport_complete=record.get("transport_complete", False),
+            transport_error=record.get("transport_error"),
         )
         if decision["valid"] and not isinstance(response.get("usage"), dict):
             decision = {
@@ -163,6 +165,9 @@ class GuardedCapture(OriginalCapture):
                 "attempt": attempt_number + 1,
                 "max_additional_retries": MAX_ADDITIONAL_RETRIES,
                 "usage": row.get("usage"),
+                "failed_output_forwarded": False,
+                "budget_reset": False,
+                "case_deadline": self.case_deadline,
                 **decision,
             }
             with (self.case / "output-retries.jsonl").open("a") as stream:

@@ -126,24 +126,29 @@ def test_compaction_needs_public_summary_and_no_tool_execution():
 @pytest.mark.parametrize(
     "status,value,complete",
     [
-        (200, response(), False),
-        (
-            502,
-            {"error": {"type": "cci_request_timeout", "outcome_unknown": True}},
-            True,
-        ),
         (403, {"error": {"type": "forbidden"}}, True),
         (200, {"error": {"code": "content_filter"}}, True),
         (200, response([{"type": "message", "content": [{"type": "refusal"}]}]), True),
     ],
 )
-def test_unknown_or_explicit_rejection_never_regenerates(status, value, complete):
+def test_explicit_rejection_never_regenerates(status, value, complete):
     assert not classify(status, value, REQUEST, transport_complete=complete)[
         "retryable"
     ]
 
 
-def run_buffer(tmp_path, replies, *, storage="raw"):
+def test_caller_cancellation_does_not_retry_unknown_transport():
+    decision = classify(
+        200,
+        response(),
+        REQUEST,
+        transport_complete=False,
+        transport_error="cancelled_or_disconnected",
+    )
+    assert not decision["retryable"] and decision["unknown"]
+
+
+def run_buffer(tmp_path, replies, *, storage="raw", case_deadline=None):
     directory = tmp_path / "case"
     directory.mkdir()
     output = directory / "api"
@@ -159,6 +164,7 @@ def run_buffer(tmp_path, replies, *, storage="raw"):
         expected_effort="medium",
         enforce_paid_cache=False,
         storage_mode=storage,
+        case_deadline=case_deadline,
     )
     calls = []
 
@@ -172,6 +178,8 @@ def run_buffer(tmp_path, replies, *, storage="raw"):
     def handler(request):
         calls.append(request.content)
         status, value = replies[min(len(calls) - 1, len(replies) - 1)]
+        if isinstance(value, Exception):
+            raise value
         return httpx.Response(
             status,
             headers={
@@ -252,12 +260,58 @@ def test_six_invalid_attempts_exhaust_one_shared_budget(tmp_path):
     assert (capture.case / "dispatch_hold.json").exists()
 
 
-def test_unknown_upstream_stops_after_initial_attempt(tmp_path):
+@pytest.mark.parametrize("storage", ["raw", "training"])
+def test_unknown_upstream_retries_share_budget_and_keep_unknown_usage(
+    tmp_path, storage
+):
+    capture, calls, messages = run_buffer(
+        tmp_path,
+        [(502, {"error": {"type": "cci_request_timeout", "outcome_unknown": True}})] * 5
+        + [(200, response())],
+        storage=storage,
+    )
+    assert len(calls) == 6 and len(set(calls)) == 1
+    assert [r["completed"] for r in capture.rows] == [False] * 5 + [True]
+    assert [r["usage"] for r in capture.rows[:5]] == [None] * 5
+    retries = [
+        json.loads(line)
+        for line in (capture.case / "output-retries.jsonl").read_text().splitlines()
+    ]
+    assert all(
+        r["unknown"] and not r["budget_reset"] and not r["failed_output_forwarded"]
+        for r in retries[:5]
+    )
+    assert not (capture.case / "dispatch_hold.json").exists()
+    assert messages[0]["status"] == 200
+
+
+def test_unknown_timeouts_exhaust_exactly_five_additional_retries(tmp_path):
     capture, calls, messages = run_buffer(
         tmp_path,
         [(502, {"error": {"type": "cci_request_timeout", "outcome_unknown": True}})],
     )
-    assert len(calls) == 1 and messages[0]["status"] == 503
+    assert len(calls) == len(capture.rows) == 6
+    assert not any(r["completed"] for r in capture.rows)
+    assert messages[0]["status"] == 503
+
+
+def test_read_timeout_retries_before_any_output_delivery(tmp_path):
+    capture, calls, messages = run_buffer(
+        tmp_path,
+        [(200, httpx.ReadTimeout("fixture timeout")), (200, response())],
+    )
+    assert len(calls) == 2 and len(set(calls)) == 1
+    assert capture.rows[0]["usage"] is None
+    assert not capture.rows[0]["completed"] and capture.rows[1]["completed"]
+    assert messages[0]["status"] == 200
+
+
+def test_expired_case_budget_prevents_even_the_first_attempt(tmp_path):
+    capture, calls, messages = run_buffer(
+        tmp_path, [(200, response())], case_deadline=0
+    )
+    assert not calls and not capture.rows
+    assert messages[0]["status"] == 503
 
 
 def test_different_output_problems_share_the_same_five_retries(tmp_path):
@@ -267,7 +321,7 @@ def test_different_output_problems_share_the_same_five_retries(tmp_path):
     capture, calls, messages = run_buffer(
         tmp_path,
         [
-            (500, {"error": {"type": "server_error"}}),
+            (502, {"error": {"type": "cci_request_timeout", "outcome_unknown": True}}),
             (200, response([])),
             (200, b"malformed JSON"),
             (200, bad_call),
