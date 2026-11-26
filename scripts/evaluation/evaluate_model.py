@@ -43,6 +43,7 @@ BENCHMARKS = (
     "libero_long_plus_plus",
     "libero_ultra_long",
     "robocasa365",
+    "robodojo",
 )
 LONG_BENCHMARKS = {"libero_pro", "libero_long_plus_plus", "libero_ultra_long"}
 DEFAULT_PRESET = ROOT / "configs/agents/embodied/default.yaml"
@@ -314,6 +315,24 @@ def parse_args(
                 f"{name}={url}" for name, url in configured_endpoints.items()
             ]
         args.auto_prepare = not (args.registry_root or args.benchmark_url)
+        if "robodojo" in args.benchmark:
+            from scripts.evaluation.robodojo import validate_configuration
+
+            validate_configuration(args.configurations["robodojo"])
+            if args.auto_prepare:
+                raise ValueError(
+                    "RoboDojo requires --benchmark-url robodojo=http://HOST:PORT or "
+                    "--registry-root after native setup; see benchmarks/robodojo/BUILD.md"
+                )
+            if args.models["robodojo"].openai_format not in {None, "responses"}:
+                raise ValueError("RoboDojo's submitted controller requires Responses")
+            if any(
+                v is not None
+                for v in (args.max_turns, args.max_tokens, args.keep_turns)
+            ):
+                raise ValueError(
+                    "RoboDojo preserves the submitted controller's turn/token/context settings"
+                )
         if len(args.benchmark) != len(set(args.benchmark)):
             raise ValueError("--benchmark values must be unique")
         args.libero_suite = (
@@ -515,11 +534,15 @@ def build_commands(args: argparse.Namespace) -> list[list[str]]:
             )
         custom = benchmark in args.presets
         model = args.models[benchmark]
-        overrides = {
-            "runtime.llm.provider": "openai",
-            "runtime.llm.base_url": model.base_url,
-            "runtime.llm.model": model.model_name,
-        }
+        overrides = (
+            {}
+            if benchmark == "robodojo"
+            else {
+                "runtime.llm.provider": "openai",
+                "runtime.llm.base_url": model.base_url,
+                "runtime.llm.model": model.model_name,
+            }
+        )
         # RoboCasa365 keeps the planner settings of its Target50 Agent; the
         # other automatic presets use the generic API-compatible defaults.
         generic = not custom and benchmark != "robocasa365"
@@ -529,6 +552,8 @@ def build_commands(args: argparse.Namespace) -> list[list[str]]:
             ("agent.max_tokens", args.max_tokens, 2048),
             ("runtime.context.keep_turns", args.keep_turns, 8),
         ):
+            if benchmark == "robodojo":
+                continue
             if explicit is not None:
                 overrides[key] = explicit
             elif generic or (not custom and key == "runtime.llm.openai_format"):
@@ -860,6 +885,18 @@ def run_evaluation(parser: argparse.ArgumentParser, args: argparse.Namespace) ->
                 child_environment = environment.copy()
                 if model.api_key:
                     child_environment["OPENAI_API_KEY"] = model.api_key
+                if benchmark == "robodojo":
+                    child_environment.update(
+                        CODEX_API_KEY=model.api_key or "EMPTY",
+                        ROBORSI_CODEX_BASE_URL=model.base_url,
+                        ROBORSI_CODEX_MODEL=model.model_name,
+                        ROBORSI_SKILL_LIBRARY_MODE="general_only",
+                    )
+                    child_environment.pop("ROBORSI_FULL_ICL_BASELINE_ROOT", None)
+                    child_environment.pop("ROBORSI_FULL_ICL_REFERENCE_LAYOUT", None)
+                    child_environment.pop("ROBORSI_DEPLOY_CONFIG", None)
+                    child_environment.pop("ROBORSI_DESCRIPTION_BUNDLE", None)
+                    child_environment.pop("ROBORSI_DESCRIPTION_MANIFEST_SHA256", None)
                 variable = args.benchmark_tokens.get(benchmark)
                 if variable:
                     child_environment[variable] = os.environ[variable]

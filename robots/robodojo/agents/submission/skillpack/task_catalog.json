@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "tasks": {
+    "align_blocks": {
+      "base_task": null
+    },
+    "arrange_largest_number": {
+      "base_task": "arrange_largest_number"
+    },
+    "arrange_largest_number_random": {
+      "base_task": "arrange_largest_number"
+    },
+    "build_tower": {
+      "base_task": "build_tower"
+    },
+    "classify_objects": {
+      "base_task": "classify_objects"
+    },
+    "classify_objects_by_language": {
+      "base_task": null
+    },
+    "cover_blocks": {
+      "base_task": null
+    },
+    "deposit_coin": {
+      "base_task": "deposit_coin"
+    },
+    "fasten_screws": {
+      "base_task": "fasten_screws"
+    },
+    "fill_egg_holder": {
+      "base_task": "fill_egg_holder"
+    },
+    "fill_pen_holder": {
+      "base_task": "fill_pen_holder"
+    },
+    "fold_clothes": {
+      "base_task": "fold_clothes"
+    },
+    "fold_clothes_random": {
+      "base_task": "fold_clothes"
+    },
+    "general_pickup": {
+      "base_task": null
+    },
+    "hang_mugs": {
+      "base_task": "hang_mugs"
+    },
+    "hang_mugs_random": {
+      "base_task": "hang_mugs"
+    },
+    "imitate_sorting_sequence": {
+      "base_task": "imitate_sorting_sequence"
+    },
+    "insert_key": {
+      "base_task": "insert_key"
+    },
+    "insert_tubes": {
+      "base_task": "insert_tubes"
+    },
+    "make_kong": {
+      "base_task": "make_kong"
+    },
+    "make_toast": {
+      "base_task": "make_toast"
+    },
+    "make_toast_random": {
+      "base_task": "make_toast"
+    },
+    "match_and_pick_from_conveyor": {
+      "base_task": null
+    },
+    "organize_table": {
+      "base_task": null
+    },
+    "pack_objects_into_box": {
+      "base_task": "pack_objects_into_box"
+    },
+    "pack_objects_into_box_random": {
+      "base_task": "pack_objects_into_box"
+    },
+    "pick_from_conveyor_by_image": {
+      "base_task": null
+    },
+    "play_Xylophone": {
+      "base_task": "play_Xylophone"
+    },
+    "play_stacking_toy": {
+      "base_task": "play_stacking_toy"
+    },
+    "play_tic_tac_toe": {
+      "base_task": "play_tic_tac_toe"
+    },
+    "plug_in_charger": {
+      "base_task": "plug_in_charger"
+    },
+    "pour_balls_into_vase": {
+      "base_task": "pour_balls_into_vase"
+    },
+    "pour_by_language": {
+      "base_task": null
+    },
+    "pour_liquid_into_cup": {
+      "base_task": "pour_liquid_into_cup"
+    },
+    "pour_liquid_into_cup_random": {
+      "base_task": "pour_liquid_into_cup"
+    },
+    "press_by_number": {
+      "base_task": "press_by_number"
+    },
+    "push_T": {
+      "base_task": "push_T"
+    },
+    "push_T_random": {
+      "base_task": "push_T"
+    },
+    "put_bottles_into_dustbin": {
+      "base_task": "put_bottles_into_dustbin"
+    },
+    "solve_equation": {
+      "base_task": null
+    },
+    "sort_nesting_dolls_by_size": {
+      "base_task": "sort_nesting_dolls_by_size"
+    },
+    "sort_nesting_dolls_by_size_random": {
+      "base_task": "sort_nesting_dolls_by_size"
+    },
+    "stack_blocks": {
+      "base_task": "stack_blocks"
+    },
+    "stack_blocks_by_language": {
+      "base_task": null
+    },
+    "stack_blocks_random": {
+      "base_task": "stack_blocks"
+    },
+    "stack_bowls": {
+      "base_task": "stack_bowls"
+    },
+    "stack_bowls_random": {
+      "base_task": "stack_bowls"
+    },
+    "store_laptop_and_headphones": {
+      "base_task": "store_laptop_and_headphones"
+    },
+    "store_laptop_and_headphones_random": {
+      "base_task": "store_laptop_and_headphones"
+    },
+    "store_tools_in_toolbox": {
+      "base_task": null
+    },
+    "swap_T": {
+      "base_task": "swap_T"
+    },
+    "swap_blocks": {
+      "base_task": null
+    },
+    "sweep_blocks": {
+      "base_task": "sweep_blocks"
+    },
+    "sweep_blocks_random": {
+      "base_task": "sweep_blocks"
+    }
+  }
+}

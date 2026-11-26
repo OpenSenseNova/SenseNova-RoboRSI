@@ -40,7 +40,7 @@ def test_released_simple_benchmark_build_is_available():
     assert "robots/simple/benchmark_service.py" in benchmark_source_files("simple")
 
 
-@pytest.mark.parametrize("name", ["robotwin", "robodojo"])
+@pytest.mark.parametrize("name", ["robotwin"])
 def test_unreleased_benchmark_build_is_rejected(name):
     with pytest.raises(ValueError, match="unsupported Benchmark"):
         benchmark_source_files(name)

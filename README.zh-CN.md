@@ -22,6 +22,8 @@
 
 ## News
 
+- **2026-11-26** — [**RoboDojo**](benchmarks/robodojo/README.zh-CN.md) 的代码与使用指南已开源。
+
 - **2026-11-23** — 🎉 [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) 正式发布。模型在 RoboDojo 新版 Agent 评测协议下取得 **34.7 分**，在 Piper 上抓放物体的成功率为 **60%**，在 Piper X 上堆叠积木的成功率为 **90%**，并通过 Code as Policy 协调双臂还原二阶魔方。
 
 - **2026-11-19** — 已提供 [**SIMPLE**](benchmarks/simple/README.zh-CN.md) 的首批代码与使用指南。
@@ -136,7 +138,7 @@ ICL 经验包统一托管在
 
 | Benchmark | 状态 | ICL 经验包 | Docker 镜像 |
 | --- | --- | --- | --- |
-| RoboDojo | 即将开源 | — | — |
+| [RoboDojo](benchmarks/robodojo/) | 已开源 | — | `ghcr.io/opensensenova/sensenova-roborsi-robodojo:v1.0.0-cu128-native` |
 | [RoboCasa365](benchmarks/robocasa365/) | 已开源 | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/main/robocasa365/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-robocasa365@sha256:28d210a42597f88c7af23b63f88fefc587edc901e268a0339cbfbf6ea1814cb5` |
 | [LIBERO-Pro](benchmarks/libero_pro/) | 已开源 | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/main/libero-pro/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-libero-pro@sha256:a83417f1459a4c555c457caa82ef00a5de50191e3d8deb943894fa9285cff172` |
 | [LIBERO-Long++](benchmarks/libero_lilo/) | 已开源 | [v1.0.0](https://huggingface.co/datasets/sensenova/SenseNova-RoboRSI-Packages/tree/main/libero-long-plus-plus/v1.0.0) | `ghcr.io/opensensenova/sensenova-roborsi-libero-long-plus-plus@sha256:814139261e914b114cb89a359c6a39d4f409a556f79928e986b6ade3dfe7dc7a` |
@@ -247,6 +249,7 @@ GPT-6 Astra 的成绩来自 [RoboDojo 官方 Agent 榜单](https://robodojo-benc
 - [x] [使用文档](docs/README.md)
 - [x] [SenseNova-RoboRSI-27B-Preview 发布](docs/sensenova-roborsi-27b-preview.zh-CN.md)
 - [x] [SenseNova-RoboRSI-27B 正式发布](docs/sensenova-roborsi-27b.zh-CN.md)
+- [x] [RoboDojo 评测](benchmarks/robodojo/README.zh-CN.md)
 - [ ] Harness demo
 - [ ] RoboRSI 技术报告
 

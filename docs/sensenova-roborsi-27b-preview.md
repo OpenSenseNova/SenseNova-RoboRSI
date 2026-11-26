@@ -10,8 +10,7 @@ and feedback-based correction in simulation and on real robots.
 The model weights are available on Hugging Face for community deployment,
 reproduction, and continued training. This guide covers model deployment and
 benchmark reproduction on **LIBERO-Pro and RoboCasa365** using **RoboRSI Harness**.
-RoboDojo reproduction instructions will be released alongside upcoming RoboDojo
-support in RoboRSI.
+The [RoboDojo guide](../benchmarks/robodojo/README.md) is also available.
 
 ![SenseNova-RoboRSI-27B-Preview results on RoboDojo, LIBERO-Pro, and RoboCasa365](../assets/roborsi-27b-preview-benchmarks.webp)
 
@@ -152,5 +151,6 @@ python scripts/evaluation/evaluate_model.py --benchmark libero_pro \
 # RoboCasa365
 python scripts/evaluation/evaluate_model.py --benchmark robocasa365
 
-# RoboDojo: Evaluation support will be available in a future RoboRSI Harness update
 ```
+
+For RoboDojo, follow the [evaluation guide](../benchmarks/robodojo/README.md).

@@ -1,0 +1,121 @@
+{
+  "models": [
+    {
+      "slug": "configured-at-runtime",
+      "display_name": "Configured CCI",
+      "description": "User selected self-hosted checkpoint; explicit exec/wait transport metadata",
+      "default_reasoning_level": "xhigh",
+      "supported_reasoning_levels": [
+        {
+          "effort": "low",
+          "description": "Fast responses with lighter reasoning"
+        },
+        {
+          "effort": "medium",
+          "description": "Balances speed and reasoning depth for everyday tasks"
+        },
+        {
+          "effort": "high",
+          "description": "Greater reasoning depth for complex problems"
+        },
+        {
+          "effort": "xhigh",
+          "description": "Extra high reasoning depth for complex problems"
+        },
+        {
+          "effort": "max",
+          "description": "Maximum reasoning depth for the hardest problems"
+        },
+        {
+          "effort": "ultra",
+          "description": "Maximum reasoning with automatic task delegation"
+        }
+      ],
+      "shell_type": "unified_exec",
+      "visibility": "list",
+      "supported_in_api": true,
+      "priority": 1,
+      "additional_speed_tiers": [],
+      "service_tiers": [],
+      "availability_nux": null,
+      "upgrade": null,
+      "model_messages": {
+        "persistent_instructions": "",
+        "instructions_template": "",
+        "instructions_variables": null,
+        "approvals": {
+          "on_request": null,
+          "on_request_auto_review": "",
+          "never": null,
+          "unless_trusted": null
+        },
+        "collaboration_modes": {
+          "default": "",
+          "plan": null
+        },
+        "auto_review": {
+          "policy": null,
+          "policy_template": null,
+          "rejection_instructions": "",
+          "timeout_instructions": null
+        },
+        "permissions": null,
+        "multi_agent": {
+          "role": {
+            "root": "",
+            "subagent": ""
+          },
+          "mode": null
+        },
+        "token_budget": {
+          "enabled": false,
+          "use_history_notes_extension": false,
+          "reminder_threshold_tokens": 6144,
+          "reminder_message_template": "",
+          "guidance_message": "",
+          "auto_compact_fallback_prompt": "",
+          "auto_compact_fallback_buffer_tokens": 16384
+        },
+        "guardian_v2": {
+          "classifier_instructions": ""
+        },
+        "confirmation_policies": {
+          "browser_use": "",
+          "computer_use": ""
+        }
+      },
+      "include_skills_usage_instructions": false,
+      "include_plugin_usage_instructions": false,
+      "include_apps_usage_instructions": false,
+      "default_reasoning_summary": "none",
+      "support_verbosity": true,
+      "default_verbosity": "low",
+      "apply_patch_tool_type": "freeform",
+      "web_search_tool_type": "text_and_image",
+      "truncation_policy": {
+        "mode": "tokens",
+        "limit": 10000
+      },
+      "supports_image_detail_original": true,
+      "context_window": 200000,
+      "max_context_window": 200000,
+      "comp_hash": "3000",
+      "effective_context_window_percent": 100,
+      "experimental_supported_tools": [],
+      "input_modalities": [
+        "text",
+        "image"
+      ],
+      "supports_search_tool": false,
+      "supports_experimental_context": false,
+      "use_responses_lite": true,
+      "supports_reasoning_effort_updates": true,
+      "node_repl_auto_review_required": true,
+      "node_repl_disabled": false,
+      "tool_mode": "code_mode_only",
+      "multi_agent_version": "v2",
+      "multi_agent_reasoning_effort": "xhigh",
+      "base_instructions": "You are an agent carrying out the supplied embodied task. Follow the current episode instruction, public interface, measured state and RGB observations. Continue authorized work autonomously; never ask the user to approve robot actions. Read robo-general and the current case skill before acting."
+    }
+  ]
+}

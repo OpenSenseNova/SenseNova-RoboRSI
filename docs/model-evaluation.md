@@ -3,15 +3,15 @@
 [简体中文](model-evaluation.zh-CN.md) · [All guides](README.md)
 
 [`scripts/evaluation/evaluate_model.py`](../scripts/evaluation/evaluate_model.py)
-downloads the selected benchmark environment and available ICL, starts its
-Benchmark service, evaluates your deployed model, and stops its containers on
-completion or failure. Downloads are cached for reuse.
+evaluates your deployed model through the selected benchmark's Agent. For
+LIBERO/RoboCasa it also prepares the environment and available ICL, manages the
+Benchmark service and caches downloads. See [RoboDojo](#robodojo) for setup and evaluation.
 
 ```text
 Your deployment script → Running model API
     → Set base_url, api_key, model_name
     → evaluate_model.py --benchmark NAME
-    → Download/build environment and ICL → Evaluate → Save results
+    → Prepare or connect to benchmark resources → Evaluate → Save results
 ```
 
 Deployment commands belong in [`scripts/deploy/`](../scripts/deploy/README.md).
@@ -39,7 +39,7 @@ bash scripts/deploy/deploy_model.sh
 
 This reserved file exits with an error until implemented. An already running API
 can be used directly. The model must support **images and tool calls** through an
-OpenAI-compatible API. Automatic presets use Chat Completions, with reasoning
+OpenAI-compatible API. LIBERO/RoboCasa automatic presets use Chat Completions, with reasoning
 and provider-specific prompt-cache extensions disabled. Pass
 `--openai-format responses` if your server implements Responses.
 
@@ -76,7 +76,7 @@ The shipped profile leaves the address/name empty for environment configuration.
 can reference different model profiles; each evaluation child receives its own
 resolved key as `OPENAI_API_KEY`. No key is written to generated presets.
 
-The same model file holds optional `vla` deployment settings; `--model-config`
+For LIBERO, the same model file holds optional `vla` deployment settings; `--model-config`
 selects both main and VLA models. The Agent only sets `parameters.enable_vla`.
 See the [complete model example](libero-vla.md). VLA weights and tokenizer are
 prepared by [`downloads.py`](../scripts/evaluation/downloads.py) before serving.
@@ -136,6 +136,7 @@ includes `/v1`.
 | `libero_long_plus_plus` | Pulls a pinned environment and verifies embedded sealed ICL. `migration_subset`: 12 seed-0 cases/packages. |
 | `libero_ultra_long` | Pulls a pinned environment and verifies embedded sealed ICL. `migration_subset`: 9 seed-0 cases/packages. |
 | `robocasa365` | Builds this checkout's service from its pinned base, including kitchen assets and RLDX-1 weights; downloads pinned Target50 ICL. Default: 340 cells. |
+| `robodojo` | Connects an existing Benchmark service or registry and evaluates the selected tasks. |
 
 Enhanced LIBERO uses this checkout's [combined delivery](../benchmarks/libero_three_combined/README.md).
 Automatic setup overlays the current checkout's Benchmark service code on the
@@ -173,6 +174,16 @@ the pinned RoboCasa base currently requires GHCR access. If Docker reports
 `denied`, log in with an account that can read the image. Hugging Face uses
 `HF_TOKEN` or your existing Hub login when needed. Model API keys are not download
 credentials. See [RoboCasa build details](../benchmarks/robocasa365/BUILD.md).
+
+## RoboDojo
+
+Follow the [RoboDojo guide](../benchmarks/robodojo/README.md) to prepare the environment, then run:
+
+```bash
+python scripts/evaluation/evaluate_model.py --benchmark robodojo \
+  --benchmark-url robodojo=http://127.0.0.1:18800 \
+  --run-id robodojo-001
+```
 
 ## Select catalogs with environment variables
 
@@ -239,7 +250,8 @@ evaluation:
   seeds: [0]
 ```
 
-`endpoint: null` (default) prepares and starts the environment automatically.
+For LIBERO/RoboCasa, `endpoint: null` (default) prepares and starts the environment automatically.
+RoboDojo requires an explicit native HTTP endpoint or registry.
 An HTTP origin uses the existing service's catalog, reset and step interfaces.
 Edit the canonical benchmark YAML to keep `--benchmark libero`, or use:
 
@@ -287,7 +299,7 @@ tokens and eight retained turns. RoboCasa keeps the settings of its Agent YAML
 and the native planner budgets: 1800 seconds for atomic tasks, 3600 for composite
 tasks. `--timeout-s` defaults
 to 1800 seconds per transport call. Whole-case `--case-timeout-s` defaults to
-43200 seconds for enhanced LIBERO and 4500 otherwise.
+43200 seconds for enhanced LIBERO, 14400 for RoboDojo and 4500 otherwise.
 Automatic/HTTP services require `--max-concurrent 1`.
 
 ## Results

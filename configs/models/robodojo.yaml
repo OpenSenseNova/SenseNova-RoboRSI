@@ -1,0 +1,8 @@
+schema_version: 1
+provider: openai
+base_url: null
+model_name: null
+base_url_env: OPENAI_BASE_URL
+model_name_env: MODEL_NAME
+api_key_env: OPENAI_API_KEY
+openai_format: responses

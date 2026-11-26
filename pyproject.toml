@@ -68,6 +68,10 @@ test = [
     "build",
     "setuptools>=68",
     "wheel",
+    "opencv-python-headless==4.11.0.86",
+    "h5py==3.13.0",
+    "msgpack==1.1.0",
+    "websockets==15.0.1",
 ]
 [tool.uv]
 prerelease = "allow"
@@ -90,6 +94,7 @@ pythonpath = ["."]
 timeout = 60
 
 [tool.ruff]
+extend-exclude = ["robots/robodojo/agents/submission", "robots/robodojo/agents/Simate_beta", "robots/robodojo/control", "tests/unit_tests/robots/robodojo/upstream"]
 line-length = 88
 indent-width = 4
 target-version = "py311"

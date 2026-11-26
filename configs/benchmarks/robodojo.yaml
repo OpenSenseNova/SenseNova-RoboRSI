@@ -1,0 +1,21 @@
+schema_version: 1
+benchmark: robodojo
+# Prepare the native environment first, then set endpoint or pass --registry-root.
+endpoint: null
+token_env: null
+model: ../models/robodojo.yaml
+agent: ../../robots/robodojo/agents/agent-track.yaml
+case_timeout_s: 14400
+environment:
+  kind: robodojo
+  catalog:
+    profile: external
+agent_overrides:
+  parameters:
+    reasoning_effort: medium
+    sampling:
+      temperature: 1.0
+      top_k: 20
+      top_p: 0.95
+evaluation:
+  seeds: [0]

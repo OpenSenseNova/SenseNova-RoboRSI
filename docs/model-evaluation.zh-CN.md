@@ -3,14 +3,14 @@
 [English](model-evaluation.md) · [全部指南](README.md)
 
 [`scripts/evaluation/evaluate_model.py`](../scripts/evaluation/evaluate_model.py)
-将已部署的模型 API 接入指定 benchmark：自动下载或构建环境、准备并校验可用的 ICL 包、
-启动 Benchmark 服务、执行评测、保存结果，最后清理本次启动的容器。下载资源会缓存复用。
+通过指定 benchmark 的 Agent 评测已部署模型。LIBERO/RoboCasa 会自动准备环境和可用
+ICL、管理 Benchmark 服务并缓存下载。[RoboDojo 的使用方法](#robodojo)见下文。
 
 ```text
 部署脚本 → 模型 API 已启动
     → 配置 base_url、api_key、model_name
     → evaluate_model.py --benchmark NAME
-    → 下载/构建环境和 ICL → 评测 → 保存结果
+    → 准备或连接 benchmark 资源 → 评测 → 保存结果
 ```
 
 部署命令放在 [`scripts/deploy/`](../scripts/deploy/README.md)，评测入口与下载逻辑放在
@@ -36,7 +36,7 @@ bash scripts/deploy/deploy_model.sh
 ```
 
 此文件是预留入口，未填写时会报错退出。服务已运行时可以直接使用。
-模型需通过 OpenAI 兼容接口支持**图像输入与工具调用**。自动预设使用 Chat Completions，
+模型需通过 OpenAI 兼容接口支持**图像输入与工具调用**。LIBERO/RoboCasa 自动预设使用 Chat Completions，
 关闭推理参数与供应商专有的 prompt-cache 扩展；支持 Responses 的服务可传
 `--openai-format responses`。
 
@@ -70,7 +70,7 @@ openai_format: chat
 不同 benchmark 可以引用不同模型配置，评测子进程分别接收各自的密钥，统一映射为
 `OPENAI_API_KEY`，不会把密钥写入生成配置。
 
-同一模型 YAML 的 `vla` 段配置 VLA 权重、OpenPI 版本、GPU 和超时；`--model-config`
+对于 LIBERO，同一模型 YAML 的 `vla` 段配置 VLA 权重、OpenPI 版本、GPU 和超时；`--model-config`
 同时选择主模型和 VLA。Agent 只设置 `parameters.enable_vla`，完整模型示例见
 [VLA 指南](libero-vla.zh-CN.md)。VLA 权重和 tokenizer 由
 [`downloads.py`](../scripts/evaluation/downloads.py) 先下载，部署服务随后加载本地文件。
@@ -129,6 +129,7 @@ base URL 通常包含 `/v1`，model name 使用服务实际提供的模型 ID。
 | `libero_long_plus_plus` | 拉取固定 digest 镜像，提取并校验封存 ICL。`migration_subset`：12 个 seed-0 case/包。 |
 | `libero_ultra_long` | 拉取固定 digest 镜像，提取并校验封存 ICL。`migration_subset`：9 个 seed-0 case/包。 |
 | `robocasa365` | 基于固定基础镜像按当前 checkout 构建服务，含厨房资产和 RLDX-1 权重；下载固定版本 Target50 ICL。默认 340 个 cell。 |
+| `robodojo` | 连接已有 Benchmark 服务或 registry，运行所选任务。 |
 
 三项增强 LIBERO 使用本 checkout 的[合并交付入口](../benchmarks/libero_three_combined/README.md)。
 自动准备会在固定的原生镜像上覆盖构建当前 checkout 的 Benchmark 服务代码，避免依赖发布镜像的旧入口布局。
@@ -156,6 +157,16 @@ Docker、GPU 驱动需要事先安装。镜像使用 Docker 登录凭据；固�
 当前需要 GHCR 访问权限，出现 `denied` 时请使用有读取权限的账号登录。
 Hugging Face 需要鉴权时使用 `HF_TOKEN` 或已有 Hub 登录状态，不使用模型 API 密钥。
 参见 [RoboCasa 构建说明](../benchmarks/robocasa365/BUILD.zh-CN.md)。
+
+## RoboDojo
+
+按 [RoboDojo 使用指南](../benchmarks/robodojo/README.zh-CN.md)准备环境后运行：
+
+```bash
+python scripts/evaluation/evaluate_model.py --benchmark robodojo \
+  --benchmark-url robodojo=http://127.0.0.1:18800 \
+  --run-id robodojo-001
+```
 
 ## 用环境变量选择 catalog
 
@@ -219,7 +230,8 @@ evaluation:
   seeds: [0]
 ```
 
-默认 `endpoint: null` 自动准备并启动环境；填写地址后走 HTTP 模式，请求已有服务的
+LIBERO/RoboCasa 默认 `endpoint: null` 自动准备并启动环境；RoboDojo 必须显式提供
+原生 HTTP 地址或 registry。填写地址后走 HTTP 模式，请求已有服务的
 catalog、reset、step 等接口。可直接修改 `configs/benchmarks/libero.yaml`，保留
 `python scripts/evaluation/evaluate_model.py --benchmark libero` 入口；或者选择示例：
 
@@ -258,7 +270,7 @@ HTTP 服务需要鉴权时，在 benchmark YAML 填 `token_env: ENV_NAME`，
 的上下文和较大输出预算，请按服务模型的能力配置。标准 LIBERO 通用预设默认 100 轮、
 2048 输出 token、保留 8 轮。RoboCasa 使用其 Agent YAML 中的设置，并保留 catalog 的原生
 planner 预算：atomic 1800 秒、composite 3600 秒。`--timeout-s` 为单次传输调用限制，默认 1800 秒。
-完整 case 的 `--case-timeout-s` 默认增强 LIBERO 43200 秒，其余 4500 秒。
+完整 case 的 `--case-timeout-s` 默认增强 LIBERO 43200 秒，RoboDojo 14400 秒，其余 4500 秒。
 自动/HTTP 模式要求 `--max-concurrent 1`。
 
 ## 查看结果

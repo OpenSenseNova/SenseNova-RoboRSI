@@ -1,0 +1,27 @@
+policy_name: SenseNova-RoboRSI
+protocol: ws
+host: localhost
+port: null
+bench_name: RoboDojo
+task_name: null
+ckpt_name: roborsi-codex-v1
+env_cfg_type: arx_x5
+seed: 0
+action_type: joint
+gpu_id: null
+eval_batch: false
+ws_ping_interval_s: 20.0
+ws_ping_timeout_s: 20.0
+checkpoint_path: "checkpoints/simate-beta-robodojo-eval"
+request_timeout_s: 3660.0
+trajectory_dir: null
+vla_backend: "simate_beta"  # pi05 | simate_beta | disabled (TCP-only; no VLA service).
+eef_execution_backend: bounded_curobo
+eef_execution_backend_by_task: {}
+provider_kind: responses  # cci: self-hosted Responses; anthropic_messages: explicit Fable native transport.
+storage_mode: training  # Compact decode-source rows; raw is an explicit debugging option.
+save_video: false  # Native RGB episode launcher; video recording is opt-in.
+
+skill_library_mode: general_only
+official_description_bundle: null
+official_description_manifest_sha256: null

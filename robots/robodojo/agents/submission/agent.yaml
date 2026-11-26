@@ -1,0 +1,94 @@
+schema_version: 1
+source_root: ../../../..
+factory: robots.robodojo.agents.submission.sense_nova_roborsi_factory:make_agent
+code:
+  - simate_compat.py
+  - __init__.py
+  - agent_track.py
+  - turn_output_retry.py
+  - output_retry.py
+  - anthropic_messages.py
+  - append_journal.py
+  - bwrap_transport.py
+  - case_budget.py
+  - case_channel_pin.py
+  - case_storage.py
+  - cci_protocol.py
+  - checkpoint_resolver.py
+  - cli_artifact.py
+  - custom_cli.py
+  - deploy.py
+  - ephemeral_runtime.py
+  - execution_profile.py
+  - fable_profile.py
+  - hybrid_agent.py
+  - hybrid_backend.py
+  - hybrid_launcher.py
+  - hybrid_resume.py
+  - image_codec.py
+  - load_file.py
+  - model.py
+  - model_template.py
+  - native_camera.py
+  - native_curobo.py
+  - native_entry.py
+  - native_layout.py
+  - native_rgb.py
+  - native_rgb_adapter.py
+  - native_rgb_episode.py
+  - pi05_assets.py
+  - pi05_metadata.py
+  - pi05_runtime.py
+  - pi05_server.py
+  - pi05_source.py
+  - pi05_tokenizer.py
+  - preflight.py
+  - provider_reasoning.py
+  - runtime_capabilities.py
+  - runtime_config.py
+  - runtime_records.py
+  - sense_nova_roborsi_factory.py
+  - simate_assets.py
+  - simate_bridge.py
+  - simate_install.py
+  - simate_runtime.py
+  - simate_server.py
+  - skillpack_agent.py
+  - spatial_observation.py
+  - tool_install.py
+  - tool_runtime.py
+  - training_quality.py
+  - training_store.py
+  - trajectory_archive.py
+  - vla_identity.py
+  - vla_pool.py
+agent:
+  planner: codex_cli
+  model: ""  # Required at runtime: ROBORSI_CODEX_MODEL
+  reasoning_effort: xhigh
+  max_turns: null
+  max_tokens: null
+  planner_timeout_s: 0
+  action_timeout_s: null
+  codex_cli:
+    executable: runtime/codex/bin/codex
+    expected_version: codex-cli 0.160.1
+    expected_sha256: f34a4d2301892ae96c90097786bfe5dc269f187b6f69faf42a7b357b8c081e35
+    tools: external
+    inherit_env: false
+    env_vars:
+      - CODEX_API_KEY
+    cli_args: []
+    config_overrides:
+      approval_policy: never
+      model_auto_compact_token_limit: 200000
+      model_context_window: 200000
+      web_search: disabled
+      features.multi_agent: false
+      model_provider: runtime
+      model_providers.runtime.name: Runtime
+      model_providers.runtime.base_url: ""  # Required: ROBORSI_CODEX_BASE_URL
+      model_providers.runtime.wire_api: responses
+      model_providers.runtime.env_key: CODEX_API_KEY
+      model_providers.runtime.stream_max_retries: 8
+      model_providers.runtime.request_max_retries: 8
