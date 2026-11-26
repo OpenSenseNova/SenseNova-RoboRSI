@@ -22,7 +22,7 @@
 
 ## News
 
-- **2026-11-26** — Code and usage guides for [**RoboDojo**](benchmarks/robodojo/README.md) are now available.
+- **2026-11-26** — Code and usage guides for [**RoboDojo**](benchmarks/robodojo/README.md) are now available, along with [one-command reproduction scripts](docs/sensenova-roborsi-27b.md#robodojo-reproduction) for [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B).
 
 - **2026-11-23** — 🎉 [**SenseNova-RoboRSI-27B**](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) is now available, with an average score of **34.7** under RoboDojo’s new Agent evaluation protocol. On real robots, it succeeds in **60%** of pick-and-place trials on Piper, stacks blocks in **90%** of trials on Piper X, and uses Code as Policy to solve a 2×2 cube with both arms.
 
@@ -32,12 +32,12 @@
 
 - **2026-11-16** — **SenseNova-RoboRSI** is now listed on the [**official RoboDojo Agent leaderboard**](https://robodojo-benchmark.com/leaderboard#agent), with an **average score of 57.10** and a **success rate of 49.17%** under **Avg. (w/o Open)**.
 
+<details>
+<summary>Earlier updates</summary>
+
 - **2026-11-15** — Added **ICL package construction and verification tools**, plus demonstration-learning and frozen-package evaluation guides for **BEHAVIOR-1K**, **Bench2Dex** and **DexJoCo**. [ICL guide](docs/icl.md) · [Source coverage](docs/icl-coverage.md).
 
 - **2026-11-03** — Initial code and usage guides for [**LHPR-VLN**](benchmarks/lhpr_vln/README.md) and [**VLN-CE (R2R / RxR)**](benchmarks/vlnce/README.md) are available.
-
-<details>
-<summary>Earlier updates</summary>
 
 - **2026-10-30** — Initial code and usage guides for [**RoboLab**](benchmarks/robolab/README.md) are available.
 

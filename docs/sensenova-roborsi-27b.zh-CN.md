@@ -142,7 +142,18 @@ export OPENAI_API_KEY='EMPTY'
 export MODEL_NAME='sensenova-roborsi-27b'
 ```
 
-**RoboDojo 复现脚本**将在我们向 RoboDojo 排行榜提交评测结果后发布。
+### RoboDojo 一键复现
+
+按 [RoboDojo 环境准备指南](../benchmarks/robodojo/README.zh-CN.md#环境准备)准备并启动 Benchmark 服务。配置好上面的模型连接后，在仓库根目录运行：
+
+```bash
+python scripts/evaluation/evaluate_model.py --benchmark robodojo \
+  --benchmark-url robodojo=http://127.0.0.1:18800 \
+  --run-id roborsi-27b-robodojo-001
+```
+
+将 Benchmark 地址替换为实际服务地址，结果保存在
+`work/model_eval/results/roborsi-27b-robodojo-001/`。
 
 ## 许可证
 
