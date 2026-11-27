@@ -140,7 +140,7 @@ RoboRSI-27B 的真机实验也表明，视觉语言模型（VLM）在仿真中�
 | 模型 | 模型权重 |
 | --- | --- |
 | SenseNova-RoboRSI-27B | [🤗 Hugging Face](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) |
-| SenseNova-RoboRSI-27B-GGUF | [🤗 GGUF 权重与 llama.cpp 部署指南](https://huggingface.co/sensenova/sensenova-roborsi-27b-gguf) |
+| SenseNova-RoboRSI-27B-GGUF | [🤗 GGUF 权重与 llama.cpp 部署指南](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B-GGUF) |
 | SenseNova-RoboRSI-9B | Coming Soon |
 
 [评测与演示](#评测与演示) · [快速开始](#快速开始)

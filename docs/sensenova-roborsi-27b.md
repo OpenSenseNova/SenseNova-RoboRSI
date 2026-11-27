@@ -134,7 +134,7 @@ Our hardware trials with RoboRSI-27B also show that a vision-language model (VLM
 | Model | Model weights |
 | --- | --- |
 | SenseNova-RoboRSI-27B | [🤗 Hugging Face](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B) |
-| SenseNova-RoboRSI-27B-GGUF | [🤗 GGUF weights & llama.cpp guide](https://huggingface.co/sensenova/sensenova-roborsi-27b-gguf) |
+| SenseNova-RoboRSI-27B-GGUF | [🤗 GGUF weights & llama.cpp guide](https://huggingface.co/sensenova/SenseNova-RoboRSI-27B-GGUF) |
 | SenseNova-RoboRSI-9B | Coming Soon |
 
 [Results & Demos](#results--demos) · [Quickstart](#quickstart)

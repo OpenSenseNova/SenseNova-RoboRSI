@@ -18,7 +18,7 @@
   <a href="#quick-start">Quick Start</a> ·
   <a href="https://www.sensenova.ai/has-gpt-6-astra-achieved-embodied-intelligence">Report</a> ·
   <a href="docs/sensenova-roborsi-27b.md">RoboRSI-27B</a> ·
-  <a href="https://huggingface.co/sensenova/sensenova-roborsi-27b-gguf">GGUF</a>
+  <a href="https://huggingface.co/sensenova/SenseNova-RoboRSI-27B-GGUF">GGUF</a>
 </p>
 
 ## News
