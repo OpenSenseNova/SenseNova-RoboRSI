@@ -17,7 +17,8 @@
   <strong>English</strong> · <a href="README.zh-CN.md">简体中文</a> ·
   <a href="#quick-start">Quick Start</a> ·
   <a href="https://www.sensenova.ai/has-gpt-6-astra-achieved-embodied-intelligence">Report</a> ·
-  <a href="docs/sensenova-roborsi-27b.md">RoboRSI-27B</a>
+  <a href="docs/sensenova-roborsi-27b.md">RoboRSI-27B</a> ·
+  <a href="https://huggingface.co/sensenova/sensenova-roborsi-27b-gguf">GGUF</a>
 </p>
 
 ## News
